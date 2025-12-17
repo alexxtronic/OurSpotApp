@@ -1,0 +1,88 @@
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+
+## Xcode 8 and later
+*.xcscmblueprint
+*.xccheckout
+
+## Xcode patch
+*.swp
+*.lock
+profile
+timeline.xctimeline
+playground.xcworkspace
+
+## Build generated
+build/
+DerivedData/
+*.build
+
+## Various settings
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+## Other
+*.moved-aside
+*.xcuserstate
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+## Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.resolved
+
+## CocoaPods
+Pods/
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+Podfile.lock
+
+## Carthage
+Carthage/Build/
+
+## Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+## Archives
+*.xcarchive
+
+## Secrets and Config
+ios/FriendMap/Config/Config.plist
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+## IDE
+*.swp
+*~.nib
+.idea/
+*.iml
+
+## Logs
+*.log
