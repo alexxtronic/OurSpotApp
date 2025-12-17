@@ -42,7 +42,7 @@ struct MapView: View {
                     MapScaleView()
                 }
             }
-            .navigationTitle("Our Spot")
+            .navigationTitle("OurSpot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

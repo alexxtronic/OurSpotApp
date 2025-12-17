@@ -7,7 +7,7 @@ struct FriendMapApp: App {
     @StateObject private var planStore = PlanStore()
     
     init() {
-        Logger.info("Our Spot app initializing...")
+        Logger.info("OurSpot app initializing...")
         
         // Check Supabase config (unused today, but validates the loader)
         if Config.isSupabaseConfigured {

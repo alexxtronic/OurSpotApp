@@ -12,7 +12,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
         id: UUID(),
         name: "New User",
         age: 25,
-        bio: "Hello! I'm new to Our Spot.",
+        bio: "Hello! I'm new to OurSpot.",
         avatarLocalAssetName: nil
     )
 }
