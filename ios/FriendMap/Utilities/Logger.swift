@@ -4,7 +4,7 @@ import os
 /// Lightweight logging utility
 enum Logger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.friendmap"
-    private static let logger = os.Logger(subsystem: subsystem, category: "FriendMap")
+    private static let logger = os.Logger(subsystem: subsystem, category: "OurSpot")
     
     static func info(_ message: String) {
         logger.info("\(message, privacy: .public)")
