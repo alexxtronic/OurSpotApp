@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a plan/event created by a user
-struct Plan: Codable, Identifiable, Equatable {
+struct Plan: Codable, Identifiable, Equatable, Hashable {
     let id: UUID
     let hostUserId: UUID
     var title: String
@@ -9,6 +9,9 @@ struct Plan: Codable, Identifiable, Equatable {
     var startsAt: Date
     var latitude: Double
     var longitude: Double
+    var emoji: String
+    var activityType: ActivityType
+    var addressText: String
     
     // Mock host names for display
     var hostName: String {
@@ -16,7 +19,10 @@ struct Plan: Codable, Identifiable, Equatable {
     }
     
     var locationName: String {
-        MockData.copenhagenSpots.first { spot in
+        if !addressText.isEmpty {
+            return addressText
+        }
+        return MockData.copenhagenSpots.first { spot in
             abs(spot.latitude - latitude) < 0.001 && abs(spot.longitude - longitude) < 0.001
         }?.name ?? "Copenhagen"
     }

@@ -6,6 +6,8 @@ import SwiftUI
 final class PlanStore: ObservableObject {
     @Published var plans: [Plan] = []
     @Published var rsvpStatus: [UUID: RSVPStatus] = [:]
+    @Published var filterActivityTypes: Set<ActivityType> = []
+    @Published var filterDateRange: DateFilterRange = .all
     
     init() {
         // Load mock plans
@@ -14,15 +16,28 @@ final class PlanStore: ObservableObject {
     }
     
     /// Creates a new plan and adds it to the store
-    func createPlan(title: String, description: String, startsAt: Date, location: LocationPreset, hostUserId: UUID) {
+    func createPlan(
+        title: String,
+        description: String,
+        startsAt: Date,
+        latitude: Double,
+        longitude: Double,
+        emoji: String,
+        activityType: ActivityType,
+        addressText: String,
+        hostUserId: UUID
+    ) {
         let newPlan = Plan(
             id: UUID(),
             hostUserId: hostUserId,
             title: title,
             description: description,
             startsAt: startsAt,
-            latitude: location.latitude,
-            longitude: location.longitude
+            latitude: latitude,
+            longitude: longitude,
+            emoji: emoji,
+            activityType: activityType,
+            addressText: addressText
         )
         plans.append(newPlan)
         rsvpStatus[newPlan.id] = .going // Auto-RSVP to your own plan
@@ -57,8 +72,64 @@ final class PlanStore: ObservableObject {
             .sorted { $0.startsAt < $1.startsAt }
     }
     
-    /// Returns plans the user is going to
-    func plansIAmGoing(userId: UUID) -> [Plan] {
-        upcomingPlans.filter { rsvpStatus[$0.id] == .going || $0.hostUserId == userId }
+    /// Returns filtered plans for map display
+    var filteredPlans: [Plan] {
+        var result = upcomingPlans
+        
+        // Filter by activity type if any selected
+        if !filterActivityTypes.isEmpty {
+            result = result.filter { filterActivityTypes.contains($0.activityType) }
+        }
+        
+        // Filter by date range
+        let calendar = Calendar.current
+        let now = Date()
+        switch filterDateRange {
+        case .today:
+            result = result.filter { calendar.isDateInToday($0.startsAt) }
+        case .thisWeek:
+            let weekEnd = calendar.date(byAdding: .day, value: 7, to: now)!
+            result = result.filter { $0.startsAt <= weekEnd }
+        case .thisMonth:
+            let monthEnd = calendar.date(byAdding: .month, value: 1, to: now)!
+            result = result.filter { $0.startsAt <= monthEnd }
+        case .all:
+            break
+        }
+        
+        return result
     }
+    
+    // MARK: - Plan Sections
+    
+    /// Plans I'm going to or maybe attending (not hosting)
+    func myPlans(userId: UUID) -> [Plan] {
+        upcomingPlans.filter { plan in
+            plan.hostUserId != userId &&
+            (rsvpStatus[plan.id] == .going || rsvpStatus[plan.id] == .maybe)
+        }
+    }
+    
+    /// Plans I'm hosting
+    func hostedPlans(userId: UUID) -> [Plan] {
+        upcomingPlans.filter { $0.hostUserId == userId }
+    }
+    
+    /// Friend plans I haven't RSVP'd to
+    func friendPlans(userId: UUID) -> [Plan] {
+        upcomingPlans.filter { plan in
+            plan.hostUserId != userId &&
+            (rsvpStatus[plan.id] == nil || rsvpStatus[plan.id] == .none)
+        }
+    }
+}
+
+/// Date filter options for map
+enum DateFilterRange: String, CaseIterable, Identifiable {
+    case today = "Today"
+    case thisWeek = "This Week"
+    case thisMonth = "This Month"
+    case all = "All"
+    
+    var id: String { rawValue }
 }

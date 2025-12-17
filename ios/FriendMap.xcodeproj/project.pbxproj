@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1000000000000001 /* FriendMapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000001 /* FriendMapApp.swift */; };
+		1000000000000015 /* ActivityType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000017 /* ActivityType.swift */; };
+		1000000000000016 /* MapFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000018 /* MapFilterView.swift */; };
 		1000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000002 /* ContentView.swift */; };
 		1000000000000003 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000003 /* UserProfile.swift */; };
 		1000000000000004 /* Plan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000004 /* Plan.swift */; };
@@ -52,6 +54,8 @@
 		2000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2000000000000016 /* Config.example.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.example.plist; sourceTree = "<group>"; };
+		2000000000000017 /* ActivityType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityType.swift; sourceTree = "<group>"; };
+		2000000000000018 /* MapFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFilterView.swift; sourceTree = "<group>"; };
 		3000000000000001 /* FriendMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -113,6 +117,7 @@
 				2000000000000004 /* Plan.swift */,
 				2000000000000005 /* RSVPStatus.swift */,
 				2000000000000006 /* MockData.swift */,
+				2000000000000017 /* ActivityType.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -170,6 +175,7 @@
 			children = (
 				200000000000000F /* MapView.swift */,
 				2000000000000010 /* PlanDetailsView.swift */,
+				2000000000000018 /* MapFilterView.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -266,6 +272,7 @@
 				1000000000000004 /* Plan.swift in Sources */,
 				1000000000000005 /* RSVPStatus.swift in Sources */,
 				1000000000000006 /* MockData.swift in Sources */,
+				1000000000000015 /* ActivityType.swift in Sources */,
 				1000000000000007 /* SessionStore.swift in Sources */,
 				1000000000000008 /* PlanStore.swift in Sources */,
 				1000000000000009 /* Logger.swift in Sources */,
@@ -275,6 +282,7 @@
 				100000000000000D /* PrimaryButton.swift in Sources */,
 				100000000000000E /* SectionCard.swift in Sources */,
 				100000000000000F /* MapView.swift in Sources */,
+				1000000000000016 /* MapFilterView.swift in Sources */,
 				1000000000000010 /* PlanDetailsView.swift in Sources */,
 				1000000000000011 /* PlansView.swift in Sources */,
 				1000000000000012 /* CreatePlanView.swift in Sources */,

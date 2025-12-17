@@ -54,74 +54,98 @@ enum MockData {
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[0].id,
-                title: "Coffee at Nyhavn ☕",
+                title: "Coffee at Nyhavn",
                 description: "Let's grab coffee and watch the boats! I know a great spot with outdoor seating.",
                 startsAt: calendar.date(byAdding: .hour, value: 2, to: now)!,
                 latitude: copenhagenSpots[0].latitude,
-                longitude: copenhagenSpots[0].longitude
+                longitude: copenhagenSpots[0].longitude,
+                emoji: "☕",
+                activityType: .drinks,
+                addressText: "Nyhavn 17, Copenhagen"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[1].id,
-                title: "Tivoli Evening 🎢",
+                title: "Tivoli Evening",
                 description: "Friday night at Tivoli! Meeting at the main entrance. Bring your adventurous spirit!",
                 startsAt: calendar.date(byAdding: .day, value: 1, to: now)!,
                 latitude: copenhagenSpots[1].latitude,
-                longitude: copenhagenSpots[1].longitude
+                longitude: copenhagenSpots[1].longitude,
+                emoji: "🎢",
+                activityType: .nightlife,
+                addressText: "Vesterbrogade 3, Copenhagen"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[2].id,
-                title: "Running Group 🏃",
+                title: "Running Group",
                 description: "Morning run around the lakes. All paces welcome! We'll do 5-7km depending on the group.",
                 startsAt: calendar.date(byAdding: .day, value: 2, to: now)!,
                 latitude: copenhagenSpots[5].latitude,
-                longitude: copenhagenSpots[5].longitude
+                longitude: copenhagenSpots[5].longitude,
+                emoji: "🏃",
+                activityType: .sports,
+                addressText: "Rosenborg Castle Gardens"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[3].id,
-                title: "Street Food Dinner 🍜",
+                title: "Street Food Dinner",
                 description: "Exploring Copenhagen Street Food market. So many cuisines to try!",
                 startsAt: calendar.date(byAdding: .hour, value: 28, to: now)!,
                 latitude: copenhagenSpots[6].latitude,
-                longitude: copenhagenSpots[6].longitude
+                longitude: copenhagenSpots[6].longitude,
+                emoji: "🍜",
+                activityType: .food,
+                addressText: "Reffen, Refshalevej 167"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[4].id,
-                title: "Sunset at Strøget 🌅",
+                title: "Sunset at Strøget",
                 description: "Shopping and sunset walk through the pedestrian street. Maybe ice cream after?",
                 startsAt: calendar.date(byAdding: .hour, value: 6, to: now)!,
                 latitude: copenhagenSpots[3].latitude,
-                longitude: copenhagenSpots[3].longitude
+                longitude: copenhagenSpots[3].longitude,
+                emoji: "🌅",
+                activityType: .social,
+                addressText: "Strøget, Copenhagen"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[5].id,
-                title: "Beach Day at Amager 🏖️",
+                title: "Beach Day at Amager",
                 description: "Beach hangout! Bring sunscreen, snacks, and good vibes. We have a volleyball.",
                 startsAt: calendar.date(byAdding: .day, value: 3, to: now)!,
                 latitude: copenhagenSpots[9].latitude,
-                longitude: copenhagenSpots[9].longitude
+                longitude: copenhagenSpots[9].longitude,
+                emoji: "🏖️",
+                activityType: .outdoors,
+                addressText: "Amager Strandpark"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[0].id,
-                title: "Art Walk at Superkilen 🎨",
+                title: "Art Walk at Superkilen",
                 description: "Exploring the colorful urban park. Great for photos and a casual stroll.",
                 startsAt: calendar.date(byAdding: .hour, value: 48, to: now)!,
                 latitude: copenhagenSpots[8].latitude,
-                longitude: copenhagenSpots[8].longitude
+                longitude: copenhagenSpots[8].longitude,
+                emoji: "🎨",
+                activityType: .culture,
+                addressText: "Superkilen, Nørrebro"
             ),
             Plan(
                 id: UUID(),
                 hostUserId: mockUsers[2].id,
-                title: "Christiania Tour 🌿",
+                title: "Christiania Tour",
                 description: "First-timer friendly walk through Freetown. Cameras away in certain areas!",
                 startsAt: calendar.date(byAdding: .day, value: 4, to: now)!,
                 latitude: copenhagenSpots[4].latitude,
-                longitude: copenhagenSpots[4].longitude
+                longitude: copenhagenSpots[4].longitude,
+                emoji: "🌿",
+                activityType: .culture,
+                addressText: "Freetown Christiania"
             )
         ]
     }

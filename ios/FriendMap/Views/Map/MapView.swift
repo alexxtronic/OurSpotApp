@@ -5,6 +5,7 @@ import MapKit
 struct MapView: View {
     @EnvironmentObject private var planStore: PlanStore
     @State private var selectedPlan: Plan?
+    @State private var showFilters = false
     @State private var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(
@@ -15,12 +16,16 @@ struct MapView: View {
         )
     )
     
+    private var hasActiveFilters: Bool {
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
-                Map(position: $cameraPosition, selection: $selectedPlan) {
-                    ForEach(planStore.upcomingPlans) { plan in
-                        Annotation(plan.title, coordinate: CLLocationCoordinate2D(
+                Map(position: $cameraPosition) {
+                    ForEach(planStore.filteredPlans) { plan in
+                        Annotation("", coordinate: CLLocationCoordinate2D(
                             latitude: plan.latitude,
                             longitude: plan.longitude
                         )) {
@@ -29,7 +34,6 @@ struct MapView: View {
                                     selectedPlan = plan
                                 }
                         }
-                        .tag(plan)
                     }
                 }
                 .mapStyle(.standard(elevation: .realistic))
@@ -40,6 +44,21 @@ struct MapView: View {
             }
             .navigationTitle("FriendMap")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showFilters = true
+                    } label: {
+                        Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                            .font(.title3)
+                            .foregroundColor(hasActiveFilters ? DesignSystem.Colors.primaryFallback : .primary)
+                    }
+                }
+            }
+            .sheet(isPresented: $showFilters) {
+                MapFilterView()
+                    .presentationDetents([.medium])
+            }
             .sheet(item: $selectedPlan) { plan in
                 PlanDetailsView(plan: plan)
                     .presentationDetents([.medium, .large])
@@ -49,18 +68,23 @@ struct MapView: View {
     }
 }
 
-/// Custom annotation view for plans on the map
+/// Custom annotation view for plans on the map - shows emoji icon
 struct PlanAnnotationView: View {
     let plan: Plan
     
     var body: some View {
         VStack(spacing: 2) {
-            AvatarView(
-                name: plan.hostName,
-                size: 44,
-                assetName: MockData.hostAvatars[plan.hostUserId]
-            )
+            // Emoji circle
+            Text(plan.emoji)
+                .font(.title)
+                .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
+                )
             
+            // Title label
             Text(plan.title.prefix(15) + (plan.title.count > 15 ? "..." : ""))
                 .font(.system(size: 10, weight: .medium, design: .rounded))
                 .padding(.horizontal, 6)
