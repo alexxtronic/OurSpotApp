@@ -1,7 +1,8 @@
 import SwiftUI
 import CoreLocation
+import MapKit
 
-/// Form for creating a new plan with emoji picker and address geocoding
+/// Form for creating a new plan with emoji picker and address autocomplete
 struct CreatePlanView: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var sessionStore: SessionStore
@@ -17,6 +18,8 @@ struct CreatePlanView: View {
     @State private var isGeocoding = false
     @State private var geocodedCoordinate: CLLocationCoordinate2D?
     @State private var geocodeError: String?
+    
+    @StateObject private var addressCompleter = AddressCompleter()
     
     private let geocoder = CLGeocoder()
     
@@ -64,7 +67,6 @@ struct CreatePlanView: View {
                         }
                     }
                     .onChange(of: selectedActivityType) { _, newValue in
-                        // Auto-update emoji to match activity type default
                         selectedEmoji = newValue.defaultEmoji
                     }
                 }
@@ -79,11 +81,43 @@ struct CreatePlanView: View {
                     )
                 }
                 
-                // Location
+                // Location with autocomplete
                 Section("Where?") {
-                    TextField("Enter address", text: $addressText)
+                    TextField("Start typing an address...", text: $addressText)
                         .textContentType(.fullStreetAddress)
                         .autocapitalization(.words)
+                        .onChange(of: addressText) { _, newValue in
+                            addressCompleter.search(query: newValue)
+                            geocodedCoordinate = nil
+                            geocodeError = nil
+                        }
+                    
+                    // Address suggestions
+                    if !addressCompleter.suggestions.isEmpty && geocodedCoordinate == nil {
+                        ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
+                            Button {
+                                selectSuggestion(suggestion)
+                            } label: {
+                                HStack {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .foregroundColor(DesignSystem.Colors.primaryFallback)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(suggestion.title)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        if !suggestion.subtitle.isEmpty {
+                                            Text(suggestion.subtitle)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                     
                     if isGeocoding {
                         HStack {
@@ -105,7 +139,7 @@ struct CreatePlanView: View {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
-                            Text("Location found")
+                            Text("Location confirmed")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -136,11 +170,44 @@ struct CreatePlanView: View {
         }
     }
     
+    private func selectSuggestion(_ suggestion: MKLocalSearchCompletion) {
+        // Set address text from suggestion
+        let fullAddress = suggestion.subtitle.isEmpty 
+            ? suggestion.title 
+            : "\(suggestion.title), \(suggestion.subtitle)"
+        addressText = fullAddress
+        addressCompleter.suggestions.removeAll()
+        
+        // Geocode the selected suggestion
+        isGeocoding = true
+        let searchRequest = MKLocalSearch.Request(completion: suggestion)
+        let search = MKLocalSearch(request: searchRequest)
+        
+        search.start { response, error in
+            DispatchQueue.main.async {
+                isGeocoding = false
+                
+                if let item = response?.mapItems.first {
+                    geocodedCoordinate = item.placemark.coordinate
+                    Logger.info("Selected location: \(item.name ?? "Unknown")")
+                } else {
+                    geocodeError = "Couldn't find exact location"
+                }
+            }
+        }
+    }
+    
     private func geocodeAndCreatePlan() {
+        // If we already have coordinates from suggestion selection, use them
+        if let coordinate = geocodedCoordinate {
+            createPlan(latitude: coordinate.latitude, longitude: coordinate.longitude)
+            return
+        }
+        
         isGeocoding = true
         geocodeError = nil
         
-        // Append Copenhagen if not already mentioned for better geocoding
+        // Append Copenhagen if not already mentioned
         let searchAddress = addressText.lowercased().contains("copenhagen") || addressText.lowercased().contains("københavn")
             ? addressText
             : "\(addressText), Copenhagen, Denmark"
@@ -161,23 +228,67 @@ struct CreatePlanView: View {
                     return
                 }
                 
-                geocodedCoordinate = location.coordinate
-                
-                // Create the plan
-                planStore.createPlan(
-                    title: title,
-                    description: description,
-                    startsAt: startsAt,
-                    latitude: location.coordinate.latitude,
-                    longitude: location.coordinate.longitude,
-                    emoji: selectedEmoji,
-                    activityType: selectedActivityType,
-                    addressText: addressText,
-                    hostUserId: sessionStore.currentUser.id
-                )
-                
-                dismiss()
+                createPlan(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
             }
+        }
+    }
+    
+    private func createPlan(latitude: Double, longitude: Double) {
+        planStore.createPlan(
+            title: title,
+            description: description,
+            startsAt: startsAt,
+            latitude: latitude,
+            longitude: longitude,
+            emoji: selectedEmoji,
+            activityType: selectedActivityType,
+            addressText: addressText,
+            hostUserId: sessionStore.currentUser.id
+        )
+        dismiss()
+    }
+}
+
+/// Observable class that handles address autocomplete using MKLocalSearchCompleter
+@MainActor
+class AddressCompleter: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
+    @Published var suggestions: [MKLocalSearchCompletion] = []
+    
+    private let completer: MKLocalSearchCompleter
+    
+    override init() {
+        completer = MKLocalSearchCompleter()
+        super.init()
+        completer.delegate = self
+        completer.resultTypes = [.address, .pointOfInterest]
+        
+        // Focus search on Copenhagen area
+        let copenhagenRegion = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 55.6761, longitude: 12.5683),
+            span: MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3)
+        )
+        completer.region = copenhagenRegion
+    }
+    
+    func search(query: String) {
+        guard query.count >= 2 else {
+            suggestions = []
+            return
+        }
+        completer.queryFragment = query
+    }
+    
+    nonisolated func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+        Task { @MainActor in
+            // Limit to 5 suggestions for cleaner UI
+            self.suggestions = Array(completer.results.prefix(5))
+        }
+    }
+    
+    nonisolated func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+        Task { @MainActor in
+            Logger.error("Address completer error: \(error.localizedDescription)")
+            self.suggestions = []
         }
     }
 }
