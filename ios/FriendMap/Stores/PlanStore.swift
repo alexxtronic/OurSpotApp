@@ -119,7 +119,7 @@ final class PlanStore: ObservableObject {
     func friendPlans(userId: UUID) -> [Plan] {
         upcomingPlans.filter { plan in
             plan.hostUserId != userId &&
-            (rsvpStatus[plan.id] == nil || rsvpStatus[plan.id] == .none)
+            (rsvpStatus[plan.id] == nil || rsvpStatus[plan.id] == RSVPStatus.none)
         }
     }
 }
