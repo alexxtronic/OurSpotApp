@@ -5,6 +5,7 @@ import MapKit
 struct PlanDetailsView: View {
     let plan: Plan
     @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var sessionStore: SessionStore
     @Environment(\.dismiss) private var dismiss
     
     @State private var showBlockAlert = false
@@ -14,21 +15,54 @@ struct PlanDetailsView: View {
         planStore.getRSVP(for: plan.id)
     }
     
+    private var isHost: Bool {
+        plan.hostUserId == sessionStore.currentUser.id
+    }
+    
+    private var attendees: [UUID] {
+        planStore.getAttendees(for: plan.id)
+    }
+    
+    private var pendingApprovals: [UUID] {
+        planStore.getPendingApprovals(for: plan.id)
+    }
+    
+    private var canSeeDetails: Bool {
+        // Host can always see, or if not private, or if approved (going)
+        isHost || !plan.isPrivate || rsvpStatus == .going
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                    // Private badge if applicable
+                    if plan.isPrivate {
+                        privateEventBadge
+                    }
+                    
                     // Host info
                     hostSection
                     
-                    // Plan details
-                    detailsSection
-                    
-                    // Map preview
-                    mapPreviewSection
+                    // Plan details (hidden for private if not approved)
+                    if canSeeDetails {
+                        detailsSection
+                        mapPreviewSection
+                    } else {
+                        pendingApprovalSection
+                    }
                     
                     // RSVP section
                     rsvpSection
+                    
+                    // Attendees section (for hosts)
+                    if isHost {
+                        attendeesSection
+                        
+                        if !pendingApprovals.isEmpty {
+                            pendingApprovalsSection
+                        }
+                    }
                     
                     // Safety buttons
                     safetySection
@@ -63,6 +97,43 @@ struct PlanDetailsView: View {
         }
     }
     
+    private var privateEventBadge: some View {
+        HStack {
+            Image(systemName: "lock.fill")
+            Text("Private Event")
+            Spacer()
+            if !isHost && rsvpStatus == .pending {
+                Text("Awaiting Approval")
+                    .font(.caption)
+            }
+        }
+        .font(.caption.weight(.medium))
+        .foregroundColor(.orange)
+        .padding(DesignSystem.Spacing.sm)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(DesignSystem.CornerRadius.md)
+    }
+    
+    private var pendingApprovalSection: some View {
+        SectionCard {
+            VStack(spacing: DesignSystem.Spacing.md) {
+                Image(systemName: "lock.shield")
+                    .font(.system(size: 40))
+                    .foregroundColor(.orange)
+                
+                Text("Details Hidden")
+                    .font(.headline)
+                
+                Text("RSVP to request access. The host will approve your request before you can see the exact location and details.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+        }
+    }
+    
     private var hostSection: some View {
         HStack(spacing: DesignSystem.Spacing.md) {
             AvatarView(
@@ -89,8 +160,12 @@ struct PlanDetailsView: View {
     private var detailsSection: some View {
         SectionCard {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                Text(plan.title)
-                    .font(.title2.bold())
+                HStack {
+                    Text(plan.emoji)
+                        .font(.title)
+                    Text(plan.title)
+                        .font(.title2.bold())
+                }
                 
                 HStack {
                     Image(systemName: "calendar")
@@ -134,11 +209,11 @@ struct PlanDetailsView: View {
                 .font(.headline)
             
             HStack(spacing: DesignSystem.Spacing.sm) {
-                ForEach(RSVPStatus.allCases, id: \.self) { status in
+                // Only show Going/Maybe/None, not Pending in the picker
+                ForEach([RSVPStatus.none, RSVPStatus.going, RSVPStatus.maybe], id: \.self) { status in
                     Button {
                         withAnimation(.spring(response: 0.3)) {
-                            // Toggle through statuses
-                            planStore.rsvpStatus[plan.id] = status
+                            planStore.toggleRSVP(planId: plan.id, userId: sessionStore.currentUser.id)
                         }
                     } label: {
                         HStack {
@@ -154,10 +229,80 @@ struct PlanDetailsView: View {
                     }
                 }
             }
+            
+            if rsvpStatus == .pending {
+                Text("⏳ Waiting for host approval")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .padding(.top, 4)
+            }
         }
         .padding(DesignSystem.Spacing.md)
         .background(DesignSystem.Colors.secondaryBackground)
         .cornerRadius(DesignSystem.CornerRadius.lg)
+    }
+    
+    private var attendeesSection: some View {
+        SectionCard(title: "Attendees (\(attendees.count))") {
+            if attendees.isEmpty {
+                Text("No attendees yet")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            } else {
+                VStack(spacing: DesignSystem.Spacing.sm) {
+                    ForEach(attendees, id: \.self) { userId in
+                        HStack {
+                            AvatarView(
+                                name: MockData.hostNames[userId] ?? "User",
+                                size: 36,
+                                assetName: MockData.hostAvatars[userId]
+                            )
+                            Text(MockData.hostNames[userId] ?? "User")
+                                .font(.subheadline)
+                            Spacer()
+                            Text("Going")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private var pendingApprovalsSection: some View {
+        SectionCard(title: "Pending Approvals (\(pendingApprovals.count))") {
+            VStack(spacing: DesignSystem.Spacing.sm) {
+                ForEach(pendingApprovals, id: \.self) { userId in
+                    HStack {
+                        AvatarView(
+                            name: MockData.hostNames[userId] ?? "User",
+                            size: 36,
+                            assetName: MockData.hostAvatars[userId]
+                        )
+                        Text(MockData.hostNames[userId] ?? "User")
+                            .font(.subheadline)
+                        Spacer()
+                        
+                        Button {
+                            planStore.approveAttendee(planId: plan.id, userId: userId)
+                        } label: {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .font(.title2)
+                        }
+                        
+                        Button {
+                            planStore.denyAttendee(planId: plan.id, userId: userId)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                                .font(.title2)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private func statusColor(_ status: RSVPStatus) -> Color {
@@ -165,6 +310,7 @@ struct PlanDetailsView: View {
         case .going: return .green
         case .maybe: return .orange
         case .none: return .gray
+        case .pending: return .orange
         }
     }
     
@@ -191,4 +337,5 @@ struct PlanDetailsView: View {
 #Preview {
     PlanDetailsView(plan: MockData.samplePlans[0])
         .environmentObject(PlanStore())
+        .environmentObject(SessionStore())
 }

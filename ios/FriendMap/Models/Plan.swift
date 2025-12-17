@@ -12,6 +12,7 @@ struct Plan: Codable, Identifiable, Equatable, Hashable {
     var emoji: String
     var activityType: ActivityType
     var addressText: String
+    var isPrivate: Bool
     
     // Mock host names for display
     var hostName: String {

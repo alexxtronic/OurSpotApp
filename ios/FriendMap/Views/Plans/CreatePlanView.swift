@@ -18,6 +18,7 @@ struct CreatePlanView: View {
     @State private var isGeocoding = false
     @State private var geocodedCoordinate: CLLocationCoordinate2D?
     @State private var geocodeError: String?
+    @State private var isPrivate = false
     
     @StateObject private var addressCompleter = AddressCompleter()
     
@@ -145,6 +146,29 @@ struct CreatePlanView: View {
                         }
                     }
                 }
+                
+                // Privacy setting
+                Section {
+                    Toggle(isOn: $isPrivate) {
+                        HStack {
+                            Image(systemName: "lock.fill")
+                                .foregroundColor(.orange)
+                            VStack(alignment: .leading) {
+                                Text("Make Private")
+                                    .font(.body)
+                                Text("You'll approve each attendee")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Privacy")
+                } footer: {
+                    if isPrivate {
+                        Text("Guests won't see exact location until you approve them.")
+                    }
+                }
             }
             .navigationTitle("Create Plan")
             .navigationBarTitleDisplayMode(.inline)
@@ -243,7 +267,8 @@ struct CreatePlanView: View {
             emoji: selectedEmoji,
             activityType: selectedActivityType,
             addressText: addressText,
-            hostUserId: sessionStore.currentUser.id
+            hostUserId: sessionStore.currentUser.id,
+            isPrivate: isPrivate
         )
         dismiss()
     }

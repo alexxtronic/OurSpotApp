@@ -61,7 +61,8 @@ enum MockData {
                 longitude: copenhagenSpots[0].longitude,
                 emoji: "☕",
                 activityType: .drinks,
-                addressText: "Nyhavn 17, Copenhagen"
+                addressText: "Nyhavn 17, Copenhagen",
+                isPrivate: false
             ),
             Plan(
                 id: UUID(),
@@ -73,7 +74,8 @@ enum MockData {
                 longitude: copenhagenSpots[1].longitude,
                 emoji: "🎢",
                 activityType: .nightlife,
-                addressText: "Vesterbrogade 3, Copenhagen"
+                addressText: "Vesterbrogade 3, Copenhagen",
+                isPrivate: false
             ),
             Plan(
                 id: UUID(),
@@ -85,7 +87,8 @@ enum MockData {
                 longitude: copenhagenSpots[5].longitude,
                 emoji: "🏃",
                 activityType: .sports,
-                addressText: "Rosenborg Castle Gardens"
+                addressText: "Rosenborg Castle Gardens",
+                isPrivate: false
             ),
             Plan(
                 id: UUID(),
@@ -97,7 +100,8 @@ enum MockData {
                 longitude: copenhagenSpots[6].longitude,
                 emoji: "🍜",
                 activityType: .food,
-                addressText: "Reffen, Refshalevej 167"
+                addressText: "Reffen, Refshalevej 167",
+                isPrivate: false
             ),
             Plan(
                 id: UUID(),
@@ -109,7 +113,8 @@ enum MockData {
                 longitude: copenhagenSpots[3].longitude,
                 emoji: "🌅",
                 activityType: .social,
-                addressText: "Strøget, Copenhagen"
+                addressText: "Strøget, Copenhagen",
+                isPrivate: false
             ),
             Plan(
                 id: UUID(),
@@ -121,7 +126,8 @@ enum MockData {
                 longitude: copenhagenSpots[9].longitude,
                 emoji: "🏖️",
                 activityType: .outdoors,
-                addressText: "Amager Strandpark"
+                addressText: "Amager Strandpark",
+                isPrivate: true
             ),
             Plan(
                 id: UUID(),
@@ -133,7 +139,8 @@ enum MockData {
                 longitude: copenhagenSpots[8].longitude,
                 emoji: "🎨",
                 activityType: .culture,
-                addressText: "Superkilen, Nørrebro"
+                addressText: "Superkilen, Nørrebro",
+                isPrivate: false
             ),
             Plan(
                 id: UUID(),
@@ -145,7 +152,8 @@ enum MockData {
                 longitude: copenhagenSpots[4].longitude,
                 emoji: "🌿",
                 activityType: .culture,
-                addressText: "Freetown Christiania"
+                addressText: "Freetown Christiania",
+                isPrivate: true
             )
         ]
     }

@@ -1,29 +1,71 @@
 import SwiftUI
 
-/// Filter view for map with date and activity type options
+/// Filter view for map with calendar, activity types, and reset button
 struct MapFilterView: View {
     @EnvironmentObject private var planStore: PlanStore
     @Environment(\.dismiss) private var dismiss
+    @State private var showCalendar = false
+    
+    private var hasActiveFilters: Bool {
+        !planStore.filterActivityTypes.isEmpty || 
+        planStore.filterDateRange != .all ||
+        planStore.filterSpecificDate != nil
+    }
     
     var body: some View {
         NavigationStack {
             List {
-                // Date filter
-                Section("Date Range") {
+                // Date filter section
+                Section("Date") {
+                    // Quick date ranges
                     ForEach(DateFilterRange.allCases) { range in
                         Button {
                             planStore.filterDateRange = range
+                            planStore.filterSpecificDate = nil
                         } label: {
                             HStack {
                                 Text(range.rawValue)
                                     .foregroundColor(.primary)
                                 Spacer()
-                                if planStore.filterDateRange == range {
+                                if planStore.filterDateRange == range && planStore.filterSpecificDate == nil {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(DesignSystem.Colors.primaryFallback)
                                 }
                             }
                         }
+                    }
+                    
+                    // Specific date picker
+                    Button {
+                        showCalendar.toggle()
+                    } label: {
+                        HStack {
+                            Image(systemName: "calendar")
+                            Text("Pick a Date")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if let date = planStore.filterSpecificDate {
+                                Text(date.formatted(date: .abbreviated, time: .omitted))
+                                    .foregroundColor(DesignSystem.Colors.primaryFallback)
+                            }
+                        }
+                    }
+                    
+                    if showCalendar {
+                        DatePicker(
+                            "Select Date",
+                            selection: Binding(
+                                get: { planStore.filterSpecificDate ?? Date() },
+                                set: { newDate in
+                                    planStore.filterSpecificDate = newDate
+                                    planStore.filterDateRange = .all
+                                }
+                            ),
+                            in: Date()...,
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
                     }
                 }
                 
@@ -50,25 +92,21 @@ struct MapFilterView: View {
                         }
                     }
                 }
-                
-                // Clear filters
-                if !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all {
-                    Section {
-                        Button(role: .destructive) {
-                            planStore.filterActivityTypes.removeAll()
-                            planStore.filterDateRange = .all
-                        } label: {
-                            HStack {
-                                Image(systemName: "xmark.circle.fill")
-                                Text("Clear All Filters")
-                            }
-                        }
-                    }
-                }
             }
             .navigationTitle("Filters")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if hasActiveFilters {
+                        Button {
+                            resetAllFilters()
+                        } label: {
+                            Text("Reset")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
@@ -77,6 +115,12 @@ struct MapFilterView: View {
                 }
             }
         }
+    }
+    
+    private func resetAllFilters() {
+        planStore.filterActivityTypes.removeAll()
+        planStore.filterDateRange = .all
+        planStore.filterSpecificDate = nil
     }
 }
 

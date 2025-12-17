@@ -8,6 +8,12 @@ final class PlanStore: ObservableObject {
     @Published var rsvpStatus: [UUID: RSVPStatus] = [:]
     @Published var filterActivityTypes: Set<ActivityType> = []
     @Published var filterDateRange: DateFilterRange = .all
+    @Published var filterSpecificDate: Date?
+    
+    /// Tracks attendees per plan: planId -> set of userIds
+    @Published var attendees: [UUID: Set<UUID>] = [:]
+    /// Tracks pending approval requests for private plans
+    @Published var pendingApprovals: [UUID: Set<UUID>] = [:]
     
     init() {
         // Load mock plans
@@ -25,7 +31,8 @@ final class PlanStore: ObservableObject {
         emoji: String,
         activityType: ActivityType,
         addressText: String,
-        hostUserId: UUID
+        hostUserId: UUID,
+        isPrivate: Bool = false
     ) {
         let newPlan = Plan(
             id: UUID(),
@@ -37,32 +44,94 @@ final class PlanStore: ObservableObject {
             longitude: longitude,
             emoji: emoji,
             activityType: activityType,
-            addressText: addressText
+            addressText: addressText,
+            isPrivate: isPrivate
         )
         plans.append(newPlan)
-        rsvpStatus[newPlan.id] = .going // Auto-RSVP to your own plan
-        Logger.info("Created new plan: \(title)")
+        rsvpStatus[newPlan.id] = .going
+        attendees[newPlan.id] = [hostUserId] // Host is automatically attending
+        Logger.info("Created new plan: \(title) (private: \(isPrivate))")
     }
     
     /// Toggles RSVP status for a plan
-    func toggleRSVP(planId: UUID) {
-        let current = rsvpStatus[planId] ?? .none
+    func toggleRSVP(planId: UUID, userId: UUID) {
+        let current = rsvpStatus[planId] ?? RSVPStatus.none
+        let plan = plans.first { $0.id == planId }
+        
         let next: RSVPStatus
         switch current {
         case .none:
-            next = .going
+            // For private plans, add to pending approvals instead of direct going
+            if plan?.isPrivate == true && plan?.hostUserId != userId {
+                addPendingApproval(planId: planId, userId: userId)
+                next = .pending
+            } else {
+                next = .going
+                addAttendee(planId: planId, userId: userId)
+            }
         case .going:
             next = .maybe
+            removeAttendee(planId: planId, userId: userId)
         case .maybe:
-            next = .none
+            next = RSVPStatus.none
+        case .pending:
+            next = RSVPStatus.none
+            removePendingApproval(planId: planId, userId: userId)
         }
         rsvpStatus[planId] = next
         Logger.info("RSVP for plan \(planId): \(next.displayText)")
     }
     
+    /// Approves a pending request for a private plan
+    func approveAttendee(planId: UUID, userId: UUID) {
+        removePendingApproval(planId: planId, userId: userId)
+        addAttendee(planId: planId, userId: userId)
+        // Update their RSVP status to going
+        // Note: In a real app this would notify the user
+        Logger.info("Approved user \(userId) for plan \(planId)")
+    }
+    
+    /// Denies a pending request for a private plan
+    func denyAttendee(planId: UUID, userId: UUID) {
+        removePendingApproval(planId: planId, userId: userId)
+        Logger.info("Denied user \(userId) for plan \(planId)")
+    }
+    
+    private func addAttendee(planId: UUID, userId: UUID) {
+        if attendees[planId] == nil {
+            attendees[planId] = []
+        }
+        attendees[planId]?.insert(userId)
+    }
+    
+    private func removeAttendee(planId: UUID, userId: UUID) {
+        attendees[planId]?.remove(userId)
+    }
+    
+    private func addPendingApproval(planId: UUID, userId: UUID) {
+        if pendingApprovals[planId] == nil {
+            pendingApprovals[planId] = []
+        }
+        pendingApprovals[planId]?.insert(userId)
+    }
+    
+    private func removePendingApproval(planId: UUID, userId: UUID) {
+        pendingApprovals[planId]?.remove(userId)
+    }
+    
+    /// Gets attendees for a plan
+    func getAttendees(for planId: UUID) -> [UUID] {
+        Array(attendees[planId] ?? [])
+    }
+    
+    /// Gets pending approvals for a plan
+    func getPendingApprovals(for planId: UUID) -> [UUID] {
+        Array(pendingApprovals[planId] ?? [])
+    }
+    
     /// Gets RSVP status for a specific plan
     func getRSVP(for planId: UUID) -> RSVPStatus {
-        return rsvpStatus[planId] ?? .none
+        return rsvpStatus[planId] ?? RSVPStatus.none
     }
     
     /// Returns plans sorted by start date
@@ -81,20 +150,26 @@ final class PlanStore: ObservableObject {
             result = result.filter { filterActivityTypes.contains($0.activityType) }
         }
         
-        // Filter by date range
-        let calendar = Calendar.current
-        let now = Date()
-        switch filterDateRange {
-        case .today:
-            result = result.filter { calendar.isDateInToday($0.startsAt) }
-        case .thisWeek:
-            let weekEnd = calendar.date(byAdding: .day, value: 7, to: now)!
-            result = result.filter { $0.startsAt <= weekEnd }
-        case .thisMonth:
-            let monthEnd = calendar.date(byAdding: .month, value: 1, to: now)!
-            result = result.filter { $0.startsAt <= monthEnd }
-        case .all:
-            break
+        // Filter by specific date if set
+        if let specificDate = filterSpecificDate {
+            let calendar = Calendar.current
+            result = result.filter { calendar.isDate($0.startsAt, inSameDayAs: specificDate) }
+        } else {
+            // Filter by date range
+            let calendar = Calendar.current
+            let now = Date()
+            switch filterDateRange {
+            case .today:
+                result = result.filter { calendar.isDateInToday($0.startsAt) }
+            case .thisWeek:
+                let weekEnd = calendar.date(byAdding: .day, value: 7, to: now)!
+                result = result.filter { $0.startsAt <= weekEnd }
+            case .thisMonth:
+                let monthEnd = calendar.date(byAdding: .month, value: 1, to: now)!
+                result = result.filter { $0.startsAt <= monthEnd }
+            case .all:
+                break
+            }
         }
         
         return result
