@@ -1,5 +1,5 @@
 import Foundation
-import Supabase
+import PostgREST
 
 /// Service for Plan CRUD operations with Supabase
 @MainActor
@@ -8,12 +8,12 @@ final class PlanService: ObservableObject {
     // MARK: - Fetch Plans
     
     func fetchPlans() async throws -> [Plan] {
-        guard let supabase = Config.supabase else {
-            Logger.warning("Supabase not configured - returning empty")
+        guard let postgrest = Config.postgrest else {
+            Logger.warning("PostgREST not configured - returning empty")
             return []
         }
         
-        let response: [PlanDTO] = try await supabase
+        let response: [PlanDTO] = try await postgrest
             .from("plans")
             .select()
             .gte("starts_at", value: ISO8601DateFormatter().string(from: Date()))
@@ -21,7 +21,6 @@ final class PlanService: ObservableObject {
             .execute()
             .value
         
-        // Map DTOs to Plan model
         return response.map { dto in
             Plan(
                 id: dto.id,
@@ -42,12 +41,12 @@ final class PlanService: ObservableObject {
     // MARK: - Create Plan
     
     func createPlan(_ plan: Plan) async throws {
-        guard let supabase = Config.supabase else {
-            Logger.warning("Supabase not configured - plan not saved")
+        guard let postgrest = Config.postgrest else {
+            Logger.warning("PostgREST not configured")
             return
         }
         
-        try await supabase
+        try await postgrest
             .from("plans")
             .insert(PlanInsertDTO(
                 id: plan.id,
@@ -64,13 +63,13 @@ final class PlanService: ObservableObject {
             ))
             .execute()
         
-        Logger.info("Plan created in Supabase: \(plan.title)")
+        Logger.info("Plan created: \(plan.title)")
     }
     
     // MARK: - Update RSVP
     
     func updateRSVP(planId: UUID, userId: UUID, status: RSVPStatus) async throws {
-        guard let supabase = Config.supabase else { return }
+        guard let postgrest = Config.postgrest else { return }
         
         let statusString: String
         switch status {
@@ -80,30 +79,26 @@ final class PlanService: ObservableObject {
         case .pending: statusString = "pending"
         }
         
-        try await supabase
+        try await postgrest
             .from("rsvps")
-            .upsert(RSVPInsertDTO(
-                plan_id: planId,
-                user_id: userId,
-                status: statusString
-            ))
+            .upsert(RSVPInsertDTO(plan_id: planId, user_id: userId, status: statusString))
             .execute()
         
-        Logger.info("RSVP updated in Supabase: \(statusString)")
+        Logger.info("RSVP updated: \(statusString)")
     }
     
     // MARK: - Delete Plan
     
     func deletePlan(_ planId: UUID) async throws {
-        guard let supabase = Config.supabase else { return }
+        guard let postgrest = Config.postgrest else { return }
         
-        try await supabase
+        try await postgrest
             .from("plans")
             .delete()
             .eq("id", value: planId.uuidString)
             .execute()
         
-        Logger.info("Plan deleted from Supabase")
+        Logger.info("Plan deleted")
     }
 }
 

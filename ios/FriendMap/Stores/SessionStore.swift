@@ -1,8 +1,7 @@
 import Foundation
 import SwiftUI
-import Supabase
 
-/// Manages the current user session and profile sync with Supabase
+/// Manages the current user session and profile sync
 @MainActor
 final class SessionStore: ObservableObject {
     @Published var currentUser: UserProfile
@@ -20,23 +19,24 @@ final class SessionStore: ObservableObject {
         }
     }
     
-    // MARK: - Supabase Profile Sync
+    // MARK: - Profile Sync
     
-    /// Fetch or create profile for authenticated user
     func syncProfile(userId: UUID, email: String?, name: String?) async {
-        guard let supabase = Config.supabase else {
-            Logger.warning("Supabase not configured - using local profile")
-            // Update local profile with ID
-            if currentUser.id != userId {
-                currentUser = UserProfile(
-                    id: userId,
-                    name: name ?? "User",
-                    age: 25,
-                    bio: "Hello! I'm new to OurSpot.",
-                    avatarLocalAssetName: nil
-                )
-                saveToUserDefaults()
-            }
+        // Update local profile
+        if currentUser.id != userId {
+            currentUser = UserProfile(
+                id: userId,
+                name: name ?? "User",
+                age: 25,
+                bio: "Hello! I'm new to OurSpot.",
+                avatarLocalAssetName: nil
+            )
+            saveToUserDefaults()
+        }
+        
+        // Sync with Supabase via PostgREST
+        guard let postgrest = Config.postgrest else {
+            Logger.warning("PostgREST not configured - using local profile")
             return
         }
         
@@ -44,7 +44,7 @@ final class SessionStore: ObservableObject {
         
         do {
             // Try to fetch existing profile
-            let response: [ProfileDTO] = try await supabase
+            let response: [ProfileDTO] = try await postgrest
                 .from("profiles")
                 .select()
                 .eq("id", value: userId.uuidString)
@@ -62,58 +62,25 @@ final class SessionStore: ObservableObject {
                 saveToUserDefaults()
                 Logger.info("Profile fetched from Supabase")
             } else {
-                // Profile doesn't exist, create one
-                await createProfile(userId: userId, email: email, name: name)
+                // Create profile
+                try await postgrest
+                    .from("profiles")
+                    .insert(ProfileInsertDTO(
+                        id: userId,
+                        email: email ?? "",
+                        name: currentUser.name,
+                        age: currentUser.age,
+                        bio: currentUser.bio
+                    ))
+                    .execute()
+                Logger.info("Profile created in Supabase")
             }
         } catch {
-            Logger.error("Failed to fetch profile: \(error.localizedDescription)")
-            // Use local profile as fallback
-            currentUser = UserProfile(
-                id: userId,
-                name: name ?? "User",
-                age: 25,
-                bio: "Hello! I'm new to OurSpot.",
-                avatarLocalAssetName: nil
-            )
+            Logger.error("Profile sync failed: \(error.localizedDescription)")
         }
         
         isLoading = false
     }
-    
-    /// Create a new profile in Supabase
-    private func createProfile(userId: UUID, email: String?, name: String?) async {
-        guard let supabase = Config.supabase else { return }
-        
-        let newProfile = UserProfile(
-            id: userId,
-            name: name ?? "New User",
-            age: 25,
-            bio: "Hello! I'm new to OurSpot.",
-            avatarLocalAssetName: nil
-        )
-        
-        do {
-            try await supabase
-                .from("profiles")
-                .insert(ProfileInsertDTO(
-                    id: userId,
-                    email: email ?? "",
-                    name: newProfile.name,
-                    age: newProfile.age,
-                    bio: newProfile.bio
-                ))
-                .execute()
-            
-            self.currentUser = newProfile
-            saveToUserDefaults()
-            Logger.info("Profile created in Supabase")
-        } catch {
-            Logger.error("Failed to create profile: \(error.localizedDescription)")
-            self.currentUser = newProfile
-        }
-    }
-    
-    // MARK: - Local Updates
     
     func updateProfile(name: String, age: Int, bio: String) {
         currentUser.name = name
@@ -123,27 +90,17 @@ final class SessionStore: ObservableObject {
         
         // Sync to Supabase in background
         Task {
-            await syncProfileToSupabase()
-        }
-    }
-    
-    private func syncProfileToSupabase() async {
-        guard let supabase = Config.supabase else { return }
-        
-        do {
-            try await supabase
-                .from("profiles")
-                .update(ProfileUpdateDTO(
-                    name: currentUser.name,
-                    age: currentUser.age,
-                    bio: currentUser.bio
-                ))
-                .eq("id", value: currentUser.id.uuidString)
-                .execute()
-            
-            Logger.info("Profile synced to Supabase")
-        } catch {
-            Logger.error("Failed to sync profile: \(error.localizedDescription)")
+            guard let postgrest = Config.postgrest else { return }
+            do {
+                try await postgrest
+                    .from("profiles")
+                    .update(ProfileUpdateDTO(name: name, age: age, bio: bio))
+                    .eq("id", value: currentUser.id.uuidString)
+                    .execute()
+                Logger.info("Profile synced to Supabase")
+            } catch {
+                Logger.error("Profile sync failed: \(error.localizedDescription)")
+            }
         }
     }
     
@@ -155,7 +112,6 @@ final class SessionStore: ObservableObject {
     func clearSession() {
         currentUser = UserProfile.placeholder
         UserDefaults.standard.removeObject(forKey: userDefaultsKey)
-        Logger.info("Session cleared")
     }
     
     private func saveToUserDefaults() {
@@ -165,7 +121,7 @@ final class SessionStore: ObservableObject {
     }
 }
 
-// MARK: - DTOs for Supabase
+// MARK: - DTOs
 
 private struct ProfileDTO: Decodable {
     let id: UUID

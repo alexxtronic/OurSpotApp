@@ -1,4 +1,5 @@
 import SwiftUI
+import Auth
 
 /// Main content view with auth routing and tab bar navigation
 struct ContentView: View {
@@ -9,16 +10,14 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authService.isAuthenticated {
-                // Main app with tabs
                 mainTabView
                     .onAppear {
                         syncProfileIfNeeded()
                     }
-            } else if Config.supabase == nil {
+            } else if Config.authClient == nil {
                 // Offline mode - skip auth
                 mainTabView
             } else {
-                // Not authenticated - show sign in
                 SignInView()
             }
         }
@@ -48,7 +47,6 @@ struct ContentView: View {
         guard let session = authService.currentSession else { return }
         
         Task {
-            // Get name from user metadata if available
             var name: String? = nil
             if let metadata = session.user.userMetadata["name"] {
                 if case .string(let stringValue) = metadata {

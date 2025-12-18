@@ -1,5 +1,6 @@
 import Foundation
-import Supabase
+import Auth
+import PostgREST
 
 /// Configuration and Supabase client initialization
 /// Reads from Config.plist - create from Config.example.plist
@@ -28,18 +29,51 @@ enum Config {
         !supabaseURL.isEmpty && !supabaseAnonKey.isEmpty
     }
     
-    /// Shared Supabase client instance
-    static let supabase: SupabaseClient? = {
+    /// Auth client instance
+    static let authClient: AuthClient? = {
         guard isSupabaseConfigured,
-              let url = URL(string: supabaseURL) else {
+              let url = URL(string: "\(supabaseURL)/auth/v1") else {
             Logger.warning("Supabase not configured - running in offline mode")
             return nil
         }
         
-        Logger.info("Initializing Supabase client...")
-        return SupabaseClient(
-            supabaseURL: url,
-            supabaseKey: supabaseAnonKey
+        Logger.info("Initializing Supabase auth client...")
+        return AuthClient(
+            url: url,
+            headers: ["apikey": supabaseAnonKey, "Authorization": "Bearer \(supabaseAnonKey)"],
+            flowType: .pkce,
+            localStorage: UserDefaultsAuthStorage()
         )
     }()
+    
+    /// PostgREST client instance
+    static let postgrest: PostgrestClient? = {
+        guard isSupabaseConfigured,
+              let url = URL(string: "\(supabaseURL)/rest/v1") else {
+            return nil
+        }
+        
+        return PostgrestClient(
+            url: url,
+            headers: ["apikey": supabaseAnonKey, "Authorization": "Bearer \(supabaseAnonKey)"],
+            logger: nil
+        )
+    }()
+}
+
+/// Auth storage using UserDefaults
+final class UserDefaultsAuthStorage: AuthLocalStorage, @unchecked Sendable {
+    private let key = "ourspot.auth"
+    
+    func store(key: String, value: Data) throws {
+        UserDefaults.standard.set(value, forKey: "\(self.key).\(key)")
+    }
+    
+    func retrieve(key: String) throws -> Data? {
+        UserDefaults.standard.data(forKey: "\(self.key).\(key)")
+    }
+    
+    func remove(key: String) throws {
+        UserDefaults.standard.removeObject(forKey: "\(self.key).\(key)")
+    }
 }
