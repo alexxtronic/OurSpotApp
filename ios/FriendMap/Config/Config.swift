@@ -1,6 +1,7 @@
 import Foundation
+import Supabase
 
-/// Configuration loader for secrets (Supabase, etc.)
+/// Configuration and Supabase client initialization
 /// Reads from Config.plist - create from Config.example.plist
 enum Config {
     private static var configDict: [String: Any]? = {
@@ -26,4 +27,19 @@ enum Config {
     static var isSupabaseConfigured: Bool {
         !supabaseURL.isEmpty && !supabaseAnonKey.isEmpty
     }
+    
+    /// Shared Supabase client instance
+    static let supabase: SupabaseClient? = {
+        guard isSupabaseConfigured,
+              let url = URL(string: supabaseURL) else {
+            Logger.warning("Supabase not configured - running in offline mode")
+            return nil
+        }
+        
+        Logger.info("Initializing Supabase client...")
+        return SupabaseClient(
+            supabaseURL: url,
+            supabaseKey: supabaseAnonKey
+        )
+    }()
 }

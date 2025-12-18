@@ -1,10 +1,30 @@
 import SwiftUI
 
-/// Main content view with tab bar navigation
+/// Main content view with auth routing and tab bar navigation
 struct ContentView: View {
+    @EnvironmentObject private var authService: AuthService
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var planStore: PlanStore
     
     var body: some View {
+        Group {
+            if authService.isAuthenticated {
+                // Main app with tabs
+                mainTabView
+                    .onAppear {
+                        syncProfileIfNeeded()
+                    }
+            } else if Config.supabase == nil {
+                // Offline mode - skip auth (development)
+                mainTabView
+            } else {
+                // Not authenticated - show sign in
+                SignInView()
+            }
+        }
+    }
+    
+    private var mainTabView: some View {
         TabView {
             MapView()
                 .tabItem {
@@ -23,10 +43,23 @@ struct ContentView: View {
         }
         .tint(DesignSystem.Colors.primaryFallback)
     }
+    
+    private func syncProfileIfNeeded() {
+        guard let session = authService.currentSession else { return }
+        
+        Task {
+            await sessionStore.syncProfile(
+                userId: session.user.id,
+                email: session.user.email,
+                name: session.user.userMetadata["name"]?.stringValue
+            )
+        }
+    }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AuthService())
         .environmentObject(SessionStore())
         .environmentObject(PlanStore())
 }
