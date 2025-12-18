@@ -1,35 +1,144 @@
 import Foundation
+import Supabase
 
-/// Service for Plan CRUD operations (stub for now)
+/// Service for Plan CRUD operations with Supabase
 @MainActor
 final class PlanService: ObservableObject {
     
-    // MARK: - Fetch Plans (placeholder)
+    // MARK: - Fetch Plans
     
     func fetchPlans() async throws -> [Plan] {
-        // TODO: Implement Supabase fetch
-        Logger.info("PlanService.fetchPlans called - using local data")
-        return []
+        guard let supabase = Config.supabase else {
+            Logger.warning("Supabase not configured - returning empty")
+            return []
+        }
+        
+        let response: [PlanDTO] = try await supabase
+            .from("plans")
+            .select()
+            .gte("starts_at", value: ISO8601DateFormatter().string(from: Date()))
+            .order("starts_at", ascending: true)
+            .execute()
+            .value
+        
+        // Map DTOs to Plan model
+        return response.map { dto in
+            Plan(
+                id: dto.id,
+                hostUserId: dto.host_user_id,
+                title: dto.title,
+                description: dto.description ?? "",
+                startsAt: dto.starts_at,
+                latitude: dto.latitude,
+                longitude: dto.longitude,
+                emoji: dto.emoji ?? "📍",
+                activityType: ActivityType(rawValue: dto.activity_type ?? "social") ?? .social,
+                addressText: dto.address_text ?? "",
+                isPrivate: dto.is_private ?? false
+            )
+        }
     }
     
-    // MARK: - Create Plan (placeholder)
+    // MARK: - Create Plan
     
     func createPlan(_ plan: Plan) async throws {
-        // TODO: Implement Supabase insert
-        Logger.info("PlanService.createPlan called - plan: \(plan.title)")
+        guard let supabase = Config.supabase else {
+            Logger.warning("Supabase not configured - plan not saved")
+            return
+        }
+        
+        try await supabase
+            .from("plans")
+            .insert(PlanInsertDTO(
+                id: plan.id,
+                host_user_id: plan.hostUserId,
+                title: plan.title,
+                description: plan.description,
+                starts_at: plan.startsAt,
+                latitude: plan.latitude,
+                longitude: plan.longitude,
+                emoji: plan.emoji,
+                activity_type: plan.activityType.rawValue,
+                address_text: plan.addressText,
+                is_private: plan.isPrivate
+            ))
+            .execute()
+        
+        Logger.info("Plan created in Supabase: \(plan.title)")
     }
     
-    // MARK: - Update RSVP (placeholder)
+    // MARK: - Update RSVP
     
     func updateRSVP(planId: UUID, userId: UUID, status: RSVPStatus) async throws {
-        // TODO: Implement Supabase upsert
-        Logger.info("PlanService.updateRSVP called")
+        guard let supabase = Config.supabase else { return }
+        
+        let statusString: String
+        switch status {
+        case .going: statusString = "going"
+        case .maybe: statusString = "maybe"
+        case .none: statusString = "not_going"
+        case .pending: statusString = "pending"
+        }
+        
+        try await supabase
+            .from("rsvps")
+            .upsert(RSVPInsertDTO(
+                plan_id: planId,
+                user_id: userId,
+                status: statusString
+            ))
+            .execute()
+        
+        Logger.info("RSVP updated in Supabase: \(statusString)")
     }
     
-    // MARK: - Delete Plan (placeholder)
+    // MARK: - Delete Plan
     
     func deletePlan(_ planId: UUID) async throws {
-        // TODO: Implement Supabase delete
-        Logger.info("PlanService.deletePlan called")
+        guard let supabase = Config.supabase else { return }
+        
+        try await supabase
+            .from("plans")
+            .delete()
+            .eq("id", value: planId.uuidString)
+            .execute()
+        
+        Logger.info("Plan deleted from Supabase")
     }
+}
+
+// MARK: - DTOs
+
+private struct PlanDTO: Decodable {
+    let id: UUID
+    let host_user_id: UUID
+    let title: String
+    let description: String?
+    let starts_at: Date
+    let latitude: Double
+    let longitude: Double
+    let emoji: String?
+    let activity_type: String?
+    let address_text: String?
+    let is_private: Bool?
+}
+
+private struct PlanInsertDTO: Encodable {
+    let id: UUID
+    let host_user_id: UUID
+    let title: String
+    let description: String
+    let starts_at: Date
+    let latitude: Double
+    let longitude: Double
+    let emoji: String
+    let activity_type: String
+    let address_text: String
+    let is_private: Bool
+}
+
+private struct RSVPInsertDTO: Encodable {
+    let plan_id: UUID
+    let user_id: UUID
+    let status: String
 }
