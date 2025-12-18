@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Main content view with auth routing and tab bar navigation
+/// Main content view with tab bar navigation
 struct ContentView: View {
     @EnvironmentObject private var authService: AuthService
     @EnvironmentObject private var sessionStore: SessionStore
@@ -8,17 +8,11 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if authService.isAuthenticated {
-                // Main app with tabs
-                mainTabView
-                    .onAppear {
-                        syncProfileIfNeeded()
-                    }
-            } else if Config.supabase == nil {
-                // Offline mode - skip auth (development)
+            if authService.isAuthenticated || !Config.isSupabaseConfigured {
+                // Show main app (skip auth in offline mode)
                 mainTabView
             } else {
-                // Not authenticated - show sign in
+                // Show sign in
                 SignInView()
             }
         }
@@ -42,21 +36,6 @@ struct ContentView: View {
                 }
         }
         .tint(DesignSystem.Colors.primaryFallback)
-    }
-    
-    private func syncProfileIfNeeded() {
-        guard let session = authService.currentSession else { return }
-        
-        Task {
-            // Get name from user metadata if available
-            let name = session.user.userMetadata["name"]?.value as? String
-            
-            await sessionStore.syncProfile(
-                userId: session.user.id,
-                email: session.user.email,
-                name: name
-            )
-        }
     }
 }
 

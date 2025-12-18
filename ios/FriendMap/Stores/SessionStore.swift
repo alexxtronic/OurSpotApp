@@ -1,9 +1,7 @@
 import Foundation
 import SwiftUI
-import Auth
-import PostgREST
 
-/// Manages the current user session and profile sync with Supabase
+/// Manages the current user session (local only for now)
 @MainActor
 final class SessionStore: ObservableObject {
     @Published var currentUser: UserProfile
@@ -12,7 +10,7 @@ final class SessionStore: ObservableObject {
     private let userDefaultsKey = "ourspot.currentUser"
     
     init() {
-        // Load from UserDefaults as initial cache
+        // Load from UserDefaults
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let user = try? JSONDecoder().decode(UserProfile.self, from: data) {
             self.currentUser = user
@@ -21,20 +19,9 @@ final class SessionStore: ObservableObject {
         }
     }
     
-    // MARK: - Supabase Profile Sync
-    
-    /// Fetch or create profile for authenticated user
+    /// Sync profile (placeholder for Supabase integration)
     func syncProfile(userId: UUID, email: String?, name: String?) async {
-        guard Config.isSupabaseConfigured,
-              let postgrestURL = Config.postgrestURL else {
-            Logger.warning("Supabase not configured - using local profile")
-            return
-        }
-        
-        isLoading = true
-        
-        // For now, just update local profile with auth info
-        // Full PostgREST integration can be added later
+        // TODO: Add Supabase profile sync
         if currentUser.id != userId {
             currentUser = UserProfile(
                 id: userId,
@@ -45,19 +32,14 @@ final class SessionStore: ObservableObject {
             )
             saveToUserDefaults()
         }
-        
-        isLoading = false
         Logger.info("Profile synced for user: \(userId)")
     }
-    
-    // MARK: - Local Updates
     
     func updateProfile(name: String, age: Int, bio: String) {
         currentUser.name = name
         currentUser.age = age
         currentUser.bio = bio
         saveToUserDefaults()
-        Logger.info("Profile updated locally")
     }
     
     func updateAvatar(_ assetName: String?) {
@@ -65,11 +47,9 @@ final class SessionStore: ObservableObject {
         saveToUserDefaults()
     }
     
-    /// Clear local session on sign out
     func clearSession() {
         currentUser = UserProfile.placeholder
         UserDefaults.standard.removeObject(forKey: userDefaultsKey)
-        Logger.info("Session cleared")
     }
     
     private func saveToUserDefaults() {

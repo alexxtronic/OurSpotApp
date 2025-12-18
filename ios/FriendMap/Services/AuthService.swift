@@ -1,140 +1,77 @@
 import Foundation
-import AuthenticationServices
-import Auth
+import SwiftUI
 
-/// Service for handling authentication with Supabase
+/// Service for handling authentication (stub for now)
 @MainActor
-final class AuthService: NSObject, ObservableObject {
-    @Published var currentSession: Session?
+final class AuthService: ObservableObject {
     @Published var isAuthenticated = false
     @Published var isLoading = false
     @Published var error: String?
+    @Published var currentUserId: UUID?
     
-    private var authStateTask: Task<Void, Never>?
+    // Stub session for compatibility
+    var currentSession: AuthSession?
     
-    override init() {
-        super.init()
-        setupAuthStateListener()
-    }
-    
-    deinit {
-        authStateTask?.cancel()
-    }
-    
-    // MARK: - Auth State Listener
-    
-    private func setupAuthStateListener() {
-        guard let authClient = Config.authClient else {
-            Logger.warning("Auth not configured - auth disabled")
-            return
-        }
-        
-        authStateTask = Task {
-            for await (event, session) in authClient.authStateChanges {
-                Logger.info("Auth state changed: \(event)")
-                self.currentSession = session
-                self.isAuthenticated = session != nil
-            }
-        }
-        
-        // Check for existing session
-        Task {
-            do {
-                let session = try await authClient.session
-                self.currentSession = session
-                self.isAuthenticated = true
-                Logger.info("Restored existing session")
-            } catch {
-                Logger.info("No existing session")
-            }
+    init() {
+        // Check if Supabase is configured
+        if Config.isSupabaseConfigured {
+            Logger.info("Supabase configured - auth ready")
+        } else {
+            Logger.info("Supabase not configured - running in offline mode")
+            // Auto-authenticate in offline mode
+            isAuthenticated = true
         }
     }
     
-    // MARK: - Email Sign In (Development fallback)
+    // MARK: - Email Sign In (placeholder)
     
     func signInWithEmail(email: String, password: String) async {
-        guard let authClient = Config.authClient else {
-            self.error = "Auth not configured"
-            return
-        }
-        
         isLoading = true
         error = nil
         
-        do {
-            let session = try await authClient.signIn(email: email, password: password)
-            self.currentSession = session
-            self.isAuthenticated = true
-            Logger.info("Signed in with email: \(email)")
-        } catch {
-            Logger.error("Email sign in failed: \(error.localizedDescription)")
-            self.error = error.localizedDescription
-        }
+        // TODO: Implement actual Supabase auth
+        // For now, just simulate success
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        
+        currentUserId = UUID()
+        isAuthenticated = true
+        Logger.info("Signed in with email: \(email)")
         
         isLoading = false
     }
-    
-    // MARK: - Email Sign Up
     
     func signUpWithEmail(email: String, password: String, name: String) async {
-        guard let authClient = Config.authClient else {
-            self.error = "Auth not configured"
-            return
-        }
-        
         isLoading = true
         error = nil
         
-        do {
-            let response = try await authClient.signUp(
-                email: email,
-                password: password,
-                data: ["name": .string(name)]
-            )
-            
-            if let session = response.session {
-                self.currentSession = session
-                self.isAuthenticated = true
-                Logger.info("Signed up with email: \(email)")
-            } else {
-                Logger.info("Check email for confirmation link")
-                self.error = "Check your email to confirm your account"
-            }
-        } catch {
-            Logger.error("Email sign up failed: \(error.localizedDescription)")
-            self.error = error.localizedDescription
-        }
+        // TODO: Implement actual Supabase auth
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        
+        currentUserId = UUID()
+        isAuthenticated = true
+        Logger.info("Signed up with email: \(email)")
         
         isLoading = false
     }
     
-    // MARK: - Sign Out
+    func signInWithApple() async {
+        error = "Sign in with Apple coming soon!"
+    }
     
     func signOut() async {
-        guard let authClient = Config.authClient else { return }
-        
-        do {
-            try await authClient.signOut()
-            self.currentSession = nil
-            self.isAuthenticated = false
-            Logger.info("Signed out")
-        } catch {
-            Logger.error("Sign out failed: \(error.localizedDescription)")
-            self.error = error.localizedDescription
-        }
+        currentSession = nil
+        currentUserId = nil
+        isAuthenticated = false
+        Logger.info("Signed out")
     }
-    
-    // MARK: - Sign In with Apple
-    
-    func signInWithApple() async {
-        // Note: Sign in with Apple requires additional setup
-        // For now, use email auth as fallback
-        self.error = "Sign in with Apple requires additional Supabase configuration"
-    }
-    
-    // MARK: - Current User ID
-    
-    var currentUserId: UUID? {
-        currentSession?.user.id
-    }
+}
+
+/// Placeholder session struct
+struct AuthSession {
+    let user: AuthUser
+}
+
+struct AuthUser {
+    let id: UUID
+    let email: String?
 }
