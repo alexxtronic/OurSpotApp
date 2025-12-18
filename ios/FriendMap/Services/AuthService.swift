@@ -1,6 +1,6 @@
 import Foundation
 import AuthenticationServices
-import Supabase
+import Auth
 
 /// Service for handling authentication with Supabase
 @MainActor
@@ -24,13 +24,13 @@ final class AuthService: NSObject, ObservableObject {
     // MARK: - Auth State Listener
     
     private func setupAuthStateListener() {
-        guard let supabase = Config.supabase else {
-            Logger.warning("Supabase not configured - auth disabled")
+        guard let authClient = Config.authClient else {
+            Logger.warning("Auth not configured - auth disabled")
             return
         }
         
         authStateTask = Task {
-            for await (event, session) in supabase.auth.authStateChanges {
+            for await (event, session) in authClient.authStateChanges {
                 Logger.info("Auth state changed: \(event)")
                 self.currentSession = session
                 self.isAuthenticated = session != nil
@@ -40,7 +40,7 @@ final class AuthService: NSObject, ObservableObject {
         // Check for existing session
         Task {
             do {
-                let session = try await supabase.auth.session
+                let session = try await authClient.session
                 self.currentSession = session
                 self.isAuthenticated = true
                 Logger.info("Restored existing session")
@@ -50,37 +50,11 @@ final class AuthService: NSObject, ObservableObject {
         }
     }
     
-    // MARK: - Sign In with Apple
-    
-    func signInWithApple() async {
-        guard let supabase = Config.supabase else {
-            self.error = "Supabase not configured"
-            return
-        }
-        
-        isLoading = true
-        error = nil
-        
-        do {
-            // Use Supabase's built-in Apple auth
-            try await supabase.auth.signInWithOAuth(provider: .apple) { url in
-                // Return the redirect URL for the auth flow
-                return url
-            }
-            Logger.info("Sign in with Apple initiated")
-        } catch {
-            Logger.error("Sign in with Apple failed: \(error.localizedDescription)")
-            self.error = error.localizedDescription
-        }
-        
-        isLoading = false
-    }
-    
     // MARK: - Email Sign In (Development fallback)
     
     func signInWithEmail(email: String, password: String) async {
-        guard let supabase = Config.supabase else {
-            self.error = "Supabase not configured"
+        guard let authClient = Config.authClient else {
+            self.error = "Auth not configured"
             return
         }
         
@@ -88,7 +62,7 @@ final class AuthService: NSObject, ObservableObject {
         error = nil
         
         do {
-            let session = try await supabase.auth.signIn(email: email, password: password)
+            let session = try await authClient.signIn(email: email, password: password)
             self.currentSession = session
             self.isAuthenticated = true
             Logger.info("Signed in with email: \(email)")
@@ -103,8 +77,8 @@ final class AuthService: NSObject, ObservableObject {
     // MARK: - Email Sign Up
     
     func signUpWithEmail(email: String, password: String, name: String) async {
-        guard let supabase = Config.supabase else {
-            self.error = "Supabase not configured"
+        guard let authClient = Config.authClient else {
+            self.error = "Auth not configured"
             return
         }
         
@@ -112,7 +86,7 @@ final class AuthService: NSObject, ObservableObject {
         error = nil
         
         do {
-            let response = try await supabase.auth.signUp(
+            let response = try await authClient.signUp(
                 email: email,
                 password: password,
                 data: ["name": .string(name)]
@@ -137,10 +111,10 @@ final class AuthService: NSObject, ObservableObject {
     // MARK: - Sign Out
     
     func signOut() async {
-        guard let supabase = Config.supabase else { return }
+        guard let authClient = Config.authClient else { return }
         
         do {
-            try await supabase.auth.signOut()
+            try await authClient.signOut()
             self.currentSession = nil
             self.isAuthenticated = false
             Logger.info("Signed out")
@@ -148,6 +122,14 @@ final class AuthService: NSObject, ObservableObject {
             Logger.error("Sign out failed: \(error.localizedDescription)")
             self.error = error.localizedDescription
         }
+    }
+    
+    // MARK: - Sign In with Apple
+    
+    func signInWithApple() async {
+        // Note: Sign in with Apple requires additional setup
+        // For now, use email auth as fallback
+        self.error = "Sign in with Apple requires additional Supabase configuration"
     }
     
     // MARK: - Current User ID

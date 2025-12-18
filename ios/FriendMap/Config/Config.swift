@@ -1,5 +1,5 @@
 import Foundation
-import Supabase
+import Auth
 
 /// Configuration and Supabase client initialization
 /// Reads from Config.plist - create from Config.example.plist
@@ -28,18 +28,42 @@ enum Config {
         !supabaseURL.isEmpty && !supabaseAnonKey.isEmpty
     }
     
-    /// Shared Supabase client instance
-    static let supabase: SupabaseClient? = {
+    /// Shared Auth client instance
+    static let authClient: AuthClient? = {
         guard isSupabaseConfigured,
-              let url = URL(string: supabaseURL) else {
+              let url = URL(string: "\(supabaseURL)/auth/v1") else {
             Logger.warning("Supabase not configured - running in offline mode")
             return nil
         }
         
-        Logger.info("Initializing Supabase client...")
-        return SupabaseClient(
-            supabaseURL: url,
-            supabaseKey: supabaseAnonKey
+        Logger.info("Initializing Supabase auth client...")
+        return AuthClient(
+            url: url,
+            headers: ["apikey": supabaseAnonKey],
+            localStorage: AuthLocalStorage()
         )
     }()
+    
+    /// Base URL for PostgREST
+    static var postgrestURL: URL? {
+        guard isSupabaseConfigured else { return nil }
+        return URL(string: "\(supabaseURL)/rest/v1")
+    }
+}
+
+/// Simple auth storage using UserDefaults
+final class AuthLocalStorage: AuthLocalStorageProtocol {
+    private let key = "ourspot.auth.session"
+    
+    func store(key: String, value: Data) throws {
+        UserDefaults.standard.set(value, forKey: "\(self.key).\(key)")
+    }
+    
+    func retrieve(key: String) throws -> Data? {
+        UserDefaults.standard.data(forKey: "\(self.key).\(key)")
+    }
+    
+    func remove(key: String) throws {
+        UserDefaults.standard.removeObject(forKey: "\(self.key).\(key)")
+    }
 }

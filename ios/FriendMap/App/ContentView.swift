@@ -48,10 +48,13 @@ struct ContentView: View {
         guard let session = authService.currentSession else { return }
         
         Task {
+            // Get name from user metadata if available
+            let name = session.user.userMetadata["name"]?.value as? String
+            
             await sessionStore.syncProfile(
                 userId: session.user.id,
                 email: session.user.email,
-                name: session.user.userMetadata["name"]?.stringValue
+                name: name
             )
         }
     }

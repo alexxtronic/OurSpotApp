@@ -1,5 +1,5 @@
 import Foundation
-import Supabase
+import PostgREST
 
 /// Service for Plan CRUD operations with Supabase
 @MainActor

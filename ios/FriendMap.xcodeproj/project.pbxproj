@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1000000000000001 /* FriendMapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000001 /* FriendMapApp.swift */; };
-		1000000000000015 /* ActivityType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000017 /* ActivityType.swift */; };
-		1000000000000016 /* MapFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000018 /* MapFilterView.swift */; };
 		1000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000002 /* ContentView.swift */; };
 		1000000000000003 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000003 /* UserProfile.swift */; };
 		1000000000000004 /* Plan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000004 /* Plan.swift */; };
@@ -29,6 +27,17 @@
 		1000000000000012 /* CreatePlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000012 /* CreatePlanView.swift */; };
 		1000000000000013 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000013 /* ProfileView.swift */; };
 		1000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2000000000000014 /* Assets.xcassets */; };
+		1000000000000015 /* ActivityType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000017 /* ActivityType.swift */; };
+		1000000000000016 /* MapFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000018 /* MapFilterView.swift */; };
+		281BCA1F2EF4433600EBBAD1 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA1E2EF4433600EBBAD1 /* Auth */; };
+		281BCA212EF4433600EBBAD1 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA202EF4433600EBBAD1 /* Functions */; };
+		281BCA232EF4433600EBBAD1 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA222EF4433600EBBAD1 /* PostgREST */; };
+		281BCA252EF4433600EBBAD1 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA242EF4433600EBBAD1 /* Realtime */; };
+		281BCA272EF4433600EBBAD1 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA262EF4433600EBBAD1 /* Storage */; };
+		281BCA2C2EF444E300EBBAD1 /* PlanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2A2EF444E300EBBAD1 /* PlanService.swift */; };
+		281BCA2D2EF444E300EBBAD1 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA292EF444E300EBBAD1 /* AuthService.swift */; };
+		281BCA302EF444FE00EBBAD1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */; };
+		281BCA322EF4456D00EBBAD1 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 281BCA312EF4456D00EBBAD1 /* Config.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,9 +62,12 @@
 		2000000000000013 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		2000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2000000000000016 /* Config.example.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.example.plist; sourceTree = "<group>"; };
 		2000000000000017 /* ActivityType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityType.swift; sourceTree = "<group>"; };
 		2000000000000018 /* MapFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFilterView.swift; sourceTree = "<group>"; };
+		281BCA292EF444E300EBBAD1 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		281BCA2A2EF444E300EBBAD1 /* PlanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanService.swift; sourceTree = "<group>"; };
+		281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		281BCA312EF4456D00EBBAD1 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
 		3000000000000001 /* FriendMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -64,12 +76,34 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				281BCA232EF4433600EBBAD1 /* PostgREST in Frameworks */,
+				281BCA212EF4433600EBBAD1 /* Functions in Frameworks */,
+				281BCA1F2EF4433600EBBAD1 /* Auth in Frameworks */,
+				281BCA272EF4433600EBBAD1 /* Storage in Frameworks */,
+				281BCA252EF4433600EBBAD1 /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		281BCA2B2EF444E300EBBAD1 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				281BCA292EF444E300EBBAD1 /* AuthService.swift */,
+				281BCA2A2EF444E300EBBAD1 /* PlanService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		281BCA2F2EF444FE00EBBAD1 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
 		5000000000000001 = {
 			isa = PBXGroup;
 			children = (
@@ -89,6 +123,7 @@
 				5000000000000009 /* Utilities */,
 				2000000000000014 /* Assets.xcassets */,
 				2000000000000015 /* Info.plist */,
+				281BCA2B2EF444E300EBBAD1 /* Services */,
 			);
 			path = FriendMap;
 			sourceTree = "<group>";
@@ -138,6 +173,7 @@
 				500000000000000B /* Map */,
 				500000000000000C /* Plans */,
 				500000000000000D /* Profile */,
+				281BCA2F2EF444FE00EBBAD1 /* Auth */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -145,8 +181,8 @@
 		5000000000000008 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				281BCA312EF4456D00EBBAD1 /* Config.plist */,
 				200000000000000A /* Config.swift */,
-				2000000000000016 /* Config.example.plist */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -241,6 +277,9 @@
 				Base,
 			);
 			mainGroup = 5000000000000001;
+			packageReferences = (
+				281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			productRefGroup = 5000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -255,6 +294,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				281BCA322EF4456D00EBBAD1 /* Config.plist in Resources */,
 				1000000000000014 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -272,6 +312,7 @@
 				1000000000000004 /* Plan.swift in Sources */,
 				1000000000000005 /* RSVPStatus.swift in Sources */,
 				1000000000000006 /* MockData.swift in Sources */,
+				281BCA302EF444FE00EBBAD1 /* SignInView.swift in Sources */,
 				1000000000000015 /* ActivityType.swift in Sources */,
 				1000000000000007 /* SessionStore.swift in Sources */,
 				1000000000000008 /* PlanStore.swift in Sources */,
@@ -285,6 +326,8 @@
 				1000000000000016 /* MapFilterView.swift in Sources */,
 				1000000000000010 /* PlanDetailsView.swift in Sources */,
 				1000000000000011 /* PlansView.swift in Sources */,
+				281BCA2C2EF444E300EBBAD1 /* PlanService.swift in Sources */,
+				281BCA2D2EF444E300EBBAD1 /* AuthService.swift in Sources */,
 				1000000000000012 /* CreatePlanView.swift in Sources */,
 				1000000000000013 /* ProfileView.swift in Sources */,
 			);
@@ -492,6 +535,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		281BCA1E2EF4433600EBBAD1 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		281BCA202EF4433600EBBAD1 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		281BCA222EF4433600EBBAD1 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		281BCA242EF4433600EBBAD1 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		281BCA262EF4433600EBBAD1 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A000000000000001 /* Project object */;
 }
