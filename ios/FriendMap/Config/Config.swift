@@ -1,6 +1,5 @@
 import Foundation
-import Auth
-import PostgREST
+import Supabase
 
 /// Configuration and Supabase client initialization
 /// Reads from Config.plist - create from Config.example.plist
@@ -29,54 +28,15 @@ enum Config {
         !supabaseURL.isEmpty && !supabaseAnonKey.isEmpty
     }
     
-    /// Auth client instance
-    static let authClient: AuthClient? = {
+    /// Supabase client instance (nil if not configured)
+    static let supabase: SupabaseClient? = {
         guard isSupabaseConfigured,
-              let url = URL(string: "\(supabaseURL)/auth/v1") else {
+              let url = URL(string: supabaseURL) else {
             Logger.warning("Supabase not configured - running in offline mode")
             return nil
         }
         
-        Logger.info("Initializing Supabase auth client...")
-        
-        let configuration = AuthClient.Configuration(
-            url: url,
-            headers: ["apikey": supabaseAnonKey, "Authorization": "Bearer \(supabaseAnonKey)"],
-            flowType: .pkce,
-            localStorage: UserDefaultsAuthStorage()
-        )
-        
-        return AuthClient(configuration: configuration)
+        Logger.info("Initializing Supabase client...")
+        return SupabaseClient(supabaseURL: url, supabaseKey: supabaseAnonKey)
     }()
-    
-    /// PostgREST client instance
-    static let postgrest: PostgrestClient? = {
-        guard isSupabaseConfigured,
-              let url = URL(string: "\(supabaseURL)/rest/v1") else {
-            return nil
-        }
-        
-        return PostgrestClient(
-            url: url,
-            headers: ["apikey": supabaseAnonKey, "Authorization": "Bearer \(supabaseAnonKey)"],
-            logger: nil
-        )
-    }()
-}
-
-/// Auth storage using UserDefaults
-final class UserDefaultsAuthStorage: AuthLocalStorage, @unchecked Sendable {
-    private let key = "ourspot.auth"
-    
-    func store(key: String, value: Data) throws {
-        UserDefaults.standard.set(value, forKey: "\(self.key).\(key)")
-    }
-    
-    func retrieve(key: String) throws -> Data? {
-        UserDefaults.standard.data(forKey: "\(self.key).\(key)")
-    }
-    
-    func remove(key: String) throws {
-        UserDefaults.standard.removeObject(forKey: "\(self.key).\(key)")
-    }
 }

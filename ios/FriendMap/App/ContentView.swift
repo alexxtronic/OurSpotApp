@@ -1,5 +1,4 @@
 import SwiftUI
-import Auth
 
 /// Main content view with auth routing and tab bar navigation
 struct ContentView: View {
@@ -12,7 +11,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authService.isAuthenticated {
-                if !sessionStore.currentUser.onboardingCompleted && Config.authClient != nil {
+                if !sessionStore.currentUser.onboardingCompleted && Config.supabase != nil {
                     // Show onboarding for new users
                     OnboardingView(isComplete: $showOnboarding)
                         .onChange(of: showOnboarding) { _, completed in
@@ -26,7 +25,7 @@ struct ContentView: View {
                             syncProfileIfNeeded()
                         }
                 }
-            } else if Config.authClient == nil {
+            } else if Config.supabase == nil {
                 // Offline mode - skip auth
                 mainTabView
             } else {

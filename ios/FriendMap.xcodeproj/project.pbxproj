@@ -38,6 +38,11 @@
 		281BCA2D2EF444E300EBBAD1 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA292EF444E300EBBAD1 /* AuthService.swift */; };
 		281BCA302EF444FE00EBBAD1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */; };
 		281BCA322EF4456D00EBBAD1 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 281BCA312EF4456D00EBBAD1 /* Config.plist */; };
+		289C69042EF577B500D114F1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 289C69032EF577B500D114F1 /* Supabase */; };
+		EE00000000000001 /* EventGroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000011 /* EventGroupsView.swift */; };
+		EE00000000000002 /* GroupChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000012 /* GroupChatView.swift */; };
+		EE00000000000003 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000013 /* OnboardingView.swift */; };
+		EE00000000000004 /* FollowService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000014 /* FollowService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +74,10 @@
 		281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		281BCA312EF4456D00EBBAD1 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
 		3000000000000001 /* FriendMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE00000000000011 /* EventGroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventGroupsView.swift; sourceTree = "<group>"; };
+		EE00000000000012 /* GroupChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupChatView.swift; sourceTree = "<group>"; };
+		EE00000000000013 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		EE00000000000014 /* FollowService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,11 +85,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				281BCA232EF4433600EBBAD1 /* PostgREST in Frameworks */,
-				281BCA212EF4433600EBBAD1 /* Functions in Frameworks */,
-				281BCA1F2EF4433600EBBAD1 /* Auth in Frameworks */,
-				281BCA272EF4433600EBBAD1 /* Storage in Frameworks */,
-				281BCA252EF4433600EBBAD1 /* Realtime in Frameworks */,
+				289C69042EF577B500D114F1 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +97,7 @@
 			children = (
 				281BCA292EF444E300EBBAD1 /* AuthService.swift */,
 				281BCA2A2EF444E300EBBAD1 /* PlanService.swift */,
+				EE00000000000014 /* FollowService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -174,8 +180,27 @@
 				500000000000000C /* Plans */,
 				500000000000000D /* Profile */,
 				281BCA2F2EF444FE00EBBAD1 /* Auth */,
+				EE00000000000020 /* Groups */,
+				EE00000000000021 /* Onboarding */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		EE00000000000020 /* Groups */ = {
+			isa = PBXGroup;
+			children = (
+				EE00000000000011 /* EventGroupsView.swift */,
+				EE00000000000012 /* GroupChatView.swift */,
+			);
+			path = Groups;
+			sourceTree = "<group>";
+		};
+		EE00000000000021 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				EE00000000000013 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		5000000000000008 /* Config */ = {
@@ -330,6 +355,10 @@
 				281BCA2D2EF444E300EBBAD1 /* AuthService.swift in Sources */,
 				1000000000000012 /* CreatePlanView.swift in Sources */,
 				1000000000000013 /* ProfileView.swift in Sources */,
+				EE00000000000001 /* EventGroupsView.swift in Sources */,
+				EE00000000000002 /* GroupChatView.swift in Sources */,
+				EE00000000000003 /* OnboardingView.swift in Sources */,
+				EE00000000000004 /* FollowService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -550,30 +579,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		281BCA1E2EF4433600EBBAD1 /* Auth */ = {
+		289C69032EF577B500D114F1 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Auth;
-		};
-		281BCA202EF4433600EBBAD1 /* Functions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Functions;
-		};
-		281BCA222EF4433600EBBAD1 /* PostgREST */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = PostgREST;
-		};
-		281BCA242EF4433600EBBAD1 /* Realtime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Realtime;
-		};
-		281BCA262EF4433600EBBAD1 /* Storage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 281BCA1D2EF4433600EBBAD1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Storage;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

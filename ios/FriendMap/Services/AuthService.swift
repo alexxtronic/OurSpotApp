@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-import Auth
+import Supabase
 
 /// Service for handling authentication with Supabase
 @MainActor
@@ -23,14 +23,14 @@ final class AuthService: ObservableObject {
     // MARK: - Auth State Listener
     
     private func setupAuthStateListener() {
-        guard let authClient = Config.authClient else {
-            Logger.warning("Auth not configured - auto-authenticate for offline mode")
+        guard let supabase = Config.supabase else {
+            Logger.warning("Supabase not configured - auto-authenticate for offline mode")
             isAuthenticated = true
             return
         }
         
         authStateTask = Task {
-            for await (event, session) in authClient.authStateChanges {
+            for await (event, session) in supabase.auth.authStateChanges {
                 Logger.info("Auth state changed: \(event)")
                 self.currentSession = session
                 self.isAuthenticated = session != nil
@@ -40,7 +40,7 @@ final class AuthService: ObservableObject {
         // Check for existing session
         Task {
             do {
-                let session = try await authClient.session
+                let session = try await supabase.auth.session
                 self.currentSession = session
                 self.isAuthenticated = true
                 Logger.info("Restored existing session")
@@ -53,8 +53,8 @@ final class AuthService: ObservableObject {
     // MARK: - Email Sign In
     
     func signInWithEmail(email: String, password: String) async {
-        guard let authClient = Config.authClient else {
-            self.error = "Auth not configured"
+        guard let supabase = Config.supabase else {
+            self.error = "Supabase not configured"
             return
         }
         
@@ -62,7 +62,7 @@ final class AuthService: ObservableObject {
         error = nil
         
         do {
-            let session = try await authClient.signIn(email: email, password: password)
+            let session = try await supabase.auth.signIn(email: email, password: password)
             self.currentSession = session
             self.isAuthenticated = true
             Logger.info("Signed in with email: \(email)")
@@ -77,8 +77,8 @@ final class AuthService: ObservableObject {
     // MARK: - Email Sign Up
     
     func signUpWithEmail(email: String, password: String, name: String) async {
-        guard let authClient = Config.authClient else {
-            self.error = "Auth not configured"
+        guard let supabase = Config.supabase else {
+            self.error = "Supabase not configured"
             return
         }
         
@@ -86,7 +86,7 @@ final class AuthService: ObservableObject {
         error = nil
         
         do {
-            let response = try await authClient.signUp(
+            let response = try await supabase.auth.signUp(
                 email: email,
                 password: password,
                 data: ["name": .string(name)]
@@ -117,10 +117,10 @@ final class AuthService: ObservableObject {
     // MARK: - Sign Out
     
     func signOut() async {
-        guard let authClient = Config.authClient else { return }
+        guard let supabase = Config.supabase else { return }
         
         do {
-            try await authClient.signOut()
+            try await supabase.auth.signOut()
             self.currentSession = nil
             self.isAuthenticated = false
             Logger.info("Signed out")

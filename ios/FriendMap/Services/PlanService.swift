@@ -1,5 +1,5 @@
 import Foundation
-import PostgREST
+import Supabase
 
 /// Service for Plan CRUD operations with Supabase
 @MainActor
@@ -8,12 +8,12 @@ final class PlanService: ObservableObject {
     // MARK: - Fetch Plans
     
     func fetchPlans() async throws -> [Plan] {
-        guard let postgrest = Config.postgrest else {
-            Logger.warning("PostgREST not configured - returning empty")
+        guard let supabase = Config.supabase else {
+            Logger.warning("Supabase not configured - returning empty")
             return []
         }
         
-        let response: [PlanDTO] = try await postgrest
+        let response: [PlanDTO] = try await supabase
             .from("plans")
             .select()
             .gte("starts_at", value: ISO8601DateFormatter().string(from: Date()))
@@ -41,12 +41,12 @@ final class PlanService: ObservableObject {
     // MARK: - Create Plan
     
     func createPlan(_ plan: Plan) async throws {
-        guard let postgrest = Config.postgrest else {
-            Logger.warning("PostgREST not configured")
+        guard let supabase = Config.supabase else {
+            Logger.warning("Supabase not configured")
             return
         }
         
-        try await postgrest
+        try await supabase
             .from("plans")
             .insert(PlanInsertDTO(
                 id: plan.id,
@@ -69,7 +69,7 @@ final class PlanService: ObservableObject {
     // MARK: - Update RSVP
     
     func updateRSVP(planId: UUID, userId: UUID, status: RSVPStatus) async throws {
-        guard let postgrest = Config.postgrest else { return }
+        guard let supabase = Config.supabase else { return }
         
         let statusString: String
         switch status {
@@ -79,7 +79,7 @@ final class PlanService: ObservableObject {
         case .pending: statusString = "pending"
         }
         
-        try await postgrest
+        try await supabase
             .from("rsvps")
             .upsert(RSVPInsertDTO(plan_id: planId, user_id: userId, status: statusString))
             .execute()
@@ -90,9 +90,9 @@ final class PlanService: ObservableObject {
     // MARK: - Delete Plan
     
     func deletePlan(_ planId: UUID) async throws {
-        guard let postgrest = Config.postgrest else { return }
+        guard let supabase = Config.supabase else { return }
         
-        try await postgrest
+        try await supabase
             .from("plans")
             .delete()
             .eq("id", value: planId.uuidString)

@@ -1,5 +1,5 @@
 import Foundation
-import PostgREST
+import Supabase
 
 /// Service for managing follows/social relationships
 @MainActor
@@ -18,11 +18,11 @@ final class FollowService: ObservableObject {
     // MARK: - Fetch Counts
     
     func fetchCounts() async {
-        guard let postgrest = Config.postgrest else { return }
+        guard let supabase = Config.supabase else { return }
         
         do {
             // Get following count
-            let followingResponse: [FollowDTO] = try await postgrest
+            let followingResponse: [FollowDTO] = try await supabase
                 .from("follows")
                 .select()
                 .eq("follower_id", value: userId.uuidString)
@@ -30,7 +30,7 @@ final class FollowService: ObservableObject {
                 .value
             
             // Get followers count
-            let followersResponse: [FollowDTO] = try await postgrest
+            let followersResponse: [FollowDTO] = try await supabase
                 .from("follows")
                 .select()
                 .eq("following_id", value: userId.uuidString)
@@ -51,10 +51,10 @@ final class FollowService: ObservableObject {
     // MARK: - Follow/Unfollow
     
     func follow(userId targetUserId: UUID) async -> Bool {
-        guard let postgrest = Config.postgrest else { return false }
+        guard let supabase = Config.supabase else { return false }
         
         do {
-            try await postgrest
+            try await supabase
                 .from("follows")
                 .insert(FollowInsertDTO(follower_id: userId, following_id: targetUserId))
                 .execute()
@@ -70,10 +70,10 @@ final class FollowService: ObservableObject {
     }
     
     func unfollow(userId targetUserId: UUID) async -> Bool {
-        guard let postgrest = Config.postgrest else { return false }
+        guard let supabase = Config.supabase else { return false }
         
         do {
-            try await postgrest
+            try await supabase
                 .from("follows")
                 .delete()
                 .eq("follower_id", value: userId.uuidString)

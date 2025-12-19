@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Supabase
 
 /// Manages the current user session and profile sync
 @MainActor
@@ -34,9 +35,8 @@ final class SessionStore: ObservableObject {
             saveToUserDefaults()
         }
         
-        // Sync with Supabase via PostgREST
-        guard let postgrest = Config.postgrest else {
-            Logger.warning("PostgREST not configured - using local profile")
+        guard let supabase = Config.supabase else {
+            Logger.warning("Supabase not configured - using local profile")
             return
         }
         
@@ -44,7 +44,7 @@ final class SessionStore: ObservableObject {
         
         do {
             // Try to fetch existing profile
-            let response: [ProfileDTO] = try await postgrest
+            let response: [ProfileDTO] = try await supabase
                 .from("profiles")
                 .select()
                 .eq("id", value: userId.uuidString)
@@ -57,13 +57,16 @@ final class SessionStore: ObservableObject {
                     name: profile.name,
                     age: profile.age ?? 25,
                     bio: profile.bio ?? "",
-                    avatarLocalAssetName: nil
+                    avatarLocalAssetName: nil,
+                    followersCount: profile.followers_count ?? 0,
+                    followingCount: profile.following_count ?? 0,
+                    onboardingCompleted: profile.onboarding_completed ?? false
                 )
                 saveToUserDefaults()
                 Logger.info("Profile fetched from Supabase")
             } else {
                 // Create profile
-                try await postgrest
+                try await supabase
                     .from("profiles")
                     .insert(ProfileInsertDTO(
                         id: userId,
@@ -90,9 +93,9 @@ final class SessionStore: ObservableObject {
         
         // Sync to Supabase in background
         Task {
-            guard let postgrest = Config.postgrest else { return }
+            guard let supabase = Config.supabase else { return }
             do {
-                try await postgrest
+                try await supabase
                     .from("profiles")
                     .update(ProfileUpdateDTO(name: name, age: age, bio: bio))
                     .eq("id", value: currentUser.id.uuidString)
@@ -128,6 +131,9 @@ private struct ProfileDTO: Decodable {
     let name: String
     let age: Int?
     let bio: String?
+    let followers_count: Int?
+    let following_count: Int?
+    let onboarding_completed: Bool?
 }
 
 private struct ProfileInsertDTO: Encodable {
