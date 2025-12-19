@@ -38,12 +38,15 @@ enum Config {
         }
         
         Logger.info("Initializing Supabase auth client...")
-        return AuthClient(
+        
+        let configuration = AuthClient.Configuration(
             url: url,
             headers: ["apikey": supabaseAnonKey, "Authorization": "Bearer \(supabaseAnonKey)"],
             flowType: .pkce,
             localStorage: UserDefaultsAuthStorage()
         )
+        
+        return AuthClient(configuration: configuration)
     }()
     
     /// PostgREST client instance
