@@ -112,6 +112,18 @@ final class SessionStore: ObservableObject {
         saveToUserDefaults()
     }
     
+    func completeOnboarding(age: Int?, countryOfBirth: String?, funFact: String?, referralSource: String?) {
+        if let age = age, age > 0 {
+            currentUser.age = age
+        }
+        currentUser.countryOfBirth = countryOfBirth
+        currentUser.funFact = funFact
+        currentUser.referralSource = referralSource
+        currentUser.onboardingCompleted = true
+        saveToUserDefaults()
+        Logger.info("Onboarding completed and saved")
+    }
+    
     func clearSession() {
         currentUser = UserProfile.placeholder
         UserDefaults.standard.removeObject(forKey: userDefaultsKey)

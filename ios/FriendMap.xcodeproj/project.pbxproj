@@ -29,11 +29,7 @@
 		1000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2000000000000014 /* Assets.xcassets */; };
 		1000000000000015 /* ActivityType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000017 /* ActivityType.swift */; };
 		1000000000000016 /* MapFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000018 /* MapFilterView.swift */; };
-		281BCA1F2EF4433600EBBAD1 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA1E2EF4433600EBBAD1 /* Auth */; };
-		281BCA212EF4433600EBBAD1 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA202EF4433600EBBAD1 /* Functions */; };
-		281BCA232EF4433600EBBAD1 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA222EF4433600EBBAD1 /* PostgREST */; };
-		281BCA252EF4433600EBBAD1 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA242EF4433600EBBAD1 /* Realtime */; };
-		281BCA272EF4433600EBBAD1 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 281BCA262EF4433600EBBAD1 /* Storage */; };
+
 		281BCA2C2EF444E300EBBAD1 /* PlanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2A2EF444E300EBBAD1 /* PlanService.swift */; };
 		281BCA2D2EF444E300EBBAD1 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA292EF444E300EBBAD1 /* AuthService.swift */; };
 		281BCA302EF444FE00EBBAD1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */; };

@@ -30,7 +30,7 @@ struct OnboardingView: View {
             // Navigation buttons
             navigationButtons
         }
-        .background(DesignSystem.Colors.primaryBackground)
+        .background(DesignSystem.Colors.background)
     }
     
     private var progressBar: some View {
@@ -203,16 +203,15 @@ struct OnboardingView: View {
     }
     
     private func completeOnboarding() {
-        // Update profile
-        if let ageInt = Int(age), ageInt > 0 {
-            sessionStore.currentUser.age = ageInt
-        }
-        sessionStore.currentUser.countryOfBirth = countryOfBirth.isEmpty ? nil : countryOfBirth
-        sessionStore.currentUser.funFact = funFact.isEmpty ? nil : funFact
-        sessionStore.currentUser.referralSource = referralSource.isEmpty ? nil : referralSource
-        sessionStore.currentUser.onboardingCompleted = true
+        // Save onboarding data through SessionStore (persists to UserDefaults)
+        sessionStore.completeOnboarding(
+            age: Int(age),
+            countryOfBirth: countryOfBirth.isEmpty ? nil : countryOfBirth,
+            funFact: funFact.isEmpty ? nil : funFact,
+            referralSource: referralSource.isEmpty ? nil : referralSource
+        )
         
-        // Save and dismiss
+        // Dismiss onboarding
         isComplete = true
     }
 }
