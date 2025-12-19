@@ -7,15 +7,18 @@ final class PlanService: ObservableObject {
     
     // MARK: - Fetch Plans
     
+    // MARK: - Fetch Plans
+    
     func fetchPlans() async throws -> [Plan] {
         guard let supabase = Config.supabase else {
             Logger.warning("Supabase not configured - returning empty")
             return []
         }
         
+        // Select all plan fields plus host profile name and avatar
         let response: [PlanDTO] = try await supabase
             .from("plans")
-            .select()
+            .select("*, profiles:host_user_id(name, avatar_url)")
             .gte("starts_at", value: ISO8601DateFormatter().string(from: Date()))
             .order("starts_at", ascending: true)
             .execute()
@@ -33,7 +36,9 @@ final class PlanService: ObservableObject {
                 emoji: dto.emoji ?? "📍",
                 activityType: ActivityType(rawValue: dto.activity_type ?? "social") ?? .social,
                 addressText: dto.address_text ?? "",
-                isPrivate: dto.is_private ?? false
+                isPrivate: dto.is_private ?? false,
+                hostName: dto.profiles?.name ?? "Unknown Host",
+                hostAvatar: dto.profiles?.avatar_url
             )
         }
     }
@@ -116,6 +121,12 @@ private struct PlanDTO: Decodable {
     let activity_type: String?
     let address_text: String?
     let is_private: Bool?
+    let profiles: ProfileDTO?
+}
+
+private struct ProfileDTO: Decodable {
+    let name: String
+    let avatar_url: String?
 }
 
 private struct PlanInsertDTO: Encodable {

@@ -39,6 +39,11 @@
 		EE00000000000002 /* GroupChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000012 /* GroupChatView.swift */; };
 		EE00000000000003 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000013 /* OnboardingView.swift */; };
 		EE00000000000004 /* FollowService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000014 /* FollowService.swift */; };
+		EE00000000000005 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000015 /* UserService.swift */; };
+		EE00000000000006 /* PublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000016 /* PublicProfileView.swift */; };
+		EE00000000000007 /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000017 /* ChatService.swift */; };
+		EE00000000000008 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000018 /* LocationManager.swift */; };
+		EE00000000000009 /* AddressCompleter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000019 /* AddressCompleter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +79,11 @@
 		EE00000000000012 /* GroupChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupChatView.swift; sourceTree = "<group>"; };
 		EE00000000000013 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		EE00000000000014 /* FollowService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowService.swift; sourceTree = "<group>"; };
+		EE00000000000015 /* UserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserService.swift; sourceTree = "<group>"; };
+		EE00000000000016 /* PublicProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicProfileView.swift; sourceTree = "<group>"; };
+		EE00000000000017 /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
+		EE00000000000018 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		EE00000000000019 /* AddressCompleter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressCompleter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +104,10 @@
 				281BCA292EF444E300EBBAD1 /* AuthService.swift */,
 				281BCA2A2EF444E300EBBAD1 /* PlanService.swift */,
 				EE00000000000014 /* FollowService.swift */,
+				EE00000000000015 /* UserService.swift */,
+				EE00000000000017 /* ChatService.swift */,
+				EE00000000000018 /* LocationManager.swift */,
+				EE00000000000019 /* AddressCompleter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -250,6 +264,7 @@
 			isa = PBXGroup;
 			children = (
 				2000000000000013 /* ProfileView.swift */,
+				EE00000000000016 /* PublicProfileView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -355,6 +370,11 @@
 				EE00000000000002 /* GroupChatView.swift in Sources */,
 				EE00000000000003 /* OnboardingView.swift in Sources */,
 				EE00000000000004 /* FollowService.swift in Sources */,
+				EE00000000000005 /* UserService.swift in Sources */,
+				EE00000000000006 /* PublicProfileView.swift in Sources */,
+				EE00000000000007 /* ChatService.swift in Sources */,
+				EE00000000000008 /* LocationManager.swift in Sources */,
+				EE00000000000009 /* AddressCompleter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

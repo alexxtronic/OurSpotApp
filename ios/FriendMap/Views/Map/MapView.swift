@@ -4,17 +4,18 @@ import MapKit
 /// Map view showing plan pins around Copenhagen
 struct MapView: View {
     @EnvironmentObject private var planStore: PlanStore
+    @StateObject private var locationManager = LocationManager()
     @State private var selectedPlan: Plan?
     @State private var showFilters = false
-    @State private var cameraPosition: MapCameraPosition = .region(
+    @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(
                 latitude: MockData.copenhagenCenter.latitude,
                 longitude: MockData.copenhagenCenter.longitude
             ),
-            span: MKCoordinateSpan(latitudeDelta: 0.08, longitudeDelta: 0.08)
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
-    )
+    ))
     
     private var hasActiveFilters: Bool {
         !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
@@ -24,6 +25,8 @@ struct MapView: View {
         NavigationStack {
             ZStack {
                 Map(position: $cameraPosition) {
+                    UserAnnotation()
+                    
                     ForEach(planStore.filteredPlans) { plan in
                         Annotation("", coordinate: CLLocationCoordinate2D(
                             latitude: plan.latitude,
@@ -38,8 +41,14 @@ struct MapView: View {
                 }
                 .mapStyle(.standard(elevation: .realistic))
                 .mapControls {
+                    MapUserLocationButton()
                     MapCompass()
                     MapScaleView()
+                }
+            }
+            .onChange(of: locationManager.mapUpdateTrigger) {
+                withAnimation {
+                    cameraPosition = .region(locationManager.region)
                 }
             }
             .navigationTitle("OurSpot")
@@ -58,6 +67,7 @@ struct MapView: View {
             .sheet(isPresented: $showFilters) {
                 MapFilterView()
                     .presentationDetents([.medium])
+                    .environmentObject(locationManager)
             }
             .sheet(item: $selectedPlan) { plan in
                 PlanDetailsView(plan: plan)

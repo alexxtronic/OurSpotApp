@@ -15,10 +15,25 @@ final class PlanStore: ObservableObject {
     /// Tracks pending approval requests for private plans
     @Published var pendingApprovals: [UUID: Set<UUID>] = [:]
     
+    private let planService = PlanService()
+    
     init() {
-        // Load mock plans
-        self.plans = MockData.samplePlans
-        Logger.info("Loaded \(plans.count) mock plans")
+        // Initialize with empty plans - loadPlans() should be called by the view
+    }
+    
+    func loadPlans() async {
+        do {
+            let fetchedPlans = try await planService.fetchPlans()
+            self.plans = fetchedPlans
+            Logger.info("Loaded \(plans.count) plans from Supabase")
+        } catch {
+            Logger.error("Failed to fetch plans: \(error.localizedDescription)")
+            // Fallback to mock data if offline or error
+            if plans.isEmpty && Config.supabase == nil {
+                self.plans = MockData.samplePlans
+                Logger.info("Loaded mock plans (offline fallback)")
+            }
+        }
     }
     
     /// Creates a new plan and adds it to the store
@@ -32,8 +47,10 @@ final class PlanStore: ObservableObject {
         activityType: ActivityType,
         addressText: String,
         hostUserId: UUID,
+        hostName: String,
+        hostAvatar: String?,
         isPrivate: Bool = false
-    ) {
+    ) async {
         let newPlan = Plan(
             id: UUID(),
             hostUserId: hostUserId,
@@ -45,12 +62,23 @@ final class PlanStore: ObservableObject {
             emoji: emoji,
             activityType: activityType,
             addressText: addressText,
-            isPrivate: isPrivate
+            isPrivate: isPrivate,
+            hostName: hostName,
+            hostAvatar: hostAvatar
         )
+        
+        // Optimistic update
         plans.append(newPlan)
         rsvpStatus[newPlan.id] = .going
         attendees[newPlan.id] = [hostUserId] // Host is automatically attending
-        Logger.info("Created new plan: \(title) (private: \(isPrivate))")
+        
+        do {
+            try await planService.createPlan(newPlan)
+            Logger.info("Created new plan: \(title)")
+        } catch {
+            Logger.error("Failed to create plan in Supabase: \(error.localizedDescription)")
+            // Revert on failure? For now just log
+        }
     }
     
     /// Toggles RSVP status for a plan

@@ -1,10 +1,18 @@
 import SwiftUI
+import MapKit
+import CoreLocation
 
 /// Filter view for map with calendar, activity types, and reset button
 struct MapFilterView: View {
     @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var locationManager: LocationManager
     @Environment(\.dismiss) private var dismiss
+    
+    @StateObject private var addressCompleter = AddressCompleter()
+    @State private var searchText = ""
     @State private var showCalendar = false
+    
+    private let geocoder = CLGeocoder()
     
     private var hasActiveFilters: Bool {
         !planStore.filterActivityTypes.isEmpty || 
@@ -15,6 +23,48 @@ struct MapFilterView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Location Search Section
+                Section("Location") {
+                    TextField("Search city or place...", text: $searchText)
+                        .textContentType(.location)
+                        .autocapitalization(.words)
+                        .onChange(of: searchText) { _, newValue in
+                            addressCompleter.search(query: newValue)
+                        }
+                    
+                    if !addressCompleter.suggestions.isEmpty {
+                        ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
+                            Button {
+                                selectLocation(suggestion)
+                            } label: {
+                                HStack {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .foregroundColor(DesignSystem.Colors.primaryFallback)
+                                    VStack(alignment: .leading) {
+                                        Text(suggestion.title)
+                                            .foregroundColor(.primary)
+                                        if !suggestion.subtitle.isEmpty {
+                                            Text(suggestion.subtitle)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    Button {
+                        locationManager.centerMapOnUser()
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "location.fill")
+                            Text("Current Location")
+                        }
+                    }
+                }
+                
                 // Date filter section
                 Section("Date") {
                     // Quick date ranges
@@ -113,6 +163,20 @@ struct MapFilterView: View {
                     }
                     .fontWeight(.semibold)
                 }
+            }
+        }
+    }
+    
+    private func selectLocation(_ suggestion: MKLocalSearchCompletion) {
+        let searchRequest = MKLocalSearch.Request(completion: suggestion)
+        let search = MKLocalSearch(request: searchRequest)
+        
+        search.start { response, error in
+            guard let coordinate = response?.mapItems.first?.placemark.coordinate else { return }
+            
+            DispatchQueue.main.async {
+                locationManager.setRegion(center: coordinate)
+                dismiss()
             }
         }
     }

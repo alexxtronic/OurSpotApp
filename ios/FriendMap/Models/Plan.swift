@@ -14,10 +14,9 @@ struct Plan: Codable, Identifiable, Equatable, Hashable {
     var addressText: String
     var isPrivate: Bool
     
-    // Mock host names for display
-    var hostName: String {
-        MockData.hostNames[hostUserId] ?? "Unknown Host"
-    }
+    // Host details
+    var hostName: String
+    var hostAvatar: String? // Optional since we might not fetch it initially
     
     var locationName: String {
         if !addressText.isEmpty {

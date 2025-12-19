@@ -62,7 +62,9 @@ enum MockData {
                 emoji: "☕",
                 activityType: .drinks,
                 addressText: "Nyhavn 17, Copenhagen",
-                isPrivate: false
+                isPrivate: false,
+                hostName: mockUsers[0].name,
+                hostAvatar: mockUsers[0].avatar
             ),
             Plan(
                 id: UUID(),
@@ -75,7 +77,9 @@ enum MockData {
                 emoji: "🎢",
                 activityType: .nightlife,
                 addressText: "Vesterbrogade 3, Copenhagen",
-                isPrivate: false
+                isPrivate: false,
+                hostName: mockUsers[1].name,
+                hostAvatar: mockUsers[1].avatar
             ),
             Plan(
                 id: UUID(),
@@ -88,7 +92,9 @@ enum MockData {
                 emoji: "🏃",
                 activityType: .sports,
                 addressText: "Rosenborg Castle Gardens",
-                isPrivate: false
+                isPrivate: false,
+                hostName: mockUsers[2].name,
+                hostAvatar: mockUsers[2].avatar
             ),
             Plan(
                 id: UUID(),
@@ -101,7 +107,9 @@ enum MockData {
                 emoji: "🍜",
                 activityType: .food,
                 addressText: "Reffen, Refshalevej 167",
-                isPrivate: false
+                isPrivate: false,
+                hostName: mockUsers[3].name,
+                hostAvatar: mockUsers[3].avatar
             ),
             Plan(
                 id: UUID(),
@@ -114,7 +122,9 @@ enum MockData {
                 emoji: "🌅",
                 activityType: .social,
                 addressText: "Strøget, Copenhagen",
-                isPrivate: false
+                isPrivate: false,
+                hostName: mockUsers[4].name,
+                hostAvatar: mockUsers[4].avatar
             ),
             Plan(
                 id: UUID(),
@@ -127,7 +137,9 @@ enum MockData {
                 emoji: "🏖️",
                 activityType: .outdoors,
                 addressText: "Amager Strandpark",
-                isPrivate: true
+                isPrivate: true,
+                hostName: mockUsers[5].name,
+                hostAvatar: mockUsers[5].avatar
             ),
             Plan(
                 id: UUID(),
@@ -140,7 +152,9 @@ enum MockData {
                 emoji: "🎨",
                 activityType: .culture,
                 addressText: "Superkilen, Nørrebro",
-                isPrivate: false
+                isPrivate: false,
+                hostName: mockUsers[0].name,
+                hostAvatar: mockUsers[0].avatar
             ),
             Plan(
                 id: UUID(),
@@ -153,8 +167,11 @@ enum MockData {
                 emoji: "🌿",
                 activityType: .culture,
                 addressText: "Freetown Christiania",
-                isPrivate: true
+                isPrivate: true,
+                hostName: mockUsers[2].name,
+                hostAvatar: mockUsers[2].avatar
             )
         ]
+
     }
 }

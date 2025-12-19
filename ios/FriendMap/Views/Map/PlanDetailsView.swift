@@ -92,6 +92,9 @@ struct PlanDetailsView: View {
                     }
                 }
             }
+            .sheet(item: $selectedAttendee) { selection in
+                PublicProfileView(userId: selection.id)
+            }
             .alert("Block User", isPresented: $showBlockAlert) {
                 Button("Cancel", role: .cancel) {}
                 Button("Block", role: .destructive) {
@@ -148,27 +151,43 @@ struct PlanDetailsView: View {
         }
     }
     
+    @State private var showHostProfile = false
+
     private var hostSection: some View {
-        HStack(spacing: DesignSystem.Spacing.md) {
-            AvatarView(
-                name: plan.hostName,
-                size: 56,
-                assetName: MockData.hostAvatars[plan.hostUserId]
-            )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Hosted by")
-                    .font(.caption)
+        Button {
+            showHostProfile = true
+        } label: {
+            HStack(spacing: DesignSystem.Spacing.md) {
+                AvatarView(
+                    name: plan.hostName,
+                    size: 56,
+                    url: URL(string: plan.hostAvatar ?? "")
+                )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Hosted by")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text(plan.hostName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
                     .foregroundColor(.secondary)
-                Text(plan.hostName)
-                    .font(.headline)
+                    .font(.caption)
             }
-            
-            Spacer()
+            .padding()
+            .background(DesignSystem.Colors.secondaryBackground)
+            .cornerRadius(DesignSystem.CornerRadius.md)
+            .shadowStyle(DesignSystem.Shadows.small)
         }
-        .padding(DesignSystem.Spacing.md)
-        .background(DesignSystem.Colors.secondaryBackground)
-        .cornerRadius(DesignSystem.CornerRadius.lg)
+        .sheet(isPresented: $showHostProfile) {
+            PublicProfileView(userId: plan.hostUserId)
+        }
     }
     
     private var detailsSection: some View {
@@ -256,6 +275,12 @@ struct PlanDetailsView: View {
         .cornerRadius(DesignSystem.CornerRadius.lg)
     }
     
+    @State private var selectedAttendee: SelectedAttendee?
+    
+    struct SelectedAttendee: Identifiable {
+        let id: UUID
+    }
+    
     private var attendeesSection: some View {
         SectionCard(title: "Attendees (\(attendees.count))") {
             if attendees.isEmpty {
@@ -265,18 +290,23 @@ struct PlanDetailsView: View {
             } else {
                 VStack(spacing: DesignSystem.Spacing.sm) {
                     ForEach(attendees, id: \.self) { userId in
-                        HStack {
-                            AvatarView(
-                                name: MockData.hostNames[userId] ?? "User",
-                                size: 36,
-                                assetName: MockData.hostAvatars[userId]
-                            )
-                            Text(MockData.hostNames[userId] ?? "User")
-                                .font(.subheadline)
-                            Spacer()
-                            Text("Going")
-                                .font(.caption)
-                                .foregroundColor(.green)
+                        Button {
+                            selectedAttendee = SelectedAttendee(id: userId)
+                        } label: {
+                            HStack {
+                                AvatarView(
+                                    name: MockData.hostNames[userId] ?? "User",
+                                    size: 36,
+                                    assetName: MockData.hostAvatars[userId]
+                                )
+                                Text(MockData.hostNames[userId] ?? "User")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                Spacer()
+                                Text("Going")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
                         }
                     }
                 }

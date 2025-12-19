@@ -52,15 +52,25 @@ final class SessionStore: ObservableObject {
                 .value
             
             if let profile = response.first {
+                // Fix: Race condition handling
+                // If local onboarding is explicitly true, don't overwrite it with false from a potentially stale fetch
+                let serverOnboardingCompleted = profile.onboarding_completed ?? false
+                let finalOnboardingCompleted = self.currentUser.onboardingCompleted ? true : serverOnboardingCompleted
+                
                 self.currentUser = UserProfile(
                     id: profile.id,
                     name: profile.name,
                     age: profile.age ?? 25,
                     bio: profile.bio ?? "",
                     avatarLocalAssetName: nil,
+                    avatarUrl: profile.avatar_url,
+                    countryOfBirth: profile.country_of_birth,
+                    favoriteSong: profile.favorite_song,
+                    funFact: profile.fun_fact,
+                    profileColor: profile.profile_color,
                     followersCount: profile.followers_count ?? 0,
                     followingCount: profile.following_count ?? 0,
-                    onboardingCompleted: profile.onboarding_completed ?? false
+                    onboardingCompleted: finalOnboardingCompleted
                 )
                 saveToUserDefaults()
                 Logger.info("Profile fetched from Supabase")
@@ -85,10 +95,14 @@ final class SessionStore: ObservableObject {
         isLoading = false
     }
     
-    func updateProfile(name: String, age: Int, bio: String) {
+    func updateProfile(name: String, age: Int, bio: String, countryOfBirth: String?, favoriteSong: String?, funFact: String?, profileColor: String?) {
         currentUser.name = name
         currentUser.age = age
         currentUser.bio = bio
+        currentUser.countryOfBirth = countryOfBirth
+        currentUser.favoriteSong = favoriteSong
+        currentUser.funFact = funFact
+        currentUser.profileColor = profileColor
         saveToUserDefaults()
         
         // Sync to Supabase in background
@@ -97,7 +111,17 @@ final class SessionStore: ObservableObject {
             do {
                 try await supabase
                     .from("profiles")
-                    .update(ProfileUpdateDTO(name: name, age: age, bio: bio))
+                    .update(ProfileUpdateDTO(
+                        name: name,
+                        age: age,
+                        bio: bio,
+                        onboarding_completed: currentUser.onboardingCompleted,
+                        country_of_birth: countryOfBirth,
+                        fun_fact: funFact,
+                        referral_source: currentUser.referralSource,
+                        favorite_song: favoriteSong,
+                        profile_color: profileColor
+                    ))
                     .eq("id", value: currentUser.id.uuidString)
                     .execute()
                 Logger.info("Profile synced to Supabase")
@@ -121,7 +145,29 @@ final class SessionStore: ObservableObject {
         currentUser.referralSource = referralSource
         currentUser.onboardingCompleted = true
         saveToUserDefaults()
-        Logger.info("Onboarding completed and saved")
+        
+        // Fix: Sync to Supabase immediately to prevent overwriting on next fetch
+        Task {
+            guard let supabase = Config.supabase else { return }
+            do {
+                try await supabase
+                    .from("profiles")
+                    .update(ProfileUpdateDTO(
+                        name: currentUser.name,
+                        age: currentUser.age,
+                        bio: currentUser.bio,
+                        onboarding_completed: true,
+                        country_of_birth: countryOfBirth,
+                        fun_fact: funFact,
+                        referral_source: referralSource
+                    ))
+                    .eq("id", value: currentUser.id.uuidString)
+                    .execute()
+                Logger.info("Onboarding status synced to Supabase")
+            } catch {
+                Logger.error("Failed to sync onboarding status: \(error.localizedDescription)")
+            }
+        }
     }
     
     func clearSession() {
@@ -143,9 +189,14 @@ private struct ProfileDTO: Decodable {
     let name: String
     let age: Int?
     let bio: String?
+    let avatar_url: String?
     let followers_count: Int?
     let following_count: Int?
     let onboarding_completed: Bool?
+    let country_of_birth: String?
+    let favorite_song: String?
+    let fun_fact: String?
+    let profile_color: String?
 }
 
 private struct ProfileInsertDTO: Encodable {
@@ -160,4 +211,10 @@ private struct ProfileUpdateDTO: Encodable {
     let name: String
     let age: Int
     let bio: String
+    var onboarding_completed: Bool?
+    var country_of_birth: String?
+    var fun_fact: String?
+    var referral_source: String?
+    var favorite_song: String?
+    var profile_color: String?
 }

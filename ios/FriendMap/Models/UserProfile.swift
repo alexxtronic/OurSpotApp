@@ -7,6 +7,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var age: Int
     var bio: String
     var avatarLocalAssetName: String?
+    var avatarUrl: String? // Remote URL from Supabase
     
     // Enhanced profile fields
     var countryOfBirth: String?
@@ -28,6 +29,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
         age: Int,
         bio: String,
         avatarLocalAssetName: String? = nil,
+        avatarUrl: String? = nil,
         countryOfBirth: String? = nil,
         favoriteSong: String? = nil,
         funFact: String? = nil,
@@ -42,6 +44,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
         self.age = age
         self.bio = bio
         self.avatarLocalAssetName = avatarLocalAssetName
+        self.avatarUrl = avatarUrl
         self.countryOfBirth = countryOfBirth
         self.favoriteSong = favoriteSong
         self.funFact = funFact

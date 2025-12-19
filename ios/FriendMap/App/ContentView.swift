@@ -6,30 +6,50 @@ struct ContentView: View {
     @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var planStore: PlanStore
     
-    @State private var showOnboarding = false
+    @State private var deepLinkPlan: Plan?
     
     var body: some View {
         Group {
             if authService.isAuthenticated {
-                if !sessionStore.currentUser.onboardingCompleted && Config.supabase != nil {
-                    // Show onboarding for new users
-                    OnboardingView(isComplete: $showOnboarding)
-                        .onChange(of: showOnboarding) { _, completed in
-                            if completed {
-                                sessionStore.currentUser.onboardingCompleted = true
-                            }
-                        }
-                } else {
+                if sessionStore.isLoading {
+                    ProgressView("Loading Profile...")
+                } else if sessionStore.currentUser.onboardingCompleted || Config.supabase == nil {
                     mainTabView
                         .onAppear {
-                            syncProfileIfNeeded()
+                            Task {
+                                await planStore.loadPlans()
+                            }
                         }
+                        .sheet(item: $deepLinkPlan) { plan in
+                            PlanDetailsView(plan: plan)
+                        }
+                        .onOpenURL { url in
+                            handleDeepLink(url)
+                        }
+                } else {
+                    // Show onboarding for new users
+                    OnboardingView {
+                        // This callback is called when onboarding completes
+                        sessionStore.objectWillChange.send()
+                    }
                 }
             } else if Config.supabase == nil {
                 // Offline mode - skip auth
                 mainTabView
             } else {
                 SignInView()
+            }
+        }
+        .task {
+            if authService.isAuthenticated {
+                await syncProfileIfNeeded()
+            }
+        }
+        .onChange(of: authService.isAuthenticated) { isAuthenticated in
+            if isAuthenticated {
+                Task {
+                    await syncProfileIfNeeded()
+                }
             }
         }
     }
@@ -59,23 +79,39 @@ struct ContentView: View {
         .tint(DesignSystem.Colors.primaryFallback)
     }
     
-    private func syncProfileIfNeeded() {
+    private func handleDeepLink(_ url: URL) {
+        // Format: ourspot://plan/{uuid}
+        guard url.scheme == "ourspot",
+              url.host == "plan",
+              let planIdString = url.pathComponents.last,
+              let planId = UUID(uuidString: planIdString) else {
+            return
+        }
+        
+        // Find plan locally
+        if let plan = planStore.plans.first(where: { $0.id == planId }) {
+            deepLinkPlan = plan
+        } else {
+            // In a real app, you would fetch the plan from Supabase here
+            Logger.warning("Deep link plan not found locally: \(planId)")
+        }
+    }
+    
+    private func syncProfileIfNeeded() async {
         guard let session = authService.currentSession else { return }
         
-        Task {
-            var name: String? = nil
-            if let metadata = session.user.userMetadata["name"] {
-                if case .string(let stringValue) = metadata {
-                    name = stringValue
-                }
+        var name: String? = nil
+        if let metadata = session.user.userMetadata["name"] {
+            if case .string(let stringValue) = metadata {
+                name = stringValue
             }
-            
-            await sessionStore.syncProfile(
-                userId: session.user.id,
-                email: session.user.email,
-                name: name
-            )
         }
+        
+        await sessionStore.syncProfile(
+            userId: session.user.id,
+            email: session.user.email,
+            name: name
+        )
     }
 }
 

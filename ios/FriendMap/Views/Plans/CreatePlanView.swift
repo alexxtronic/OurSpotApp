@@ -258,65 +258,26 @@ struct CreatePlanView: View {
     }
     
     private func createPlan(latitude: Double, longitude: Double) {
-        planStore.createPlan(
-            title: title,
-            description: description,
-            startsAt: startsAt,
-            latitude: latitude,
-            longitude: longitude,
-            emoji: selectedEmoji,
-            activityType: selectedActivityType,
-            addressText: addressText,
-            hostUserId: sessionStore.currentUser.id,
-            isPrivate: isPrivate
-        )
-        dismiss()
+        Task {
+            await planStore.createPlan(
+                title: title,
+                description: description,
+                startsAt: startsAt,
+                latitude: latitude,
+                longitude: longitude,
+                emoji: selectedEmoji,
+                activityType: selectedActivityType,
+                addressText: addressText,
+                hostUserId: sessionStore.currentUser.id,
+                hostName: sessionStore.currentUser.name,
+                hostAvatar: sessionStore.currentUser.avatarUrl,
+                isPrivate: isPrivate
+            )
+            dismiss()
+        }
     }
 }
 
-/// Observable class that handles address autocomplete using MKLocalSearchCompleter
-@MainActor
-class AddressCompleter: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
-    @Published var suggestions: [MKLocalSearchCompletion] = []
-    
-    private let completer: MKLocalSearchCompleter
-    
-    override init() {
-        completer = MKLocalSearchCompleter()
-        super.init()
-        completer.delegate = self
-        completer.resultTypes = [.address, .pointOfInterest]
-        
-        // Focus search on Copenhagen area
-        let copenhagenRegion = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 55.6761, longitude: 12.5683),
-            span: MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3)
-        )
-        completer.region = copenhagenRegion
-    }
-    
-    func search(query: String) {
-        guard query.count >= 2 else {
-            suggestions = []
-            return
-        }
-        completer.queryFragment = query
-    }
-    
-    nonisolated func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        Task { @MainActor in
-            // Limit to 5 suggestions for cleaner UI
-            self.suggestions = Array(completer.results.prefix(5))
-        }
-    }
-    
-    nonisolated func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
-        Task { @MainActor in
-            Logger.error("Address completer error: \(error.localizedDescription)")
-            self.suggestions = []
-        }
-    }
-}
 
 /// Emoji picker grid view
 struct EmojiPickerView: View {

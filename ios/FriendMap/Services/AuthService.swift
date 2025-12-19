@@ -130,6 +130,30 @@ final class AuthService: ObservableObject {
         }
     }
     
+    // MARK: - User Settings
+    
+    func updatePassword(_ password: String) async throws {
+        guard let supabase = Config.supabase else {
+            throw NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not configured"])
+        }
+        
+        // Supabase `updateUser` with attributes updates the currently authenticated user
+        let _ = try await supabase.auth.update(user: UserAttributes(password: password))
+        Logger.info("Password updated successfully")
+    }
+    
+    func deleteAccount() async throws {
+        guard let supabase = Config.supabase else { return }
+        
+        // 1. Call RPC to delete profile and auth account
+        try await supabase.database.rpc("delete_current_user").execute()
+        
+        // 2. Clear local session
+        await signOut()
+        
+        Logger.info("Account deleted successfully")
+    }
+    
     // MARK: - Current User ID
     
     var currentUserId: UUID? {

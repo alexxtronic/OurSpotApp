@@ -3,7 +3,7 @@ import SwiftUI
 /// Onboarding flow shown after sign-up
 struct OnboardingView: View {
     @EnvironmentObject private var sessionStore: SessionStore
-    @Binding var isComplete: Bool
+    var onComplete: () -> Void
     
     @State private var currentStep = 0
     @State private var referralSource = ""
@@ -211,12 +211,12 @@ struct OnboardingView: View {
             referralSource: referralSource.isEmpty ? nil : referralSource
         )
         
-        // Dismiss onboarding
-        isComplete = true
+        // Notify parent view to refresh
+        onComplete()
     }
 }
 
 #Preview {
-    OnboardingView(isComplete: .constant(false))
+    OnboardingView(onComplete: {})
         .environmentObject(SessionStore())
 }

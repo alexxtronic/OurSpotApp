@@ -5,8 +5,9 @@ struct GroupChatView: View {
     let plan: Plan
     
     @EnvironmentObject private var sessionStore: SessionStore
+    @StateObject private var chatService = ChatService()
+    
     @State private var messageText = ""
-    @State private var messages: [ChatMessage] = []
     
     var body: some View {
         VStack(spacing: 0) {
@@ -19,15 +20,15 @@ struct GroupChatView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: DesignSystem.Spacing.sm) {
-                        ForEach(messages) { message in
+                        ForEach(chatService.messages) { message in
                             messageRow(message)
                                 .id(message.id)
                         }
                     }
                     .padding(DesignSystem.Spacing.md)
                 }
-                .onChange(of: messages.count) { _, _ in
-                    if let lastMessage = messages.last {
+                .onChange(of: chatService.messages.count) { _, _ in
+                    if let lastMessage = chatService.messages.last {
                         withAnimation {
                             proxy.scrollTo(lastMessage.id, anchor: .bottom)
                         }
@@ -43,7 +44,13 @@ struct GroupChatView: View {
         .navigationTitle("Event Chat")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            loadMockMessages()
+            Task {
+                await chatService.fetchMessages(for: plan.id)
+                chatService.subscribe(to: plan.id)
+            }
+        }
+        .onDisappear {
+            chatService.unsubscribe()
         }
     }
     
@@ -105,7 +112,9 @@ struct GroupChatView: View {
                 .cornerRadius(DesignSystem.CornerRadius.lg)
             
             Button {
-                sendMessage()
+                Task {
+                    await sendMessage()
+                }
             } label: {
                 Image(systemName: "paperplane.fill")
                     .foregroundColor(.white)
@@ -119,44 +128,17 @@ struct GroupChatView: View {
         .background(DesignSystem.Colors.secondaryBackground)
     }
     
-    private func sendMessage() {
+    private func sendMessage() async {
         guard !messageText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         
-        let newMessage = ChatMessage(
-            id: UUID(),
+        let content = messageText
+        messageText = "" // Clear immediately for UX
+        
+        await chatService.sendMessage(
             planId: plan.id,
             userId: sessionStore.currentUser.id,
-            userName: sessionStore.currentUser.name,
-            content: messageText,
-            timestamp: Date()
+            content: content
         )
-        
-        messages.append(newMessage)
-        messageText = ""
-        
-        // TODO: Send to Supabase
-    }
-    
-    private func loadMockMessages() {
-        // Mock messages for demo
-        messages = [
-            ChatMessage(
-                id: UUID(),
-                planId: plan.id,
-                userId: UUID(),
-                userName: "Alex",
-                content: "Hey! Can't wait for this event 🎉",
-                timestamp: Date().addingTimeInterval(-3600)
-            ),
-            ChatMessage(
-                id: UUID(),
-                planId: plan.id,
-                userId: UUID(),
-                userName: "Sam",
-                content: "Same here! Should we meet up before?",
-                timestamp: Date().addingTimeInterval(-1800)
-            )
-        ]
     }
 }
 
