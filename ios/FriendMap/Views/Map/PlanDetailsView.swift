@@ -32,6 +32,11 @@ struct PlanDetailsView: View {
         isHost || !plan.isPrivate || rsvpStatus == .going
     }
     
+    private var shareURL: URL {
+        // Deep link format: ourspot://plan/{id}
+        URL(string: "https://ourspot.app/plan/\(plan.id.uuidString)")!
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -72,6 +77,15 @@ struct PlanDetailsView: View {
             .navigationTitle("Plan Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    ShareLink(
+                        item: shareURL,
+                        subject: Text(plan.title),
+                        message: Text("Join me at \(plan.title)!")
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()

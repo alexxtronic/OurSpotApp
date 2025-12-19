@@ -7,13 +7,25 @@ struct ContentView: View {
     @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var planStore: PlanStore
     
+    @State private var showOnboarding = false
+    
     var body: some View {
         Group {
             if authService.isAuthenticated {
-                mainTabView
-                    .onAppear {
-                        syncProfileIfNeeded()
-                    }
+                if !sessionStore.currentUser.onboardingCompleted && Config.authClient != nil {
+                    // Show onboarding for new users
+                    OnboardingView(isComplete: $showOnboarding)
+                        .onChange(of: showOnboarding) { _, completed in
+                            if completed {
+                                sessionStore.currentUser.onboardingCompleted = true
+                            }
+                        }
+                } else {
+                    mainTabView
+                        .onAppear {
+                            syncProfileIfNeeded()
+                        }
+                }
             } else if Config.authClient == nil {
                 // Offline mode - skip auth
                 mainTabView

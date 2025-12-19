@@ -8,6 +8,50 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var bio: String
     var avatarLocalAssetName: String?
     
+    // Enhanced profile fields
+    var countryOfBirth: String?
+    var favoriteSong: String?
+    var funFact: String?
+    var profileColor: String?
+    
+    // Social stats
+    var followersCount: Int
+    var followingCount: Int
+    
+    // Onboarding
+    var onboardingCompleted: Bool
+    var referralSource: String?
+    
+    init(
+        id: UUID,
+        name: String,
+        age: Int,
+        bio: String,
+        avatarLocalAssetName: String? = nil,
+        countryOfBirth: String? = nil,
+        favoriteSong: String? = nil,
+        funFact: String? = nil,
+        profileColor: String? = nil,
+        followersCount: Int = 0,
+        followingCount: Int = 0,
+        onboardingCompleted: Bool = false,
+        referralSource: String? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.age = age
+        self.bio = bio
+        self.avatarLocalAssetName = avatarLocalAssetName
+        self.countryOfBirth = countryOfBirth
+        self.favoriteSong = favoriteSong
+        self.funFact = funFact
+        self.profileColor = profileColor
+        self.followersCount = followersCount
+        self.followingCount = followingCount
+        self.onboardingCompleted = onboardingCompleted
+        self.referralSource = referralSource
+    }
+    
     static let placeholder = UserProfile(
         id: UUID(),
         name: "New User",
