@@ -30,6 +30,11 @@ struct ContentView: View {
                     Label("Map", systemImage: "map.fill")
                 }
             
+            EventGroupsView()
+                .tabItem {
+                    Label("Groups", systemImage: "person.2.fill")
+                }
+            
             PlansView()
                 .tabItem {
                     Label("Plans", systemImage: "calendar")
