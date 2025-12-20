@@ -19,6 +19,10 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var followersCount: Int
     var followingCount: Int
     
+    // Ratings
+    var ratingAverage: Double
+    var ratingCount: Int
+    
     // Onboarding
     var onboardingCompleted: Bool
     var referralSource: String?
@@ -36,6 +40,8 @@ struct UserProfile: Codable, Identifiable, Equatable {
         profileColor: String? = nil,
         followersCount: Int = 0,
         followingCount: Int = 0,
+        ratingAverage: Double = 0.0,
+        ratingCount: Int = 0,
         onboardingCompleted: Bool = false,
         referralSource: String? = nil
     ) {
@@ -51,6 +57,8 @@ struct UserProfile: Codable, Identifiable, Equatable {
         self.profileColor = profileColor
         self.followersCount = followersCount
         self.followingCount = followingCount
+        self.ratingAverage = ratingAverage
+        self.ratingCount = ratingCount
         self.onboardingCompleted = onboardingCompleted
         self.referralSource = referralSource
     }

@@ -93,6 +93,65 @@ final class FollowService: ObservableObject {
     func isFollowing(_ targetUserId: UUID) -> Bool {
         following.contains(targetUserId)
     }
+    
+    // MARK: - Fetch Users
+    
+    func fetchFollowersList() async -> [UserProfile] {
+        await fetchUserList(isFollowers: true)
+    }
+    
+    func fetchFollowingList() async -> [UserProfile] {
+        await fetchUserList(isFollowers: false)
+    }
+    
+    private func fetchUserList(isFollowers: Bool) async -> [UserProfile] {
+        guard let supabase = Config.supabase else { return [] }
+        
+        let relatedColumn = isFollowers ? "follower_id" : "following_id"
+        let filterColumn = isFollowers ? "following_id" : "follower_id"
+        
+        do {
+            let response: [FollowWithProfileDTO] = try await supabase
+                .from("follows")
+                .select("""
+                    \(relatedColumn),
+                    profiles:\(relatedColumn) (
+                        id,
+                        name,
+                        avatar_url
+                    )
+                """)
+                .eq(filterColumn, value: userId.uuidString)
+                .execute()
+                .value
+            
+            return response.compactMap { dto in
+                guard let profile = dto.profiles else { return nil }
+                return UserProfile(
+                    id: profile.id,
+                    name: profile.name,
+                    age: 0, // Not needed for list
+                    bio: "", // Not needed for list
+                    avatarUrl: profile.avatar_url
+                )
+            }
+        } catch {
+            Logger.error("Failed to fetch user list: \(error.localizedDescription)")
+            return []
+        }
+    }
+}
+
+// ... DTOs ...
+
+private struct FollowWithProfileDTO: Decodable {
+    let profiles: ProfileSummaryDTO?
+}
+
+private struct ProfileSummaryDTO: Decodable {
+    let id: UUID
+    let name: String
+    let avatar_url: String?
 }
 
 // MARK: - DTOs

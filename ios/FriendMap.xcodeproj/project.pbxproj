@@ -29,11 +29,13 @@
 		1000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2000000000000014 /* Assets.xcassets */; };
 		1000000000000015 /* ActivityType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000017 /* ActivityType.swift */; };
 		1000000000000016 /* MapFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2000000000000018 /* MapFilterView.swift */; };
-
 		281BCA2C2EF444E300EBBAD1 /* PlanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2A2EF444E300EBBAD1 /* PlanService.swift */; };
 		281BCA2D2EF444E300EBBAD1 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA292EF444E300EBBAD1 /* AuthService.swift */; };
 		281BCA302EF444FE00EBBAD1 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */; };
 		281BCA322EF4456D00EBBAD1 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 281BCA312EF4456D00EBBAD1 /* Config.plist */; };
+		286C8B8D2EF76706000951A9 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B8C2EF76706000951A9 /* StorageService.swift */; };
+		286C8B8E2EF76706000951A9 /* RatingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B8B2EF76706000951A9 /* RatingService.swift */; };
+		286C8B902EF7674B000951A9 /* UserListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B8F2EF7674B000951A9 /* UserListView.swift */; };
 		289C69042EF577B500D114F1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 289C69032EF577B500D114F1 /* Supabase */; };
 		EE00000000000001 /* EventGroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000011 /* EventGroupsView.swift */; };
 		EE00000000000002 /* GroupChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000012 /* GroupChatView.swift */; };
@@ -74,6 +76,9 @@
 		281BCA2A2EF444E300EBBAD1 /* PlanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanService.swift; sourceTree = "<group>"; };
 		281BCA2E2EF444FE00EBBAD1 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		281BCA312EF4456D00EBBAD1 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
+		286C8B8B2EF76706000951A9 /* RatingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingService.swift; sourceTree = "<group>"; };
+		286C8B8C2EF76706000951A9 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
+		286C8B8F2EF7674B000951A9 /* UserListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListView.swift; sourceTree = "<group>"; };
 		3000000000000001 /* FriendMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE00000000000011 /* EventGroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventGroupsView.swift; sourceTree = "<group>"; };
 		EE00000000000012 /* GroupChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupChatView.swift; sourceTree = "<group>"; };
@@ -101,6 +106,8 @@
 		281BCA2B2EF444E300EBBAD1 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				286C8B8B2EF76706000951A9 /* RatingService.swift */,
+				286C8B8C2EF76706000951A9 /* StorageService.swift */,
 				281BCA292EF444E300EBBAD1 /* AuthService.swift */,
 				281BCA2A2EF444E300EBBAD1 /* PlanService.swift */,
 				EE00000000000014 /* FollowService.swift */,
@@ -196,23 +203,6 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		EE00000000000020 /* Groups */ = {
-			isa = PBXGroup;
-			children = (
-				EE00000000000011 /* EventGroupsView.swift */,
-				EE00000000000012 /* GroupChatView.swift */,
-			);
-			path = Groups;
-			sourceTree = "<group>";
-		};
-		EE00000000000021 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				EE00000000000013 /* OnboardingView.swift */,
-			);
-			path = Onboarding;
-			sourceTree = "<group>";
-		};
 		5000000000000008 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -263,10 +253,28 @@
 		500000000000000D /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				286C8B8F2EF7674B000951A9 /* UserListView.swift */,
 				2000000000000013 /* ProfileView.swift */,
 				EE00000000000016 /* PublicProfileView.swift */,
 			);
 			path = Profile;
+			sourceTree = "<group>";
+		};
+		EE00000000000020 /* Groups */ = {
+			isa = PBXGroup;
+			children = (
+				EE00000000000011 /* EventGroupsView.swift */,
+				EE00000000000012 /* GroupChatView.swift */,
+			);
+			path = Groups;
+			sourceTree = "<group>";
+		};
+		EE00000000000021 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				EE00000000000013 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -347,6 +355,8 @@
 				1000000000000003 /* UserProfile.swift in Sources */,
 				1000000000000004 /* Plan.swift in Sources */,
 				1000000000000005 /* RSVPStatus.swift in Sources */,
+				286C8B8D2EF76706000951A9 /* StorageService.swift in Sources */,
+				286C8B8E2EF76706000951A9 /* RatingService.swift in Sources */,
 				1000000000000006 /* MockData.swift in Sources */,
 				281BCA302EF444FE00EBBAD1 /* SignInView.swift in Sources */,
 				1000000000000015 /* ActivityType.swift in Sources */,
@@ -359,6 +369,7 @@
 				100000000000000D /* PrimaryButton.swift in Sources */,
 				100000000000000E /* SectionCard.swift in Sources */,
 				100000000000000F /* MapView.swift in Sources */,
+				286C8B902EF7674B000951A9 /* UserListView.swift in Sources */,
 				1000000000000016 /* MapFilterView.swift in Sources */,
 				1000000000000010 /* PlanDetailsView.swift in Sources */,
 				1000000000000011 /* PlansView.swift in Sources */,
@@ -507,9 +518,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 284G637Q9X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FriendMap/Info.plist;
@@ -523,8 +535,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.friendmap.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.friendmap2.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -536,9 +549,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 284G637Q9X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FriendMap/Info.plist;
@@ -552,8 +566,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.friendmap.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.friendmap2.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

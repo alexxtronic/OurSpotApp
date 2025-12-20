@@ -8,6 +8,7 @@ struct GroupChatView: View {
     @StateObject private var chatService = ChatService()
     
     @State private var messageText = ""
+    @State private var selectedUserId: UUID?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -52,6 +53,16 @@ struct GroupChatView: View {
         .onDisappear {
             chatService.unsubscribe()
         }
+        .sheet(item: selectedUserIdFromWrapper) { wrapper in
+            PublicProfileView(userId: wrapper.id)
+        }
+    }
+
+    private var selectedUserIdFromWrapper: Binding<IdentifiableUUID?> {
+        Binding(
+            get: { selectedUserId.map { IdentifiableUUID(id: $0) } },
+            set: { selectedUserId = $0?.id }
+        )
     }
     
     private var eventHeader: some View {
@@ -76,29 +87,64 @@ struct GroupChatView: View {
     private func messageRow(_ message: ChatMessage) -> some View {
         let isMe = message.userId == sessionStore.currentUser.id
         
-        return HStack {
-            if isMe { Spacer() }
+        return HStack(alignment: .bottom, spacing: 8) {
+            if !isMe {
+                Button {
+                    selectedUserId = message.userId
+                } label: {
+                    AvatarView(
+                        name: message.userName,
+                        size: 32,
+                        url: URL(string: message.userAvatarUrl ?? "")
+                    )
+                }
+            } else {
+                Spacer()
+            }
             
             VStack(alignment: isMe ? .trailing : .leading, spacing: 4) {
                 if !isMe {
                     Text(message.userName)
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .padding(.leading, 4)
                 }
                 
-                Text(message.content)
-                    .padding(.horizontal, DesignSystem.Spacing.md)
-                    .padding(.vertical, DesignSystem.Spacing.sm)
-                    .background(isMe ? DesignSystem.Colors.primaryFallback : DesignSystem.Colors.secondaryBackground)
-                    .foregroundColor(isMe ? .white : .primary)
-                    .cornerRadius(DesignSystem.CornerRadius.lg)
+                HStack(alignment: .bottom, spacing: 4) {
+                    if isMe && message.status == .failed {
+                        Button {
+                            Task { await chatService.retryMessage(message) }
+                        } label: {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                    }
+                    
+                    Text(message.content)
+                        .padding(.horizontal, DesignSystem.Spacing.md)
+                        .padding(.vertical, DesignSystem.Spacing.sm)
+                        .background(isMe ? DesignSystem.Colors.primaryFallback : DesignSystem.Colors.secondaryBackground)
+                        .foregroundColor(isMe ? .white : .primary)
+                        .cornerRadius(DesignSystem.CornerRadius.lg)
+                        .opacity(message.status == .sending ? 0.7 : 1.0)
+                }
                 
-                Text(message.timestamp.formatted(date: .omitted, time: .shortened))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                if message.status == .failed {
+                    Text("Failed to send")
+                        .font(.caption2)
+                        .foregroundColor(.red)
+                        .padding(isMe ? .trailing : .leading, 4)
+                } else {
+                    Text(message.timestamp.formatted(date: .omitted, time: .shortened))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .padding(isMe ? .trailing : .leading, 4)
+                }
             }
             
-            if !isMe { Spacer() }
+            if !isMe {
+                Spacer()
+            }
         }
     }
     
@@ -137,20 +183,35 @@ struct GroupChatView: View {
         await chatService.sendMessage(
             planId: plan.id,
             userId: sessionStore.currentUser.id,
-            content: content
+            content: content,
+            userName: sessionStore.currentUser.name,
+            userAvatarUrl: sessionStore.currentUser.avatarUrl
         )
     }
 }
 
 /// Chat message model
-struct ChatMessage: Identifiable {
+struct ChatMessage: Identifiable, Equatable {
     let id: UUID
     let planId: UUID
     let userId: UUID
     let userName: String
+    let userAvatarUrl: String?
     let content: String
     let timestamp: Date
+    var status: MessageStatus = .sent
+    
+    enum MessageStatus {
+        case sending
+        case sent
+        case failed
+    }
 }
+
+struct IdentifiableUUID: Identifiable {
+    let id: UUID
+}
+// Removed extraneous brace
 
 #Preview {
     NavigationStack {

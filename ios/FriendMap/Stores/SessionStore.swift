@@ -70,6 +70,8 @@ final class SessionStore: ObservableObject {
                     profileColor: profile.profile_color,
                     followersCount: profile.followers_count ?? 0,
                     followingCount: profile.following_count ?? 0,
+                    ratingAverage: profile.rating_average ?? 0.0,
+                    ratingCount: profile.rating_count ?? 0,
                     onboardingCompleted: finalOnboardingCompleted
                 )
                 saveToUserDefaults()
@@ -131,6 +133,28 @@ final class SessionStore: ObservableObject {
         }
     }
     
+    func updateAvatar(url: String) async {
+        currentUser.avatarUrl = url
+        saveToUserDefaults()
+        
+        guard let supabase = Config.supabase else { return }
+        do {
+            try await supabase
+                .from("profiles")
+                .update(ProfileUpdateDTO(
+                    name: currentUser.name,
+                    age: currentUser.age,
+                    bio: currentUser.bio,
+                    avatar_url: url
+                ))
+                .eq("id", value: currentUser.id.uuidString)
+                .execute()
+            Logger.info("Avatar URL synced to Supabase")
+        } catch {
+            Logger.error("Failed to sync avatar URL: \(error.localizedDescription)")
+        }
+    }
+    
     func updateAvatar(_ assetName: String?) {
         currentUser.avatarLocalAssetName = assetName
         saveToUserDefaults()
@@ -156,6 +180,7 @@ final class SessionStore: ObservableObject {
                         name: currentUser.name,
                         age: currentUser.age,
                         bio: currentUser.bio,
+                        avatar_url: currentUser.avatarUrl,
                         onboarding_completed: true,
                         country_of_birth: countryOfBirth,
                         fun_fact: funFact,
@@ -192,6 +217,8 @@ private struct ProfileDTO: Decodable {
     let avatar_url: String?
     let followers_count: Int?
     let following_count: Int?
+    let rating_average: Double?
+    let rating_count: Int?
     let onboarding_completed: Bool?
     let country_of_birth: String?
     let favorite_song: String?
@@ -211,6 +238,7 @@ private struct ProfileUpdateDTO: Encodable {
     let name: String
     let age: Int
     let bio: String
+    var avatar_url: String?
     var onboarding_completed: Bool?
     var country_of_birth: String?
     var fun_fact: String?

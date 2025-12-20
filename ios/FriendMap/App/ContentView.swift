@@ -54,29 +54,63 @@ struct ContentView: View {
         }
     }
     
+    @State private var showCreatePlanSheet = false
+    
+    // ... (rest of body)
+    
     private var mainTabView: some View {
-        TabView {
-            MapView()
-                .tabItem {
-                    Label("Map", systemImage: "map.fill")
-                }
+        ZStack(alignment: .bottom) {
+            TabView {
+                MapView()
+                    .tabItem {
+                        Label("Map", systemImage: "map.fill")
+                    }
+                
+                EventGroupsView()
+                    .tabItem {
+                        Label("Groups", systemImage: "person.2.fill")
+                    }
+                
+                // Placeholder for center spacing
+                Color.clear
+                    .tabItem {
+                        Text("") // Empty title
+                        Image(systemName: "plus.circle") // Fallback icon, but will be covered
+                    }
+                    .disabled(true)
+                
+                PlansView()
+                    .tabItem {
+                        Label("Plans", systemImage: "calendar")
+                    }
+                
+                ProfileView()
+                    .tabItem {
+                        Label("Profile", systemImage: "person.fill")
+                    }
+            }
+            .tint(DesignSystem.Colors.primaryFallback)
             
-            EventGroupsView()
-                .tabItem {
-                    Label("Groups", systemImage: "person.2.fill")
+            // Custom Center Button
+            Button {
+                showCreatePlanSheet = true
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(DesignSystem.Colors.primaryFallback)
+                        .frame(width: 56, height: 56)
+                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                    
+                    Image(systemName: "plus")
+                        .font(.title.bold())
+                        .foregroundColor(.white)
                 }
-            
-            PlansView()
-                .tabItem {
-                    Label("Plans", systemImage: "calendar")
-                }
-            
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.fill")
-                }
+            }
+            .offset(y: -10) // Lift slightly above tab bar
         }
-        .tint(DesignSystem.Colors.primaryFallback)
+        .sheet(isPresented: $showCreatePlanSheet) {
+            CreatePlanView()
+        }
     }
     
     private func handleDeepLink(_ url: URL) {
