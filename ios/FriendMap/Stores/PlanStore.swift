@@ -21,10 +21,19 @@ final class PlanStore: ObservableObject {
         // Initialize with empty plans - loadPlans() should be called by the view
     }
     
-    func loadPlans() async {
+    func loadPlans(currentUserId: UUID) async {
         do {
             let fetchedPlans = try await planService.fetchPlans()
             self.plans = fetchedPlans
+            
+            // Automatically set host as "going" for their own events
+            for plan in fetchedPlans {
+                if plan.hostUserId == currentUserId {
+                    rsvpStatus[plan.id] = .going
+                    attendees[plan.id] = (attendees[plan.id] ?? []).union([currentUserId])
+                }
+            }
+            
             Logger.info("Loaded \(plans.count) plans from Supabase")
         } catch {
             Logger.error("Failed to fetch plans: \(error.localizedDescription)")
@@ -81,6 +90,30 @@ final class PlanStore: ObservableObject {
         }
     }
     
+    /// Deletes a plan from local storage and Supabase
+    func deletePlan(_ plan: Plan) async throws {
+        // Optimistic removal
+        plans.removeAll { $0.id == plan.id }
+        rsvpStatus.removeValue(forKey: plan.id)
+        attendees.removeValue(forKey: plan.id)
+        pendingApprovals.removeValue(forKey: plan.id)
+        
+        // Delete from Supabase
+        try await planService.deletePlan(plan.id)
+        Logger.info("Deleted plan: \(plan.title)")
+    }
+    
+    /// Updates an existing plan
+    func updatePlan(_ updatedPlan: Plan) async throws {
+        // Update local state
+        if let index = plans.firstIndex(where: { $0.id == updatedPlan.id }) {
+            plans[index] = updatedPlan
+        }
+        
+        // Update in Supabase
+        try await planService.updatePlan(updatedPlan)
+    }
+    
     /// Toggles RSVP status for a plan
     func toggleRSVP(planId: UUID, userId: UUID) {
         let current = rsvpStatus[planId] ?? RSVPStatus.none
@@ -108,6 +141,56 @@ final class PlanStore: ObservableObject {
         }
         rsvpStatus[planId] = next
         Logger.info("RSVP for plan \(planId): \(next.displayText)")
+    }
+    
+    /// Sets a specific RSVP status for a plan
+    func setRSVP(planId: UUID, userId: UUID, status: RSVPStatus, isPrivate: Bool, isHost: Bool) {
+        let currentStatus = rsvpStatus[planId] ?? RSVPStatus.none
+        
+        // Handle the transition based on what was selected
+        switch status {
+        case .going:
+            // For private plans, non-hosts go to pending
+            if isPrivate && !isHost {
+                addPendingApproval(planId: planId, userId: userId)
+                rsvpStatus[planId] = .pending
+            } else {
+                // Remove from pending if was pending
+                if currentStatus == .pending {
+                    removePendingApproval(planId: planId, userId: userId)
+                }
+                addAttendee(planId: planId, userId: userId)
+                rsvpStatus[planId] = .going
+            }
+        case .maybe:
+            // Remove from attendees if was going
+            if currentStatus == .going {
+                removeAttendee(planId: planId, userId: userId)
+            }
+            if currentStatus == .pending {
+                removePendingApproval(planId: planId, userId: userId)
+            }
+            rsvpStatus[planId] = .maybe
+        case .none:
+            // Remove from everything
+            if currentStatus == .going {
+                removeAttendee(planId: planId, userId: userId)
+            }
+            if currentStatus == .pending {
+                removePendingApproval(planId: planId, userId: userId)
+            }
+            rsvpStatus[planId] = .none
+        case .pending:
+            // Handled in going case
+            break
+        }
+        
+        // Sync to backend
+        Task {
+            try? await planService.updateRSVP(planId: planId, userId: userId, status: rsvpStatus[planId] ?? .none)
+        }
+        
+        Logger.info("RSVP set for plan \(planId): \(status.displayText)")
     }
     
     /// Approves a pending request for a private plan

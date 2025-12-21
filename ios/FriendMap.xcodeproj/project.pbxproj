@@ -36,6 +36,17 @@
 		286C8B8D2EF76706000951A9 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B8C2EF76706000951A9 /* StorageService.swift */; };
 		286C8B8E2EF76706000951A9 /* RatingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B8B2EF76706000951A9 /* RatingService.swift */; };
 		286C8B902EF7674B000951A9 /* UserListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B8F2EF7674B000951A9 /* UserListView.swift */; };
+		286C8B922EF7EA82000951A9 /* StarRatingPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B912EF7EA82000951A9 /* StarRatingPickerView.swift */; };
+		286C8B942EF7F7FB000951A9 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B932EF7F7FB000951A9 /* ConfettiView.swift */; };
+		286C8B962EF89CA3000951A9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B952EF89CA3000951A9 /* AppDelegate.swift */; };
+		286C8B992EF89CB6000951A9 /* NotificationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B982EF89CB6000951A9 /* NotificationRouter.swift */; };
+		286C8B9A2EF89CB6000951A9 /* DeviceTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B972EF89CB6000951A9 /* DeviceTokenService.swift */; };
+		286C8B9C2EF89CC5000951A9 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B9B2EF89CC5000951A9 /* HapticManager.swift */; };
+		286C8B9E2EF89CD3000951A9 /* NotificationPreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B9D2EF89CD3000951A9 /* NotificationPreferencesView.swift */; };
+		286C8BA02EF8A8AC000951A9 /* EditPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8B9F2EF8A8AC000951A9 /* EditPlanView.swift */; };
+		286C8BA22EF8A8BA000951A9 /* AppNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8BA12EF8A8BA000951A9 /* AppNotification.swift */; };
+		286C8BA42EF8A8C5000951A9 /* NotificationBellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8BA32EF8A8C5000951A9 /* NotificationBellView.swift */; };
+		286C8BA62EF8B2AD000951A9 /* PlanFormFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286C8BA52EF8B2AD000951A9 /* PlanFormFields.swift */; };
 		289C69042EF577B500D114F1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 289C69032EF577B500D114F1 /* Supabase */; };
 		EE00000000000001 /* EventGroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000011 /* EventGroupsView.swift */; };
 		EE00000000000002 /* GroupChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE00000000000012 /* GroupChatView.swift */; };
@@ -79,6 +90,17 @@
 		286C8B8B2EF76706000951A9 /* RatingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingService.swift; sourceTree = "<group>"; };
 		286C8B8C2EF76706000951A9 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		286C8B8F2EF7674B000951A9 /* UserListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListView.swift; sourceTree = "<group>"; };
+		286C8B912EF7EA82000951A9 /* StarRatingPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarRatingPickerView.swift; sourceTree = "<group>"; };
+		286C8B932EF7F7FB000951A9 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		286C8B952EF89CA3000951A9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		286C8B972EF89CB6000951A9 /* DeviceTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenService.swift; sourceTree = "<group>"; };
+		286C8B982EF89CB6000951A9 /* NotificationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRouter.swift; sourceTree = "<group>"; };
+		286C8B9B2EF89CC5000951A9 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		286C8B9D2EF89CD3000951A9 /* NotificationPreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPreferencesView.swift; sourceTree = "<group>"; };
+		286C8B9F2EF8A8AC000951A9 /* EditPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPlanView.swift; sourceTree = "<group>"; };
+		286C8BA12EF8A8BA000951A9 /* AppNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotification.swift; sourceTree = "<group>"; };
+		286C8BA32EF8A8C5000951A9 /* NotificationBellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationBellView.swift; sourceTree = "<group>"; };
+		286C8BA52EF8B2AD000951A9 /* PlanFormFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanFormFields.swift; sourceTree = "<group>"; };
 		3000000000000001 /* FriendMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE00000000000011 /* EventGroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventGroupsView.swift; sourceTree = "<group>"; };
 		EE00000000000012 /* GroupChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupChatView.swift; sourceTree = "<group>"; };
@@ -106,6 +128,8 @@
 		281BCA2B2EF444E300EBBAD1 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				286C8B972EF89CB6000951A9 /* DeviceTokenService.swift */,
+				286C8B982EF89CB6000951A9 /* NotificationRouter.swift */,
 				286C8B8B2EF76706000951A9 /* RatingService.swift */,
 				286C8B8C2EF76706000951A9 /* StorageService.swift */,
 				281BCA292EF444E300EBBAD1 /* AuthService.swift */,
@@ -162,6 +186,7 @@
 		5000000000000004 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				286C8B952EF89CA3000951A9 /* AppDelegate.swift */,
 				2000000000000001 /* FriendMapApp.swift */,
 				2000000000000002 /* ContentView.swift */,
 			);
@@ -171,6 +196,7 @@
 		5000000000000005 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				286C8BA12EF8A8BA000951A9 /* AppNotification.swift */,
 				2000000000000003 /* UserProfile.swift */,
 				2000000000000004 /* Plan.swift */,
 				2000000000000005 /* RSVPStatus.swift */,
@@ -215,6 +241,7 @@
 		5000000000000009 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				286C8B9B2EF89CC5000951A9 /* HapticManager.swift */,
 				2000000000000009 /* Logger.swift */,
 			);
 			path = Utilities;
@@ -223,6 +250,8 @@
 		500000000000000A /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				286C8BA32EF8A8C5000951A9 /* NotificationBellView.swift */,
+				286C8B932EF7F7FB000951A9 /* ConfettiView.swift */,
 				200000000000000B /* DesignSystem.swift */,
 				200000000000000C /* AvatarView.swift */,
 				200000000000000D /* PrimaryButton.swift */,
@@ -244,6 +273,8 @@
 		500000000000000C /* Plans */ = {
 			isa = PBXGroup;
 			children = (
+				286C8BA52EF8B2AD000951A9 /* PlanFormFields.swift */,
+				286C8B9F2EF8A8AC000951A9 /* EditPlanView.swift */,
 				2000000000000011 /* PlansView.swift */,
 				2000000000000012 /* CreatePlanView.swift */,
 			);
@@ -253,6 +284,8 @@
 		500000000000000D /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				286C8B9D2EF89CD3000951A9 /* NotificationPreferencesView.swift */,
+				286C8B912EF7EA82000951A9 /* StarRatingPickerView.swift */,
 				286C8B8F2EF7674B000951A9 /* UserListView.swift */,
 				2000000000000013 /* ProfileView.swift */,
 				EE00000000000016 /* PublicProfileView.swift */,
@@ -352,8 +385,10 @@
 			files = (
 				1000000000000001 /* FriendMapApp.swift in Sources */,
 				1000000000000002 /* ContentView.swift in Sources */,
+				286C8BA22EF8A8BA000951A9 /* AppNotification.swift in Sources */,
 				1000000000000003 /* UserProfile.swift in Sources */,
 				1000000000000004 /* Plan.swift in Sources */,
+				286C8B922EF7EA82000951A9 /* StarRatingPickerView.swift in Sources */,
 				1000000000000005 /* RSVPStatus.swift in Sources */,
 				286C8B8D2EF76706000951A9 /* StorageService.swift in Sources */,
 				286C8B8E2EF76706000951A9 /* RatingService.swift in Sources */,
@@ -363,13 +398,22 @@
 				1000000000000007 /* SessionStore.swift in Sources */,
 				1000000000000008 /* PlanStore.swift in Sources */,
 				1000000000000009 /* Logger.swift in Sources */,
+				286C8B9E2EF89CD3000951A9 /* NotificationPreferencesView.swift in Sources */,
 				100000000000000A /* Config.swift in Sources */,
 				100000000000000B /* DesignSystem.swift in Sources */,
+				286C8BA42EF8A8C5000951A9 /* NotificationBellView.swift in Sources */,
+				286C8BA02EF8A8AC000951A9 /* EditPlanView.swift in Sources */,
+				286C8B9C2EF89CC5000951A9 /* HapticManager.swift in Sources */,
+				286C8B992EF89CB6000951A9 /* NotificationRouter.swift in Sources */,
+				286C8B9A2EF89CB6000951A9 /* DeviceTokenService.swift in Sources */,
+				286C8B942EF7F7FB000951A9 /* ConfettiView.swift in Sources */,
 				100000000000000C /* AvatarView.swift in Sources */,
 				100000000000000D /* PrimaryButton.swift in Sources */,
 				100000000000000E /* SectionCard.swift in Sources */,
 				100000000000000F /* MapView.swift in Sources */,
+				286C8B962EF89CA3000951A9 /* AppDelegate.swift in Sources */,
 				286C8B902EF7674B000951A9 /* UserListView.swift in Sources */,
+				286C8BA62EF8B2AD000951A9 /* PlanFormFields.swift in Sources */,
 				1000000000000016 /* MapFilterView.swift in Sources */,
 				1000000000000010 /* PlanDetailsView.swift in Sources */,
 				1000000000000011 /* PlansView.swift in Sources */,

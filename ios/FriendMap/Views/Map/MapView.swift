@@ -54,6 +54,9 @@ struct MapView: View {
             .navigationTitle("OurSpot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NotificationBellView()
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showFilters = true

@@ -27,6 +27,10 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var onboardingCompleted: Bool
     var referralSource: String?
     
+    // Notification preferences
+    var notificationsEnabled: Bool?
+    var chatNotificationsEnabled: Bool?
+    
     init(
         id: UUID,
         name: String,
@@ -43,7 +47,9 @@ struct UserProfile: Codable, Identifiable, Equatable {
         ratingAverage: Double = 0.0,
         ratingCount: Int = 0,
         onboardingCompleted: Bool = false,
-        referralSource: String? = nil
+        referralSource: String? = nil,
+        notificationsEnabled: Bool? = true,
+        chatNotificationsEnabled: Bool? = true
     ) {
         self.id = id
         self.name = name
@@ -61,6 +67,8 @@ struct UserProfile: Codable, Identifiable, Equatable {
         self.ratingCount = ratingCount
         self.onboardingCompleted = onboardingCompleted
         self.referralSource = referralSource
+        self.notificationsEnabled = notificationsEnabled
+        self.chatNotificationsEnabled = chatNotificationsEnabled
     }
     
     static let placeholder = UserProfile(

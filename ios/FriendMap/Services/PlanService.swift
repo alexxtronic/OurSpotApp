@@ -105,6 +105,32 @@ final class PlanService: ObservableObject {
         
         Logger.info("Plan deleted")
     }
+    
+    // MARK: - Update Plan
+    
+    func updatePlan(_ plan: Plan) async throws {
+        guard let supabase = Config.supabase else { return }
+        
+        let updateDTO = PlanUpdateDTO(
+            title: plan.title,
+            description: plan.description,
+            starts_at: plan.startsAt,
+            latitude: plan.latitude,
+            longitude: plan.longitude,
+            emoji: plan.emoji,
+            activity_type: plan.activityType.rawValue,
+            address_text: plan.addressText,
+            is_private: plan.isPrivate
+        )
+        
+        try await supabase
+            .from("plans")
+            .update(updateDTO)
+            .eq("id", value: plan.id.uuidString)
+            .execute()
+        
+        Logger.info("Plan updated: \(plan.title)")
+    }
 }
 
 // MARK: - DTOs
@@ -147,4 +173,16 @@ private struct RSVPInsertDTO: Encodable {
     let plan_id: UUID
     let user_id: UUID
     let status: String
+}
+
+private struct PlanUpdateDTO: Encodable {
+    let title: String
+    let description: String
+    let starts_at: Date
+    let latitude: Double
+    let longitude: Double
+    let emoji: String
+    let activity_type: String
+    let address_text: String?
+    let is_private: Bool
 }

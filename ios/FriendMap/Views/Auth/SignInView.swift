@@ -17,17 +17,15 @@ struct SignInView: View {
                 
                 // Logo and title
                 VStack(spacing: DesignSystem.Spacing.md) {
-                    Image("AppIcon")
+                    Image("AppLogo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .cornerRadius(28)
-                        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+                        .frame(width: 150, height: 150)
                     
                     Text("OurSpot")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                     
-                    Text("Meet up with friends")
+                    Text("Meet new friends in any city")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }

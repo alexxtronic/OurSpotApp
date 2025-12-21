@@ -20,7 +20,12 @@ struct CreatePlanView: View {
     @State private var geocodeError: String?
     @State private var isPrivate = false
     
-    @StateObject private var addressCompleter = AddressCompleter()
+    // Invite friends state
+    @State private var friendSearchText = ""
+    @State private var friendSearchResults: [FriendSearchResult] = []
+    @State private var invitedFriends: [FriendSearchResult] = []
+    
+    @StateObject private var followService = FollowService()
     
     private let geocoder = CLGeocoder()
     
@@ -33,141 +38,78 @@ struct CreatePlanView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Title and Description
-                Section("What's the plan?") {
-                    TextField("Title", text: $title)
-                        .textContentType(.none)
-                    
-                    TextField("Description", text: $description, axis: .vertical)
-                        .lineLimit(3...6)
-                }
+                // Shared form fields (title, category, when, where, privacy)
+                PlanFormFields(
+                    title: $title,
+                    description: $description,
+                    selectedActivityType: $selectedActivityType,
+                    selectedEmoji: $selectedEmoji,
+                    startsAt: $startsAt,
+                    addressText: $addressText,
+                    isPrivate: $isPrivate,
+                    geocodedCoordinate: $geocodedCoordinate
+                )
                 
-                // Emoji and Activity Type
-                Section("Category") {
-                    HStack {
-                        Text("Icon")
-                        Spacer()
-                        Button {
-                            showEmojiPicker = true
-                        } label: {
-                            Text(selectedEmoji)
-                                .font(.title)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(8)
-                        }
-                    }
-                    
-                    Picker("Activity Type", selection: $selectedActivityType) {
-                        ForEach(ActivityType.allCases) { type in
-                            HStack {
-                                Text(type.defaultEmoji)
-                                Text(type.displayName)
-                            }
-                            .tag(type)
-                        }
-                    }
-                    .onChange(of: selectedActivityType) { _, newValue in
-                        selectedEmoji = newValue.defaultEmoji
-                    }
-                }
-                
-                // Date and Time
-                Section("When?") {
-                    DatePicker(
-                        "Date & Time",
-                        selection: $startsAt,
-                        in: Date()...,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
-                }
-                
-                // Location with autocomplete
-                Section("Where?") {
-                    TextField("Start typing an address...", text: $addressText)
-                        .textContentType(.fullStreetAddress)
-                        .autocapitalization(.words)
-                        .onChange(of: addressText) { _, newValue in
-                            addressCompleter.search(query: newValue)
-                            geocodedCoordinate = nil
-                            geocodeError = nil
+                // Invite Friends section (Create-only)
+                Section {
+                    TextField("Search friends...", text: $friendSearchText)
+                        .textContentType(.name)
+                        .onChange(of: friendSearchText) { _, newValue in
+                            searchFriends(query: newValue)
                         }
                     
-                    // Address suggestions
-                    if !addressCompleter.suggestions.isEmpty && geocodedCoordinate == nil {
-                        ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
+                    // Search results
+                    if !friendSearchResults.isEmpty && !friendSearchText.isEmpty {
+                        ForEach(friendSearchResults, id: \.id) { user in
                             Button {
-                                selectSuggestion(suggestion)
+                                addInvite(user)
                             } label: {
                                 HStack {
-                                    Image(systemName: "mappin.circle.fill")
-                                        .foregroundColor(DesignSystem.Colors.primaryFallback)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(suggestion.title)
-                                            .font(.subheadline)
-                                            .foregroundColor(.primary)
-                                        if !suggestion.subtitle.isEmpty {
-                                            Text(suggestion.subtitle)
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
+                                    AvatarView(
+                                        name: user.name,
+                                        size: 32,
+                                        url: URL(string: user.avatarUrl ?? "")
+                                    )
+                                    Text(user.name)
                                     Spacer()
+                                    if invitedFriends.contains(where: { $0.id == user.id }) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                    } else {
+                                        Image(systemName: "plus.circle")
+                                            .foregroundColor(.blue)
+                                    }
                                 }
-                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                         }
                     }
                     
-                    if isGeocoding {
-                        HStack {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Finding location...")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    if let error = geocodeError {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
-                    
-                    if geocodedCoordinate != nil {
-                        HStack {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                            Text("Location confirmed")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                
-                // Privacy setting
-                Section {
-                    Toggle(isOn: $isPrivate) {
-                        HStack {
-                            Image(systemName: "lock.fill")
-                                .foregroundColor(.orange)
-                            VStack(alignment: .leading) {
-                                Text("Make Private")
-                                    .font(.body)
-                                Text("You'll approve each attendee")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    // Invited friends chips
+                    if !invitedFriends.isEmpty {
+                        FlowLayout(spacing: 8) {
+                            ForEach(invitedFriends, id: \.id) { friend in
+                                HStack(spacing: 4) {
+                                    Text(friend.name)
+                                        .font(.subheadline)
+                                    Button {
+                                        removeInvite(friend)
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.blue.opacity(0.15))
+                                .cornerRadius(16)
                             }
                         }
                     }
                 } header: {
-                    Text("Privacy")
+                    Text("Invite Friends (Optional)")
                 } footer: {
-                    if isPrivate {
-                        Text("Guests won't see exact location until you approve them.")
-                    }
+                    Text("Invited friends will receive a notification.")
                 }
             }
             .navigationTitle("Create Plan")
@@ -185,37 +127,6 @@ struct CreatePlanView: View {
                     }
                     .font(.headline)
                     .disabled(!isFormValid || isGeocoding)
-                }
-            }
-            .sheet(isPresented: $showEmojiPicker) {
-                EmojiPickerView(selectedEmoji: $selectedEmoji)
-                    .presentationDetents([.medium])
-            }
-        }
-    }
-    
-    private func selectSuggestion(_ suggestion: MKLocalSearchCompletion) {
-        // Set address text from suggestion
-        let fullAddress = suggestion.subtitle.isEmpty 
-            ? suggestion.title 
-            : "\(suggestion.title), \(suggestion.subtitle)"
-        addressText = fullAddress
-        addressCompleter.suggestions.removeAll()
-        
-        // Geocode the selected suggestion
-        isGeocoding = true
-        let searchRequest = MKLocalSearch.Request(completion: suggestion)
-        let search = MKLocalSearch(request: searchRequest)
-        
-        search.start { response, error in
-            DispatchQueue.main.async {
-                isGeocoding = false
-                
-                if let item = response?.mapItems.first {
-                    geocodedCoordinate = item.placemark.coordinate
-                    Logger.info("Selected location: \(item.name ?? "Unknown")")
-                } else {
-                    geocodeError = "Couldn't find exact location"
                 }
             }
         }
@@ -273,6 +184,15 @@ struct CreatePlanView: View {
                 hostAvatar: sessionStore.currentUser.avatarUrl,
                 isPrivate: isPrivate
             )
+            
+            // Send invite notifications to selected friends
+            if !invitedFriends.isEmpty {
+                // Get the newly created plan ID (it's the last one added)
+                if let newPlan = planStore.plans.last {
+                    sendInviteNotifications(planId: newPlan.id, planTitle: title)
+                }
+            }
+            
             dismiss()
         }
     }
@@ -314,6 +234,99 @@ struct EmojiPickerView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+// MARK: - Friend Search Model
+
+struct FriendSearchResult: Identifiable, Equatable {
+    let id: UUID
+    let name: String
+    let avatarUrl: String?
+}
+
+// MARK: - Flow Layout for Chips
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(in: proposal.width ?? 0, subviews: subviews, spacing: spacing)
+        return CGSize(width: proposal.width ?? 0, height: result.height)
+    }
+    
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x, y: bounds.minY + result.positions[index].y), proposal: .unspecified)
+        }
+    }
+    
+    struct FlowResult {
+        var positions: [CGPoint] = []
+        var height: CGFloat = 0
+        
+        init(in width: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var x: CGFloat = 0
+            var y: CGFloat = 0
+            var maxHeight: CGFloat = 0
+            
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+                if x + size.width > width && x > 0 {
+                    x = 0
+                    y += maxHeight + spacing
+                    maxHeight = 0
+                }
+                positions.append(CGPoint(x: x, y: y))
+                maxHeight = max(maxHeight, size.height)
+                x += size.width + spacing
+            }
+            height = y + maxHeight
+        }
+    }
+}
+
+// MARK: - CreatePlanView Extension
+
+extension CreatePlanView {
+    func searchFriends(query: String) {
+        guard !query.isEmpty else {
+            friendSearchResults = []
+            return
+        }
+        
+        Task {
+            // Search from followers/following
+            let results = await followService.searchFriends(query: query)
+            friendSearchResults = results.map { FriendSearchResult(id: $0.id, name: $0.name, avatarUrl: $0.avatarUrl) }
+        }
+    }
+    
+    func addInvite(_ friend: FriendSearchResult) {
+        if !invitedFriends.contains(where: { $0.id == friend.id }) {
+            invitedFriends.append(friend)
+            HapticManager.lightTap()
+        }
+        friendSearchText = ""
+        friendSearchResults = []
+    }
+    
+    func removeInvite(_ friend: FriendSearchResult) {
+        invitedFriends.removeAll { $0.id == friend.id }
+    }
+    
+    func sendInviteNotifications(planId: UUID, planTitle: String) {
+        for friend in invitedFriends {
+            let notification = AppNotification.eventInvite(
+                from: sessionStore.currentUser.name,
+                eventName: planTitle,
+                planId: planId,
+                userId: sessionStore.currentUser.id
+            )
+            // This sends local notification - push would require backend
+            NotificationCenter.shared.addNotification(notification)
         }
     }
 }

@@ -15,6 +15,40 @@ final class FollowService: ObservableObject {
         self.userId = userId
     }
     
+    /// Convenience init for searching (doesn't require userId)
+    convenience init() {
+        self.init(userId: UUID())
+    }
+    
+    // MARK: - Search Friends
+    
+    func searchFriends(query: String) async -> [UserProfile] {
+        guard let supabase = Config.supabase else { return [] }
+        
+        do {
+            let response: [ProfileSummaryDTO] = try await supabase
+                .from("profiles")
+                .select("id, name, avatar_url")
+                .ilike("name", pattern: "%\(query)%")
+                .limit(10)
+                .execute()
+                .value
+            
+            return response.map { dto in
+                UserProfile(
+                    id: dto.id,
+                    name: dto.name,
+                    age: 0,
+                    bio: "",
+                    avatarUrl: dto.avatar_url
+                )
+            }
+        } catch {
+            Logger.error("Friend search failed: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
     // MARK: - Fetch Counts
     
     func fetchCounts() async {

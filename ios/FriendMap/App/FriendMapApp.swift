@@ -3,9 +3,12 @@ import SwiftUI
 /// Main app entry point
 @main
 struct FriendMapApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var authService = AuthService()
     @StateObject private var sessionStore = SessionStore()
     @StateObject private var planStore = PlanStore()
+    @StateObject private var notificationRouter = NotificationRouter.shared
     
     init() {
         Logger.info("OurSpot app initializing...")
@@ -23,6 +26,24 @@ struct FriendMapApp: App {
                 .environmentObject(authService)
                 .environmentObject(sessionStore)
                 .environmentObject(planStore)
+                .environmentObject(notificationRouter)
+                .task {
+                    // Register for push notifications if authorized
+                    if authService.isAuthenticated {
+                        await PushNotificationManager.registerIfAuthorized()
+                    }
+                }
+                .onChange(of: authService.isAuthenticated) { isAuthenticated in
+                    if isAuthenticated {
+                        Task {
+                            await PushNotificationManager.registerIfAuthorized()
+                        }
+                    } else {
+                        Task {
+                            await DeviceTokenService.shared.clearToken()
+                        }
+                    }
+                }
         }
     }
 }

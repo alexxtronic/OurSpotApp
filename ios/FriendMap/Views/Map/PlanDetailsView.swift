@@ -10,6 +10,10 @@ struct PlanDetailsView: View {
     
     @State private var showBlockAlert = false
     @State private var showReportAlert = false
+    @State private var showDeleteAlert = false
+    @State private var isDeleting = false
+    @State private var showEditSheet = false
+    @State private var attendeeProfiles: [UUID: UserProfile] = [:]
     
     private var rsvpStatus: RSVPStatus {
         planStore.getRSVP(for: plan.id)
@@ -71,6 +75,11 @@ struct PlanDetailsView: View {
                     
                     // Safety buttons
                     safetySection
+                    
+                    // Delete button (host only)
+                    if isHost {
+                        deleteEventSection
+                    }
                 }
                 .padding(DesignSystem.Spacing.md)
             }
@@ -94,6 +103,9 @@ struct PlanDetailsView: View {
             }
             .sheet(item: $selectedAttendee) { selection in
                 PublicProfileView(userId: selection.id)
+            }
+            .sheet(isPresented: $showEditSheet) {
+                EditPlanView(plan: plan)
             }
             .alert("Block User", isPresented: $showBlockAlert) {
                 Button("Cancel", role: .cancel) {}
@@ -246,7 +258,9 @@ struct PlanDetailsView: View {
                 ForEach([RSVPStatus.none, RSVPStatus.going, RSVPStatus.maybe], id: \.self) { status in
                     Button {
                         withAnimation(.spring(response: 0.3)) {
-                            planStore.toggleRSVP(planId: plan.id, userId: sessionStore.currentUser.id)
+                            // Set the specific status that was tapped
+                            planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: status, isPrivate: plan.isPrivate, isHost: isHost)
+                            HapticManager.lightTap()
                         }
                     } label: {
                         HStack {
@@ -271,6 +285,7 @@ struct PlanDetailsView: View {
             }
         }
         .padding(DesignSystem.Spacing.md)
+        .frame(maxWidth: .infinity)
         .background(DesignSystem.Colors.secondaryBackground)
         .cornerRadius(DesignSystem.CornerRadius.lg)
     }
@@ -290,16 +305,20 @@ struct PlanDetailsView: View {
             } else {
                 VStack(spacing: DesignSystem.Spacing.sm) {
                     ForEach(attendees, id: \.self) { userId in
+                        let profile = attendeeProfiles[userId]
+                        let name = profile?.name ?? sessionStore.currentUser.name
+                        let avatarUrl = profile?.avatarUrl ?? sessionStore.currentUser.avatarUrl
+                        
                         Button {
                             selectedAttendee = SelectedAttendee(id: userId)
                         } label: {
                             HStack {
                                 AvatarView(
-                                    name: MockData.hostNames[userId] ?? "User",
+                                    name: name,
                                     size: 36,
-                                    assetName: MockData.hostAvatars[userId]
+                                    url: URL(string: avatarUrl ?? "")
                                 )
-                                Text(MockData.hostNames[userId] ?? "User")
+                                Text(name)
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
                                 Spacer()
@@ -312,6 +331,48 @@ struct PlanDetailsView: View {
                 }
             }
         }
+        .task {
+            await loadAttendeeProfiles()
+        }
+    }
+    
+    private func loadAttendeeProfiles() async {
+        guard let supabase = Config.supabase else { return }
+        
+        for userId in attendees {
+            // Skip if already loaded or is current user
+            if attendeeProfiles[userId] != nil { continue }
+            if userId == sessionStore.currentUser.id {
+                attendeeProfiles[userId] = sessionStore.currentUser
+                continue
+            }
+            
+            do {
+                let response: ProfileDTO = try await supabase
+                    .from("profiles")
+                    .select("id, name, avatar_url")
+                    .eq("id", value: userId.uuidString)
+                    .single()
+                    .execute()
+                    .value
+                
+                attendeeProfiles[userId] = UserProfile(
+                    id: response.id,
+                    name: response.name,
+                    age: 0,
+                    bio: "",
+                    avatarUrl: response.avatar_url
+                )
+            } catch {
+                Logger.error("Failed to load attendee profile: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private struct ProfileDTO: Decodable {
+        let id: UUID
+        let name: String
+        let avatar_url: String?
     }
     
     private var pendingApprovalsSection: some View {
@@ -374,6 +435,79 @@ struct PlanDetailsView: View {
                     showReportAlert = true
                 }
             }
+        }
+    }
+    
+    private var deleteEventSection: some View {
+        VStack(spacing: DesignSystem.Spacing.md) {
+            Divider()
+                .padding(.top, DesignSystem.Spacing.md)
+            
+            // Edit button (blue)
+            Button {
+                showEditSheet = true
+            } label: {
+                HStack {
+                    Image(systemName: "pencil")
+                    Text("Edit Event")
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(DesignSystem.CornerRadius.md)
+            }
+            
+            // Delete button (red)
+            Button {
+                showDeleteAlert = true
+            } label: {
+                HStack {
+                    if isDeleting {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Image(systemName: "trash.fill")
+                    }
+                    Text("Delete Event")
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.red)
+                .cornerRadius(DesignSystem.CornerRadius.md)
+            }
+            .disabled(isDeleting)
+            
+            Text("This will permanently delete the event for everyone.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .alert("Delete Event?", isPresented: $showDeleteAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                deleteEvent()
+            }
+        } message: {
+            Text("This action cannot be undone. All RSVPs and messages will also be deleted.")
+        }
+    }
+    
+    private func deleteEvent() {
+        isDeleting = true
+        Task {
+            do {
+                try await planStore.deletePlan(plan)
+                HapticManager.success()
+                dismiss()
+            } catch {
+                Logger.error("Failed to delete event: \(error.localizedDescription)")
+                HapticManager.error()
+            }
+            isDeleting = false
         }
     }
 }

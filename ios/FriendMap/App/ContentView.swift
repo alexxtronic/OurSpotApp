@@ -17,7 +17,7 @@ struct ContentView: View {
                     mainTabView
                         .onAppear {
                             Task {
-                                await planStore.loadPlans()
+                                await planStore.loadPlans(currentUserId: sessionStore.currentUser.id)
                             }
                         }
                         .sheet(item: $deepLinkPlan) { plan in
@@ -55,6 +55,8 @@ struct ContentView: View {
     }
     
     @State private var showCreatePlanSheet = false
+    @State private var showConfetti = false
+    @State private var planCountBeforeSheet = 0
     
     // ... (rest of body)
     
@@ -71,11 +73,10 @@ struct ContentView: View {
                         Label("Groups", systemImage: "person.2.fill")
                     }
                 
-                // Placeholder for center spacing
+                // Placeholder for center spacing - completely invisible
                 Color.clear
                     .tabItem {
-                        Text("") // Empty title
-                        Image(systemName: "plus.circle") // Fallback icon, but will be covered
+                        Text(" ") // Invisible placeholder
                     }
                     .disabled(true)
                 
@@ -91,26 +92,76 @@ struct ContentView: View {
             }
             .tint(DesignSystem.Colors.primaryFallback)
             
-            // Custom Center Button
+            // Custom Center Button - Liquid Glass Style
             Button {
                 showCreatePlanSheet = true
             } label: {
                 ZStack {
+                    // Outer glow
                     Circle()
-                        .fill(DesignSystem.Colors.primaryFallback)
-                        .frame(width: 56, height: 56)
-                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.cyan.opacity(0.4),
+                                    Color.teal.opacity(0.2),
+                                    Color.clear
+                                ],
+                                center: .center,
+                                startRadius: 20,
+                                endRadius: 35
+                            )
+                        )
+                        .frame(width: 70, height: 70)
+                        .blur(radius: 4)
                     
+                    // Glass circle
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(0.6),
+                                            Color.cyan.opacity(0.3),
+                                            Color.teal.opacity(0.2)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1.5
+                                )
+                        )
+                        .shadow(color: .cyan.opacity(0.3), radius: 8, x: 0, y: 4)
+                    
+                    // Plus icon
                     Image(systemName: "plus")
-                        .font(.title.bold())
-                        .foregroundColor(.white)
+                        .font(.title2.bold())
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.cyan, .teal],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 }
             }
-            .offset(y: -10) // Lift slightly above tab bar
+            .buttonStyle(PressButtonStyle())
+            .offset(y: 2)
         }
-        .sheet(isPresented: $showCreatePlanSheet) {
+        .sheet(isPresented: $showCreatePlanSheet, onDismiss: {
+            // Only show confetti if a plan was actually created
+            if planStore.plans.count > planCountBeforeSheet {
+                showConfetti = true
+            }
+        }) {
             CreatePlanView()
+                .onAppear {
+                    planCountBeforeSheet = planStore.plans.count
+                }
         }
+        .confetti(isShowing: $showConfetti)
     }
     
     private func handleDeepLink(_ url: URL) {
@@ -146,6 +197,16 @@ struct ContentView: View {
             email: session.user.email,
             name: name
         )
+    }
+}
+
+// MARK: - Press Animation Button Style
+struct PressButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.85 : 1.0)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 

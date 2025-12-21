@@ -134,7 +134,11 @@ final class SessionStore: ObservableObject {
     }
     
     func updateAvatar(url: String) async {
-        currentUser.avatarUrl = url
+        // Trigger UI refresh immediately
+        await MainActor.run {
+            objectWillChange.send()
+            currentUser.avatarUrl = url
+        }
         saveToUserDefaults()
         
         guard let supabase = Config.supabase else { return }
@@ -158,6 +162,27 @@ final class SessionStore: ObservableObject {
     func updateAvatar(_ assetName: String?) {
         currentUser.avatarLocalAssetName = assetName
         saveToUserDefaults()
+    }
+    
+    func updateNotificationPreferences(notificationsEnabled: Bool, chatNotificationsEnabled: Bool) async {
+        currentUser.notificationsEnabled = notificationsEnabled
+        currentUser.chatNotificationsEnabled = chatNotificationsEnabled
+        saveToUserDefaults()
+        
+        guard let supabase = Config.supabase else { return }
+        do {
+            try await supabase
+                .from("profiles")
+                .update([
+                    "notifications_enabled": notificationsEnabled,
+                    "chat_notifications_enabled": chatNotificationsEnabled
+                ])
+                .eq("id", value: currentUser.id.uuidString)
+                .execute()
+            Logger.info("Notification preferences synced to Supabase")
+        } catch {
+            Logger.error("Failed to sync notification preferences: \(error.localizedDescription)")
+        }
     }
     
     func completeOnboarding(age: Int?, countryOfBirth: String?, funFact: String?, referralSource: String?) {

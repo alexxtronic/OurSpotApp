@@ -26,11 +26,14 @@ final class StorageService: ObservableObject {
                 .upload(fileName, data: data, options: fileOptions)
             
             // 2. Get Public URL (new API)
-            let url = try supabase.storage
+            let baseUrl = try supabase.storage
                 .from(bucketName)
                 .getPublicURL(path: fileName)
             
-            return url
+            // 3. Add cache-busting timestamp to force refresh
+            let cacheBustedUrl = URL(string: "\(baseUrl.absoluteString)?t=\(Int(Date().timeIntervalSince1970))")
+            
+            return cacheBustedUrl ?? baseUrl
         } catch {
             Logger.error("Storage upload error: \(error.localizedDescription)")
             throw error

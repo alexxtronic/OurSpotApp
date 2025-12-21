@@ -97,10 +97,11 @@ final class ChatService: ObservableObject {
                 .insert(messageDTO)
                 .execute()
             
-            // 4. On success: Remove the optimistic message. 
-            // The Realtime subscription will receive the real message shortly and add it.
+            // 4. On success: Mark as sent (keep it visible!)
+            // The optimistic message stays - we just update its status
             if let index = self.messages.firstIndex(where: { $0.id == tempId }) {
-                self.messages.remove(at: index)
+                self.messages[index].status = .sent
+                HapticManager.lightTap()
             }
             
         } catch {
