@@ -6,13 +6,15 @@ enum RSVPStatus: String, Codable, CaseIterable {
     case going
     case maybe
     case pending  // For private events awaiting host approval
+    case invited  // User has been invited but hasn't responded
     
     var displayText: String {
         switch self {
         case .none: return "Not Going"
         case .going: return "Going"
         case .maybe: return "Maybe"
-        case .pending: return "Pending Approval"
+        case .pending: return "Pending"
+        case .invited: return "Invited"
         }
     }
     
@@ -22,6 +24,7 @@ enum RSVPStatus: String, Codable, CaseIterable {
         case .going: return "checkmark.circle.fill"
         case .maybe: return "questionmark.circle"
         case .pending: return "clock.circle"
+        case .invited: return "envelope.circle"
         }
     }
 }

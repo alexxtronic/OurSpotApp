@@ -7,7 +7,9 @@ enum Logger {
     private static let logger = os.Logger(subsystem: subsystem, category: "OurSpot")
     
     static func info(_ message: String) {
+        #if DEBUG
         logger.info("\(message, privacy: .public)")
+        #endif
     }
     
     static func warning(_ message: String) {

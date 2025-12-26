@@ -7,17 +7,24 @@ struct PrimaryButton: View {
     let action: () -> Void
     var isDestructive: Bool = false
     var isDisabled: Bool = false
+    var useGradient: Bool = true
     
-    init(_ title: String, icon: String? = nil, isDestructive: Bool = false, isDisabled: Bool = false, action: @escaping () -> Void) {
+    @State private var isPressed = false
+    
+    init(_ title: String, icon: String? = nil, isDestructive: Bool = false, isDisabled: Bool = false, useGradient: Bool = true, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
         self.isDestructive = isDestructive
         self.isDisabled = isDisabled
+        self.useGradient = useGradient
         self.action = action
     }
     
     var body: some View {
-        Button(action: action) {
+        Button {
+            HapticManager.mediumTap()
+            action()
+        } label: {
             HStack(spacing: DesignSystem.Spacing.xs) {
                 if let icon = icon {
                     Image(systemName: icon)
@@ -27,21 +34,33 @@ struct PrimaryButton: View {
                     .font(.system(.body, design: .rounded).weight(.semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Spacing.sm)
+            .padding(.vertical, DesignSystem.Spacing.sm + 2)
             .padding(.horizontal, DesignSystem.Spacing.md)
-            .background(backgroundColor)
+            .background(backgroundView)
             .foregroundColor(.white)
             .cornerRadius(DesignSystem.CornerRadius.md)
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .animation(DesignSystem.Animation.quick, value: isPressed)
         }
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.6 : 1)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+        .shadowStyle(isDestructive ? DesignSystem.Shadows.small : DesignSystem.Shadows.medium)
     }
     
-    private var backgroundColor: Color {
+    @ViewBuilder
+    private var backgroundView: some View {
         if isDestructive {
-            return Color.red
+            Color.red
+        } else if useGradient {
+            DesignSystem.Gradients.primary
+        } else {
+            DesignSystem.Colors.primaryFallback
         }
-        return DesignSystem.Colors.primaryFallback
     }
 }
 

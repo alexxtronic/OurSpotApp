@@ -10,6 +10,12 @@ struct SignInView: View {
     @State private var password = ""
     @State private var name = ""
     
+    // Focus state to control keyboard
+    enum FormField {
+        case name, email, password
+    }
+    @FocusState private var focusedField: FormField?
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: DesignSystem.Spacing.xl) {
@@ -118,15 +124,18 @@ struct SignInView: View {
                     TextField("Name", text: $name)
                         .textContentType(.name)
                         .autocapitalization(.words)
+                        .focused($focusedField, equals: .name)
                 }
                 
                 TextField("Email", text: $email)
                     .textContentType(.emailAddress)
                     .autocapitalization(.none)
                     .keyboardType(.emailAddress)
+                    .focused($focusedField, equals: .email)
                 
                 SecureField("Password", text: $password)
                     .textContentType(isSignUp ? .newPassword : .password)
+                    .focused($focusedField, equals: .password)
                 
                 if let error = authService.error {
                     Text(error)
@@ -139,12 +148,16 @@ struct SignInView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
+                        focusedField = nil // Dismiss keyboard
                         showEmailForm = false
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(isSignUp ? "Create" : "Sign In") {
+                        // IMMEDIATELY dismiss keyboard before async work
+                        focusedField = nil
+                        
                         Task {
                             if isSignUp {
                                 await authService.signUpWithEmail(email: email, password: password, name: name)
@@ -152,6 +165,8 @@ struct SignInView: View {
                                 await authService.signInWithEmail(email: email, password: password)
                             }
                             if authService.isAuthenticated {
+                                // Wait for keyboard to fully dismiss
+                                try? await Task.sleep(nanoseconds: 400_000_000) // 0.4 seconds
                                 showEmailForm = false
                             }
                         }

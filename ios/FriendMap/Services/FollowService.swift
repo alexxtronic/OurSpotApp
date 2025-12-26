@@ -23,7 +23,11 @@ final class FollowService: ObservableObject {
     // MARK: - Search Friends
     
     func searchFriends(query: String) async -> [UserProfile] {
-        guard let supabase = Config.supabase else { return [] }
+        Logger.info("🔍 FollowService.searchFriends called with query: '\(query)'")
+        guard let supabase = Config.supabase else {
+            Logger.error("❌ Supabase not configured, cannot search friends")
+            return []
+        }
         
         do {
             let response: [ProfileSummaryDTO] = try await supabase
@@ -34,6 +38,7 @@ final class FollowService: ObservableObject {
                 .execute()
                 .value
             
+            Logger.info("🔍 FollowService.searchFriends found \(response.count) profiles matching '\(query)'")
             return response.map { dto in
                 UserProfile(
                     id: dto.id,
@@ -44,7 +49,7 @@ final class FollowService: ObservableObject {
                 )
             }
         } catch {
-            Logger.error("Friend search failed: \(error.localizedDescription)")
+            Logger.error("❌ Friend search failed: \(error.localizedDescription)")
             return []
         }
     }
@@ -56,7 +61,7 @@ final class FollowService: ObservableObject {
         
         do {
             // Get following count
-            let followingResponse: [FollowDTO] = try await supabase
+            async let followingFetch: [FollowDTO] = supabase
                 .from("follows")
                 .select()
                 .eq("follower_id", value: userId.uuidString)
@@ -64,19 +69,28 @@ final class FollowService: ObservableObject {
                 .value
             
             // Get followers count
-            let followersResponse: [FollowDTO] = try await supabase
+            async let followersFetch: [FollowDTO] = supabase
                 .from("follows")
                 .select()
                 .eq("following_id", value: userId.uuidString)
                 .execute()
                 .value
             
-            self.followingCount = followingResponse.count
-            self.followersCount = followersResponse.count
-            self.following = followingResponse.map { $0.following_id }
-            self.followers = followersResponse.map { $0.follower_id }
+            let (followingResponse, followersResponse) = try await (followingFetch, followersFetch)
             
-            Logger.info("Loaded \(followersCount) followers, \(followingCount) following")
+            // Batch all updates together to minimize view redraws
+            let newFollowingCount = followingResponse.count
+            let newFollowersCount = followersResponse.count
+            let newFollowing = followingResponse.map { $0.following_id }
+            let newFollowers = followersResponse.map { $0.follower_id }
+            
+            // Single update block
+            self.followingCount = newFollowingCount
+            self.followersCount = newFollowersCount
+            self.following = newFollowing
+            self.followers = newFollowers
+            
+            Logger.debug("Loaded \(followersCount) followers, \(followingCount) following")
         } catch {
             Logger.error("Failed to fetch follow counts: \(error.localizedDescription)")
         }
@@ -190,7 +204,7 @@ private struct ProfileSummaryDTO: Decodable {
 
 // MARK: - DTOs
 
-private struct FollowDTO: Decodable {
+struct FollowDTO: Decodable {
     let id: UUID
     let follower_id: UUID
     let following_id: UUID

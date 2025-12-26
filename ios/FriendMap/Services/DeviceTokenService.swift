@@ -90,7 +90,10 @@ final class DeviceTokenService: ObservableObject {
     // MARK: - Keychain Storage
     
     private func storeToken(_ token: String) {
-        let data = token.data(using: .utf8)!
+        guard let data = token.data(using: .utf8) else {
+            Logger.error("Failed to encode token as UTF-8")
+            return
+        }
         
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,

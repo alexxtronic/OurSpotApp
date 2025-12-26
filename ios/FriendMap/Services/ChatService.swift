@@ -32,6 +32,7 @@ final class ChatService: ObservableObject {
                 """)
                 .eq("plan_id", value: planId.uuidString)
                 .order("created_at", ascending: true)
+                .limit(200) // Prevent unbounded message loading
                 .execute()
                 .value
             
@@ -158,6 +159,37 @@ final class ChatService: ObservableObject {
             realtimeChannel = nil
         }
     }
+    func fetchChatSummaries(currentUserId: UUID) async throws -> [ChatSummaryDTO] {
+        guard let supabase = supabase else { return [] }
+        
+        return try await supabase
+            .database
+            .rpc("get_user_chat_summaries", params: ["current_user_id": currentUserId.uuidString])
+            .execute()
+            .value
+    }
+    
+    func markChatAsRead(planId: UUID, userId: UUID) {
+        guard let supabase = supabase else { return }
+        
+        Task {
+            // Upsert: last_read_at = NOW()
+            struct ReadReceipt: Encodable {
+                let user_id: UUID
+                let plan_id: UUID
+                let last_read_at: Date
+            }
+            
+            try? await supabase
+                .from("event_chat_reads")
+                .upsert(ReadReceipt(
+                    user_id: userId,
+                    plan_id: planId,
+                    last_read_at: Date()
+                ))
+                .execute()
+        }
+    }
 }
 
 // MARK: - DTOs
@@ -180,4 +212,11 @@ struct ChatMessageInsertDTO: Encodable {
     let plan_id: UUID
     let user_id: UUID
     let content: String
+}
+
+struct ChatSummaryDTO: Decodable {
+    let plan_id: UUID
+    let unread_count: Int
+    let last_message_at: Date?
+    let last_message_content: String?
 }

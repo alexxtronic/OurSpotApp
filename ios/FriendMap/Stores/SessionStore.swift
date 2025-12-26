@@ -220,9 +220,45 @@ final class SessionStore: ObservableObject {
         }
     }
     
+    /// Complete onboarding with profile data (name, bio, avatar)
+    func completeOnboardingWithProfile(name: String, bio: String?, avatarUrl: String?) {
+        currentUser.name = name
+        if let bio = bio {
+            currentUser.bio = bio
+        }
+        if let avatarUrl = avatarUrl {
+            currentUser.avatarUrl = avatarUrl
+        }
+        currentUser.onboardingCompleted = true
+        saveToUserDefaults()
+        
+        // Sync to Supabase
+        Task {
+            guard let supabase = Config.supabase else { return }
+            do {
+                try await supabase
+                    .from("profiles")
+                    .update(ProfileUpdateDTO(
+                        name: name,
+                        age: currentUser.age,
+                        bio: bio ?? currentUser.bio,
+                        avatar_url: avatarUrl,
+                        onboarding_completed: true
+                    ))
+                    .eq("id", value: currentUser.id.uuidString)
+                    .execute()
+                Logger.info("Profile onboarding synced to Supabase")
+            } catch {
+                Logger.error("Failed to sync profile onboarding: \(error.localizedDescription)")
+            }
+        }
+    }
+    
     func clearSession() {
         currentUser = UserProfile.placeholder
         UserDefaults.standard.removeObject(forKey: userDefaultsKey)
+        // Clear notifications to prevent next user from seeing them
+        NotificationCenter.shared.clearAll()
     }
     
     private func saveToUserDefaults() {

@@ -10,7 +10,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             latitude: MockData.copenhagenCenter.latitude,
             longitude: MockData.copenhagenCenter.longitude
         ), // Default fallback
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1) // Zoomed out by default for fallback
     )
     @Published var permissionStatus: CLAuthorizationStatus = .notDetermined
     
@@ -20,8 +20,21 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
+        // Don't auto-request on init, let the view drive it
+    }
+    
+    func checkAuthorization() {
+        switch locationManager.authorizationStatus {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        case .restricted, .denied:
+            Logger.error("Location access denied/restricted")
+            // Ensure we fallback to Copenhagen or default
+        case .authorizedAlways, .authorizedWhenInUse:
+            locationManager.startUpdatingLocation()
+        @unknown default:
+            break
+        }
     }
     
     func requestPermission() {
@@ -29,12 +42,30 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
     
     func centerMapOnUser() {
-        guard let location = userLocation else { return }
-        region = MKCoordinateRegion(
-            center: location,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
-        mapUpdateTrigger += 1
+        // First try our cached userLocation
+        if let location = userLocation {
+            region = MKCoordinateRegion(
+                center: location,
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            )
+            mapUpdateTrigger += 1
+            return
+        }
+        
+        // Fallback: try to get location directly from CLLocationManager
+        if let location = locationManager.location?.coordinate {
+            userLocation = location
+            region = MKCoordinateRegion(
+                center: location,
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            )
+            mapUpdateTrigger += 1
+            return
+        }
+        
+        // If still no location, request and start updates
+        locationManager.requestLocation()
+        locationManager.startUpdatingLocation()
     }
     
     func setRegion(center: CLLocationCoordinate2D) {
@@ -59,11 +90,13 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         
         DispatchQueue.main.async {
             self.userLocation = latestLocation.coordinate
-            // Only auto-center once on first load if needed, defaulting to Copenhagen otherwise
+            
+            // Auto-center map on first significant update if we haven't already
+            // This logic can be refined in the View layer if preferred
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location Manager Error: \(error.localizedDescription)")
+        Logger.error("Location Manager Error: \(error.localizedDescription)")
     }
 }

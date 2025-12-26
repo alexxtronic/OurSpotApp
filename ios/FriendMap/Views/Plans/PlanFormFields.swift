@@ -14,7 +14,6 @@ struct PlanFormFields: View {
     @Binding var geocodedCoordinate: CLLocationCoordinate2D?
     
     @StateObject private var addressCompleter = AddressCompleter()
-    private let geocoder = CLGeocoder()
     
     var body: some View {
         // What's the plan?
@@ -111,10 +110,16 @@ struct PlanFormFields: View {
         addressText = "\(suggestion.title), \(suggestion.subtitle)"
         addressCompleter.suggestions = []
         
-        // Geocode the address
-        geocoder.geocodeAddressString(addressText) { placemarks, error in
-            if let location = placemarks?.first?.location {
-                geocodedCoordinate = location.coordinate
+        // Use MKLocalSearch instead of CLGeocoder - more reliable for MapKit suggestions
+        let searchRequest = MKLocalSearch.Request(completion: suggestion)
+        let search = MKLocalSearch(request: searchRequest)
+        
+        search.start { response, error in
+            if let coordinate = response?.mapItems.first?.placemark.coordinate {
+                geocodedCoordinate = coordinate
+                Logger.info("Address geocoded via MKLocalSearch: \(coordinate.latitude), \(coordinate.longitude)")
+            } else if let error = error {
+                Logger.error("MKLocalSearch error: \(error.localizedDescription)")
             }
         }
     }

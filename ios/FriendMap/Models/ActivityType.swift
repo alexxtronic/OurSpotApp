@@ -12,6 +12,7 @@ enum ActivityType: String, Codable, CaseIterable, Identifiable {
     case culture
     case outdoors
     case nightlife
+    case liveMusic
     case other
     
     var id: String { rawValue }
@@ -28,6 +29,7 @@ enum ActivityType: String, Codable, CaseIterable, Identifiable {
         case .culture: return "Art & culture"
         case .outdoors: return "Go outside"
         case .nightlife: return "Party time"
+        case .liveMusic: return "Live music"
         case .other: return "Something else"
         }
     }
@@ -44,6 +46,7 @@ enum ActivityType: String, Codable, CaseIterable, Identifiable {
         case .culture: return "🎨"
         case .outdoors: return "🌳"
         case .nightlife: return "🎉"
+        case .liveMusic: return "🎸"
         case .other: return "📍"
         }
     }
@@ -60,6 +63,7 @@ enum ActivityType: String, Codable, CaseIterable, Identifiable {
         case .culture: return "theatermasks.fill"
         case .outdoors: return "leaf.fill"
         case .nightlife: return "party.popper.fill"
+        case .liveMusic: return "music.mic"
         case .other: return "mappin"
         }
     }
@@ -74,7 +78,9 @@ enum PlanEmoji {
         "🎨", "🎭", "🎬", "📚", "🎵", "🖼️",   // Culture
         "🌳", "🏖️", "⛰️", "🚶", "🧘", "🌅",   // Outdoors
         "🎉", "💃", "🎤", "🎪", "🪩",         // Nightlife
+        "🎸", "🎹", "🎷", "🎺", "🥁",         // Live Music
         "👋", "🤝", "💬", "🎮", "🎲",         // Social
         "📍", "⭐", "❤️", "🔥", "✨"          // Other
     ]
 }
+

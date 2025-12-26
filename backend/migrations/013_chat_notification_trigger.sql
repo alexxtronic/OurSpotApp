@@ -56,7 +56,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Note: Uncomment below if using pg_net trigger approach
--- CREATE TRIGGER on_new_chat_message
--- AFTER INSERT ON event_messages
--- FOR EACH ROW
--- EXECUTE FUNCTION trigger_chat_notification();
+CREATE TRIGGER on_new_chat_message
+AFTER INSERT ON event_messages
+FOR EACH ROW
+EXECUTE FUNCTION trigger_chat_notification();

@@ -35,7 +35,7 @@ class AddressCompleter: NSObject, ObservableObject, MKLocalSearchCompleterDelega
     
     nonisolated func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
         Task { @MainActor in
-            print("Address completer error: \(error.localizedDescription)")
+            Logger.error("Address completer error: \(error.localizedDescription)")
             self.suggestions = []
         }
     }

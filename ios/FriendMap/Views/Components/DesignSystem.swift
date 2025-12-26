@@ -35,9 +35,53 @@ enum DesignSystem {
         static let tertiaryBackground = Color(UIColor.tertiarySystemBackground)
     }
     
+    // MARK: - Premium Gradients
+    enum Gradients {
+        /// Primary brand gradient (purple to blue)
+        static let primary = LinearGradient(
+            colors: [Color(hex: "6366F1") ?? .purple, Color(hex: "8B5CF6") ?? .purple],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        
+        /// Accent gradient (pink to orange)
+        static let accent = LinearGradient(
+            colors: [Color(hex: "EC4899") ?? .pink, Color(hex: "F97316") ?? .orange],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+        
+        /// Success gradient (teal to green)
+        static let success = LinearGradient(
+            colors: [Color(hex: "14B8A6") ?? .teal, Color(hex: "22C55E") ?? .green],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+        
+        /// Dark card gradient
+        static let darkCard = LinearGradient(
+            colors: [Color(hex: "1F2937") ?? .black, Color(hex: "111827") ?? .black],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        
+        /// Shimmer gradient for loading
+        static let shimmer = LinearGradient(
+            colors: [
+                Color.white.opacity(0.0),
+                Color.white.opacity(0.3),
+                Color.white.opacity(0.0)
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+    
     // MARK: - Fonts
     enum Fonts {
+        static let largeTitle = Font.system(.largeTitle, design: .rounded).bold()
         static let title = Font.system(.title, design: .rounded).bold()
+        static let title2 = Font.system(.title2, design: .rounded).weight(.semibold)
         static let headline = Font.system(.headline, design: .rounded)
         static let body = Font.system(.body, design: .default)
         static let caption = Font.system(.caption, design: .default)
@@ -47,6 +91,16 @@ enum DesignSystem {
     enum Shadows {
         static let small = ShadowStyle(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
         static let medium = ShadowStyle(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+        static let large = ShadowStyle(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
+        static let glow = ShadowStyle(color: Color(hex: "6366F1")?.opacity(0.5) ?? .purple.opacity(0.5), radius: 20, x: 0, y: 0)
+    }
+    
+    // MARK: - Animation
+    enum Animation {
+        static let springy = SwiftUI.Animation.spring(response: 0.35, dampingFraction: 0.7)
+        static let smooth = SwiftUI.Animation.easeInOut(duration: 0.25)
+        static let quick = SwiftUI.Animation.easeOut(duration: 0.15)
+        static let bouncy = SwiftUI.Animation.spring(response: 0.4, dampingFraction: 0.6)
     }
 
     // MARK: - Vibe Colors
@@ -110,6 +164,146 @@ extension String {
 extension View {
     func shadowStyle(_ style: ShadowStyle) -> some View {
         self.shadow(color: style.color, radius: style.radius, x: style.x, y: style.y)
+    }
+    
+    /// Adds a premium press effect with scale and haptic feedback
+    func pressEffect() -> some View {
+        self.modifier(PressEffectModifier())
+    }
+    
+    /// Adds a shimmer loading effect
+    func shimmer(isActive: Bool = true) -> some View {
+        self.modifier(ShimmerModifier(isActive: isActive))
+    }
+    
+    /// Adds glassmorphism background
+    func glassBackground(cornerRadius: CGFloat = DesignSystem.CornerRadius.lg) -> some View {
+        self
+            .background(.ultraThinMaterial)
+            .cornerRadius(cornerRadius)
+    }
+    
+    /// Premium card styling with shadow and corner radius
+    func premiumCard() -> some View {
+        self
+            .background(DesignSystem.Colors.secondaryBackground)
+            .cornerRadius(DesignSystem.CornerRadius.lg)
+            .shadowStyle(DesignSystem.Shadows.medium)
+    }
+    
+    /// Gradient border effect
+    func gradientBorder(lineWidth: CGFloat = 2) -> some View {
+        self.overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .stroke(DesignSystem.Gradients.primary, lineWidth: lineWidth)
+        )
+    }
+}
+
+// MARK: - Press Effect Modifier
+struct PressEffectModifier: ViewModifier {
+    @State private var isPressed = false
+    
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .opacity(isPressed ? 0.9 : 1.0)
+            .animation(DesignSystem.Animation.quick, value: isPressed)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in isPressed = true }
+                    .onEnded { _ in 
+                        isPressed = false
+                        HapticManager.lightTap()
+                    }
+            )
+    }
+}
+
+// MARK: - Shimmer Effect Modifier
+struct ShimmerModifier: ViewModifier {
+    let isActive: Bool
+    @State private var phase: CGFloat = 0
+    
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                GeometryReader { geometry in
+                    if isActive {
+                        DesignSystem.Gradients.shimmer
+                            .frame(width: geometry.size.width * 2)
+                            .offset(x: phase * geometry.size.width * 2 - geometry.size.width)
+                            .onAppear {
+                                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                                    phase = 1
+                                }
+                            }
+                    }
+                }
+            )
+            .mask(content)
+    }
+}
+
+// MARK: - Skeleton Loading View
+struct SkeletonView: View {
+    let width: CGFloat?
+    let height: CGFloat
+    
+    init(width: CGFloat? = nil, height: CGFloat = 20) {
+        self.width = width
+        self.height = height
+    }
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+            .fill(Color.gray.opacity(0.3))
+            .frame(width: width, height: height)
+            .shimmer()
+    }
+}
+
+// MARK: - Animated Counter View
+struct AnimatedCounter: View {
+    let value: Int
+    @State private var animatedValue: Int = 0
+    
+    var body: some View {
+        Text("\(animatedValue)")
+            .contentTransition(.numericText(value: Double(animatedValue)))
+            .onAppear {
+                withAnimation(DesignSystem.Animation.springy) {
+                    animatedValue = value
+                }
+            }
+            .onChange(of: value) { _, newValue in
+                withAnimation(DesignSystem.Animation.springy) {
+                    animatedValue = newValue
+                }
+            }
+    }
+}
+
+// MARK: - Pulsing Dot View
+struct PulsingDot: View {
+    let color: Color
+    @State private var isPulsing = false
+    
+    var body: some View {
+        Circle()
+            .fill(color)
+            .frame(width: 12, height: 12)
+            .overlay(
+                Circle()
+                    .stroke(color, lineWidth: 2)
+                    .scaleEffect(isPulsing ? 2 : 1)
+                    .opacity(isPulsing ? 0 : 0.8)
+            )
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+                    isPulsing = true
+                }
+            }
     }
 }
 

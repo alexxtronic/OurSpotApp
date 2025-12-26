@@ -1,194 +1,144 @@
 import SwiftUI
-import MapKit
 import CoreLocation
 
-/// Filter view for map with calendar, activity types, and reset button
-struct MapFilterView: View {
+// NOTE: This file now contains MapOverlayControls to maintain compatibility with the existing Xcode project file structure.
+// The file MapFilterView.swift is included in the project, so we define MapOverlayControls here.
+
+/// Floating map controls (Calendar, Activity, Location)
+struct MapOverlayControls: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var locationManager: LocationManager
-    @Environment(\.dismiss) private var dismiss
     
-    @StateObject private var addressCompleter = AddressCompleter()
-    @State private var searchText = ""
-    @State private var showCalendar = false
+    // Callback to center map on user location
+    var onCenterOnUser: (() -> Void)?
     
-    private let geocoder = CLGeocoder()
+    @State private var showDatePicker = false
     
-    private var hasActiveFilters: Bool {
-        !planStore.filterActivityTypes.isEmpty || 
-        planStore.filterDateRange != .all ||
-        planStore.filterSpecificDate != nil
+    // Check if we are checking authorization status to show appropriate location button state
+    var isAuthorized: Bool {
+        locationManager.permissionStatus == .authorizedWhenInUse || 
+        locationManager.permissionStatus == .authorizedAlways
     }
     
     var body: some View {
-        NavigationStack {
-            List {
-                // Location Search Section
-                Section("Location") {
-                    TextField("Search city or place...", text: $searchText)
-                        .textContentType(.location)
-                        .autocapitalization(.words)
-                        .onChange(of: searchText) { _, newValue in
-                            addressCompleter.search(query: newValue)
-                        }
-                    
-                    if !addressCompleter.suggestions.isEmpty {
-                        ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
-                            Button {
-                                selectLocation(suggestion)
-                            } label: {
-                                HStack {
-                                    Image(systemName: "mappin.circle.fill")
-                                        .foregroundColor(DesignSystem.Colors.primaryFallback)
-                                    VStack(alignment: .leading) {
-                                        Text(suggestion.title)
-                                            .foregroundColor(.primary)
-                                        if !suggestion.subtitle.isEmpty {
-                                            Text(suggestion.subtitle)
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    Button {
-                        locationManager.centerMapOnUser()
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Image(systemName: "location.fill")
-                            Text("Current Location")
-                        }
+        VStack(spacing: 12) {
+            // 1. Activity Filter
+            Menu {
+                Button {
+                    planStore.activityFilter = nil
+                    HapticManager.lightTap()
+                } label: {
+                    if planStore.activityFilter == nil {
+                        Label("All Activities", systemImage: "checkmark")
+                    } else {
+                        Text("All Activities")
                     }
                 }
                 
-                // Date filter section
-                Section("Date") {
-                    // Quick date ranges
-                    ForEach(DateFilterRange.allCases) { range in
-                        Button {
-                            planStore.filterDateRange = range
-                            planStore.filterSpecificDate = nil
-                        } label: {
-                            HStack {
-                                Text(range.rawValue)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                if planStore.filterDateRange == range && planStore.filterSpecificDate == nil {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(DesignSystem.Colors.primaryFallback)
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Specific date picker
-                    Button {
-                        showCalendar.toggle()
-                    } label: {
-                        HStack {
-                            Image(systemName: "calendar")
-                            Text("Pick a Date")
-                                .foregroundColor(.primary)
-                            Spacer()
-                            if let date = planStore.filterSpecificDate {
-                                Text(date.formatted(date: .abbreviated, time: .omitted))
-                                    .foregroundColor(DesignSystem.Colors.primaryFallback)
-                            }
-                        }
-                    }
-                    
-                    if showCalendar {
-                        DatePicker(
-                            "Select Date",
-                            selection: Binding(
-                                get: { planStore.filterSpecificDate ?? Date() },
-                                set: { newDate in
-                                    planStore.filterSpecificDate = newDate
-                                    planStore.filterDateRange = .all
-                                }
-                            ),
-                            in: Date()...,
-                            displayedComponents: .date
-                        )
-                        .datePickerStyle(.graphical)
-                        .labelsHidden()
-                    }
-                }
+                Divider()
                 
-                // Activity type filter
-                Section("Activity Type") {
-                    ForEach(ActivityType.allCases) { type in
-                        Button {
-                            if planStore.filterActivityTypes.contains(type) {
-                                planStore.filterActivityTypes.remove(type)
-                            } else {
-                                planStore.filterActivityTypes.insert(type)
-                            }
-                        } label: {
-                            HStack {
+                ForEach(ActivityType.allCases, id: \.self) { type in
+                    Button {
+                        planStore.activityFilter = type
+                        HapticManager.lightTap()
+                    } label: {
+                        if planStore.activityFilter == type {
+                            Label(type.rawValue.capitalized, systemImage: "checkmark")
+                        } else {
+                            Label {
+                                Text(type.rawValue.capitalized)
+                            } icon: {
                                 Text(type.defaultEmoji)
-                                Text(type.displayName)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                if planStore.filterActivityTypes.contains(type) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(DesignSystem.Colors.primaryFallback)
-                                }
                             }
                         }
                     }
                 }
+            } label: {
+                ZStack {
+                    GlassBubble(size: 50)
+                    Text(planStore.activityFilter?.defaultEmoji ?? "👋")
+                        .font(.title2)
+                }
             }
-            .navigationTitle("Filters")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if hasActiveFilters {
-                        Button {
-                            resetAllFilters()
-                        } label: {
-                            Text("Reset")
-                                .foregroundColor(.red)
+            
+            // 2. Date Filter
+            Menu {
+                ForEach(DateFilterOption.allCases) { option in
+                    Button {
+                        if option == .custom {
+                            showDatePicker = true
+                        } else {
+                            planStore.dateFilter = option
+                            planStore.customDate = nil
+                        }
+                        HapticManager.lightTap()
+                    } label: {
+                        if planStore.dateFilter == option {
+                            Label(option.rawValue, systemImage: "checkmark")
+                        } else {
+                            Label(option.rawValue, systemImage: option.icon)
                         }
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+            } label: {
+                ZStack {
+                    GlassBubble(size: 50)
+                    Image(systemName: planStore.dateFilter.icon)
+                        .font(.title3)
+                        .foregroundColor(.primary)
+                }
+            }
+            
+            // 3. Location Button - always visible
+            Button {
+                if isAuthorized {
+                    // Prefer callback if provided, otherwise use locationManager
+                    if let centerOnUser = onCenterOnUser {
+                        centerOnUser()
+                    } else {
+                        locationManager.centerMapOnUser()
                     }
-                    .fontWeight(.semibold)
+                } else {
+                    locationManager.checkAuthorization()
+                }
+                HapticManager.mediumTap()
+            } label: {
+                ZStack {
+                    GlassBubble(size: 50)
+                    Image(systemName: isAuthorized ? "location.fill" : "location")
+                        .font(.title3)
+                        .foregroundColor(.blue)
                 }
             }
         }
-    }
-    
-    private func selectLocation(_ suggestion: MKLocalSearchCompletion) {
-        let searchRequest = MKLocalSearch.Request(completion: suggestion)
-        let search = MKLocalSearch(request: searchRequest)
-        
-        search.start { response, error in
-            guard let coordinate = response?.mapItems.first?.placemark.coordinate else { return }
-            
-            DispatchQueue.main.async {
-                locationManager.setRegion(center: coordinate)
-                dismiss()
+        .sheet(isPresented: $showDatePicker) {
+            DatePickerSheet(selectedDate: $planStore.customDate) {
+                // On clear - reset to all future
+                planStore.dateFilter = .allFuture
+                planStore.customDate = nil
+            }
+            .presentationDetents([.medium])
+            .onDisappear {
+                if planStore.customDate != nil {
+                    planStore.dateFilter = .custom
+                }
             }
         }
-    }
-    
-    private func resetAllFilters() {
-        planStore.filterActivityTypes.removeAll()
-        planStore.filterDateRange = .all
-        planStore.filterSpecificDate = nil
     }
 }
 
-#Preview {
-    MapFilterView()
-        .environmentObject(PlanStore())
+/// Reusable Glass Bubble Background
+struct GlassBubble: View {
+    let size: CGFloat
+    
+    var body: some View {
+        Circle()
+            .fill(.ultraThinMaterial)
+            .frame(width: size, height: size)
+            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .overlay(
+                Circle()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            )
+    }
 }

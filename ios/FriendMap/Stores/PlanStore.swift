@@ -6,16 +6,23 @@ import SwiftUI
 final class PlanStore: ObservableObject {
     @Published var plans: [Plan] = []
     @Published var rsvpStatus: [UUID: RSVPStatus] = [:]
-    @Published var filterActivityTypes: Set<ActivityType> = []
-    @Published var filterDateRange: DateFilterRange = .all
-    @Published var filterSpecificDate: Date?
+    
+    // New Filtering Logic
+    @Published var dateFilter: DateFilterOption = .allFuture
+    @Published var customDate: Date? // For when dateFilter is .custom
+    @Published var activityFilter: ActivityType? // Single selection or nil for all
     
     /// Tracks attendees per plan: planId -> set of userIds
     @Published var attendees: [UUID: Set<UUID>] = [:]
     /// Tracks pending approval requests for private plans
     @Published var pendingApprovals: [UUID: Set<UUID>] = [:]
+    /// Plan to navigate to on Map tab (cross-tab navigation)
+    @Published var planToShowOnMap: Plan?
+    
+    @Published var profiles: [UUID: UserProfile] = [:]
     
     private let planService = PlanService()
+    private let userService = UserService()
     
     init() {
         // Initialize with empty plans - loadPlans() should be called by the view
@@ -26,7 +33,24 @@ final class PlanStore: ObservableObject {
             let fetchedPlans = try await planService.fetchPlans()
             self.plans = fetchedPlans
             
-            // Automatically set host as "going" for their own events
+            // Fetch RSVPs and attendees from backend
+            let planIds = fetchedPlans.map { $0.id }
+            
+            // 1. Fetch current user's RSVP status for all plans
+            let myRSVPs = try await planService.fetchMyRSVPs(userId: currentUserId)
+            
+            // 2. Fetch all attendees (going users) for all plans
+            let allAttendees = try await planService.fetchAttendeesForPlans(planIds: planIds)
+            
+            // 3. Apply the fetched data
+            self.rsvpStatus = myRSVPs
+            self.attendees = allAttendees
+            
+            // Debug: log invited RSVPs
+            let invitedCount = myRSVPs.values.filter { $0 == .invited }.count
+            Logger.info("📋 RSVPs loaded: \(myRSVPs.count) total, \(invitedCount) invited")
+            
+            // Ensure hosts are marked as going for their own events
             for plan in fetchedPlans {
                 if plan.hostUserId == currentUserId {
                     rsvpStatus[plan.id] = .going
@@ -34,13 +58,37 @@ final class PlanStore: ObservableObject {
                 }
             }
             
-            Logger.info("Loaded \(plans.count) plans from Supabase")
+            Logger.info("Loaded \(plans.count) plans with \(myRSVPs.count) RSVPs from Supabase")
+            
+            // Trigger notifications for invites
+            checkForNewInvites()
+            
         } catch {
             Logger.error("Failed to fetch plans: \(error.localizedDescription)")
             // Fallback to mock data if offline or error
             if plans.isEmpty && Config.supabase == nil {
                 self.plans = MockData.samplePlans
                 Logger.info("Loaded mock plans (offline fallback)")
+            }
+        }
+    }
+    
+    private func checkForNewInvites() {
+        let invites = invitedPlans
+        for plan in invites {
+            // Check if notification already exists for this plan
+            let hasNotification = NotificationCenter.shared.notifications.contains {
+                $0.type == .eventInvite && $0.relatedPlanId == plan.id
+            }
+            
+            if !hasNotification {
+                let notification = AppNotification.eventInvite(
+                    from: plan.hostName,
+                    eventName: plan.title,
+                    planId: plan.id,
+                    userId: plan.hostUserId
+                )
+                NotificationCenter.shared.addNotification(notification)
             }
         }
     }
@@ -60,8 +108,41 @@ final class PlanStore: ObservableObject {
         hostAvatar: String?,
         isPrivate: Bool = false
     ) async {
-        let newPlan = Plan(
+        await createPlanWithId(
             id: UUID(),
+            title: title,
+            description: description,
+            startsAt: startsAt,
+            latitude: latitude,
+            longitude: longitude,
+            emoji: emoji,
+            activityType: activityType,
+            addressText: addressText,
+            hostUserId: hostUserId,
+            hostName: hostName,
+            hostAvatar: hostAvatar,
+            isPrivate: isPrivate
+        )
+    }
+    
+    /// Creates a new plan with a specific ID (useful when you need to reference the plan ID immediately)
+    func createPlanWithId(
+        id: UUID,
+        title: String,
+        description: String,
+        startsAt: Date,
+        latitude: Double,
+        longitude: Double,
+        emoji: String,
+        activityType: ActivityType,
+        addressText: String,
+        hostUserId: UUID,
+        hostName: String,
+        hostAvatar: String?,
+        isPrivate: Bool = false
+    ) async {
+        let newPlan = Plan(
+            id: id,
             hostUserId: hostUserId,
             title: title,
             description: description,
@@ -114,6 +195,53 @@ final class PlanStore: ObservableObject {
         try await planService.updatePlan(updatedPlan)
     }
     
+    /// Kicks a user from an event and permanently bans them
+    func kickUser(_ userId: UUID, from planId: UUID, by hostId: UUID, reason: String? = nil) async throws {
+        // Call service to create ban and remove RSVP
+        try await planService.kickUser(userId, from: planId, by: hostId, reason: reason)
+        
+        // Update local state immediately
+        removeAttendee(planId: planId, userId: userId)
+        rsvpStatus[planId] = nil
+        
+        Logger.info("✅ User \(userId) kicked from plan \(planId)")
+    }
+    
+    /// Invites users to a plan (creates RSVP records and sends notifications)
+    func inviteUsers(to plan: Plan, users: [FriendSearchResult], currentUser: UserProfile) async {
+        Logger.info("🔔 inviteUsers called for plan '\(plan.title)' with \(users.count) users")
+        
+        for user in users {
+            Logger.info("🔔 Processing invite for user: \(user.name) (id: \(user.id))")
+            do {
+                // 1. Create RSVP record with .invited status
+                Logger.info("🔔 Inserting RSVP for user \(user.id) with status .invited")
+                try await planService.updateRSVP(planId: plan.id, userId: user.id, status: .invited)
+                Logger.info("✅ RSVP inserted successfully for user \(user.id)")
+                
+                // 2. Send notification
+                let notification = AppNotification.eventInvite(
+                    from: currentUser.name,
+                    eventName: plan.title,
+                    planId: plan.id,
+                    userId: currentUser.id
+                )
+                
+                Logger.info("🔔 Sending notification to user \(user.id)")
+                await NotificationCenter.shared.sendNotificationToUser(
+                    userId: user.id,
+                    notification: notification
+                )
+                Logger.info("✅ Notification sent to user \(user.id)")
+                
+                Logger.info("✅ Invited user \(user.name) to plan \(plan.title)")
+            } catch {
+                Logger.error("❌ Failed to invite user \(user.name): \(error.localizedDescription)")
+            }
+        }
+        Logger.info("🔔 inviteUsers completed for plan '\(plan.title)'")
+    }
+    
     /// Toggles RSVP status for a plan
     func toggleRSVP(planId: UUID, userId: UUID) {
         let current = rsvpStatus[planId] ?? RSVPStatus.none
@@ -138,6 +266,11 @@ final class PlanStore: ObservableObject {
         case .pending:
             next = RSVPStatus.none
             removePendingApproval(planId: planId, userId: userId)
+        case .invited:
+            // Treat invited like "none" but with a prompt to go
+            // If they toggle it, they are accepting the invite
+            next = .going
+            addAttendee(planId: planId, userId: userId)
         }
         rsvpStatus[planId] = next
         Logger.info("RSVP for plan \(planId): \(next.displayText)")
@@ -183,11 +316,25 @@ final class PlanStore: ObservableObject {
         case .pending:
             // Handled in going case
             break
+        case .invited:
+            // Reset to invited? Rare but handle it safely
+            // Remove from attendees if was going
+            if currentStatus == .going {
+                removeAttendee(planId: planId, userId: userId)
+            }
+            if currentStatus == .pending {
+                removePendingApproval(planId: planId, userId: userId)
+            }
+            rsvpStatus[planId] = .invited
         }
         
         // Sync to backend
         Task {
-            try? await planService.updateRSVP(planId: planId, userId: userId, status: rsvpStatus[planId] ?? .none)
+            do {
+                try await planService.updateRSVP(planId: planId, userId: userId, status: rsvpStatus[planId] ?? .none)
+            } catch {
+                Logger.error("Failed to sync RSVP to backend: \(error.localizedDescription)")
+            }
         }
         
         Logger.info("RSVP set for plan \(planId): \(status.displayText)")
@@ -257,33 +404,60 @@ final class PlanStore: ObservableObject {
         var result = upcomingPlans
         
         // Filter by activity type if any selected
-        if !filterActivityTypes.isEmpty {
-            result = result.filter { filterActivityTypes.contains($0.activityType) }
+        if let activity = activityFilter {
+            result = result.filter { $0.activityType == activity }
         }
         
-        // Filter by specific date if set
-        if let specificDate = filterSpecificDate {
-            let calendar = Calendar.current
-            result = result.filter { calendar.isDate($0.startsAt, inSameDayAs: specificDate) }
-        } else {
-            // Filter by date range
-            let calendar = Calendar.current
-            let now = Date()
-            switch filterDateRange {
-            case .today:
-                result = result.filter { calendar.isDateInToday($0.startsAt) }
-            case .thisWeek:
-                let weekEnd = calendar.date(byAdding: .day, value: 7, to: now)!
+        // Filter by date
+        let calendar = Calendar.current
+        let now = Date()
+        
+        switch dateFilter {
+        case .allFuture:
+            // Show all future events (already filtered by upcomingPlans)
+            break
+        case .today:
+            result = result.filter { calendar.isDateInToday($0.startsAt) }
+        case .tomorrow:
+            result = result.filter { calendar.isDateInTomorrow($0.startsAt) }
+        case .nextWeek:
+            // Next 7 days from now
+            if let weekEnd = calendar.date(byAdding: .day, value: 7, to: now) {
                 result = result.filter { $0.startsAt <= weekEnd }
-            case .thisMonth:
-                let monthEnd = calendar.date(byAdding: .month, value: 1, to: now)!
+            }
+        case .nextMonth:
+            // Next 30 days from now
+            if let monthEnd = calendar.date(byAdding: .day, value: 30, to: now) {
                 result = result.filter { $0.startsAt <= monthEnd }
-            case .all:
-                break
+            }
+        case .custom:
+            if let targetDate = customDate {
+                result = result.filter { calendar.isDate($0.startsAt, inSameDayAs: targetDate) }
             }
         }
         
         return result
+    }
+    
+    /// Plans the user has been invited to (status == .invited)
+    var invitedPlans: [Plan] {
+        plans.filter { plan in
+            getRSVP(for: plan.id) == .invited && plan.startsAt > Date()
+        }
+        .sorted { $0.startsAt < $1.startsAt }
+    }
+    
+    /// Count of pending invitations for badge
+    var invitationCount: Int {
+        invitedPlans.count
+    }
+
+    /// Helper to test invitations (REMOVE IN PROD)
+    func testInvite() {
+        if let firstPlan = plans.first {
+            rsvpStatus[firstPlan.id] = .invited
+            checkForNewInvites()
+        }
     }
     
     // MARK: - Plan Sections
@@ -293,6 +467,47 @@ final class PlanStore: ObservableObject {
         upcomingPlans.filter { plan in
             plan.hostUserId != userId &&
             (rsvpStatus[plan.id] == .going || rsvpStatus[plan.id] == .maybe)
+        }
+    }
+    
+    // MARK: - Event Chats
+    
+    @Published var eventChats: [EventChat] = []
+    private var chatService = ChatService()
+    
+    func loadEventChats(currentUserId: UUID) async {
+        // Ensure plans are loaded first? Or just use what we have?
+        // Ideally we should have plans loaded. But let's assume views call loadPlans first or independently.
+        
+        do {
+            let summaries = try await chatService.fetchChatSummaries(currentUserId: currentUserId)
+            
+            // Map summaries to EventChat objects
+            // We need to match summaries with Plans. 
+            // If plans are not loaded, we might miss some info.
+            // But we can filter by plans we have in memory.
+            
+            var newChats: [EventChat] = []
+            
+            for summary in summaries {
+                if let plan = plans.first(where: { $0.id == summary.plan_id }) {
+                    let chat = EventChat(
+                        plan: plan,
+                        unreadCount: summary.unread_count,
+                        lastMessageAt: summary.last_message_at,
+                        lastMessagePreview: summary.last_message_content
+                    )
+                    newChats.append(chat)
+                }
+            }
+            
+            // Sort them
+            newChats.sort(by: <)
+            
+            self.eventChats = newChats
+            
+        } catch {
+            Logger.error("Failed to load event chats: \(error.localizedDescription)")
         }
     }
     
@@ -308,14 +523,49 @@ final class PlanStore: ObservableObject {
             (rsvpStatus[plan.id] == nil || rsvpStatus[plan.id] == RSVPStatus.none)
         }
     }
+    // MARK: - Profile Management
+    
+    func fetchProfiles(for userIds: [UUID]) async {
+        // Filter out IDs we already have
+        let missingIds = userIds.filter { profiles[$0] == nil }
+        guard !missingIds.isEmpty else { return }
+        
+        do {
+            let fetchedProfiles = try await userService.fetchProfiles(userIds: missingIds)
+            for profile in fetchedProfiles {
+                profiles[profile.id] = profile
+            }
+        } catch {
+            Logger.error("Failed to batch fetch profiles: \(error.localizedDescription)")
+        }
+    }
+    
+    func getProfile(id: UUID) -> UserProfile? {
+        profiles[id]
+    }
 }
 
 /// Date filter options for map
-enum DateFilterRange: String, CaseIterable, Identifiable {
+enum DateFilterOption: String, CaseIterable, Identifiable {
+    case allFuture = "All Future"
     case today = "Today"
-    case thisWeek = "This Week"
-    case thisMonth = "This Month"
-    case all = "All"
+    case tomorrow = "Tomorrow"
+    case nextWeek = "Next Week"
+    case nextMonth = "Next Month"
+    case custom = "Custom Date"
     
     var id: String { rawValue }
+    
+    var icon: String {
+        switch self {
+        case .allFuture: return "calendar"
+        case .today: return "sun.max.fill"
+        case .tomorrow: return "sunrise.fill"
+        case .nextWeek: return "calendar.badge.clock"
+        case .nextMonth: return "calendar"
+        case .custom: return "calendar.badge.plus"
+        }
+    }
 }
+
+// EventChat is defined in Models/EventChat.swift

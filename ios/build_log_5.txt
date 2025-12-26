@@ -1,0 +1,346 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme FriendMap -destination "platform=iOS Simulator,name=iPhone 17 Pro" build
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.2.0
+  Supabase: https://github.com/supabase/supabase-swift @ 2.38.1
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.3.2
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.8.0
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.5.1
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.5.1
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (23 targets)
+    Target 'FriendMap' in project 'FriendMap'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'swift-crypto_Crypto' in project 'swift-crypto' (no dependencies)
+    Target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay' (no dependencies)
+    Target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+    Target 'HTTPTypes' in project 'swift-http-types' (no dependencies)
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk /Users/alexdamore/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -o /Users/alexdamore/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache
+
+SwiftDriver FriendMap normal arm64 com.apple.xcode.tools.swift.compiler (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name FriendMap -Onone -enforce-exclusivity\=checked @/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64 -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -output-file-map /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/alexdamore/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap_const_extract_protocols.json -Xcc -iquote -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-generated-files.hmap -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-own-target-headers.hmap -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap-466722f0c7f6de2d5be8c6046c865250-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-project-headers.hmap -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources-normal/arm64 -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources/arm64 -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap-Swift.h -working-directory /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ MapView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:28:77: error: binary operator '!=' cannot be applied to operands of type 'Binding<_>' and '_'
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~ ^  ~~~~
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:28:20: error: value of type 'PlanStore' has no dynamic member 'filterActivityTypes' using key path from root type 'PlanStore'
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+         ~~~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:28:10: error: referencing subscript 'subscript(dynamicMember:)' requires wrapper 'EnvironmentObject<PlanStore>.Wrapper'
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+         ^
+         $
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:28:61: error: value of type 'PlanStore' has no dynamic member 'filterDateRange' using key path from root type 'PlanStore'
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+                                                  ~~~~~~~~~ ^~~~~~~~~~~~~~~
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:28:51: error: referencing subscript 'subscript(dynamicMember:)' requires wrapper 'EnvironmentObject<PlanStore>.Wrapper'
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+                                                  ^
+                                                  $
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:28:81: error: reference to member 'all' cannot be resolved without a contextual type
+        !planStore.filterActivityTypes.isEmpty || planStore.filterDateRange != .all
+                                                                                ^
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:111:17: error: cannot find 'MapFilterView' in scope
+                MapFilterView()
+                ^~~~~~~~~~~~~
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift:31:25: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+    var body: some View {
+                        ^
+
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/App/FriendMapApp.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/App/ContentView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Models/AppNotification.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Models/UserProfile.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Models/Plan.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Launch/LaunchScreenView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/StarRatingPickerView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Models/RSVPStatus.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/StorageService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/RatingService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Models/MockData.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Auth/SignInView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Models/ActivityType.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Stores/SessionStore.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Stores/PlanStore.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Utilities/Logger.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/NotificationPreferencesView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Config/Config.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/DesignSystem.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/NotificationBellView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/EditPlanView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Utilities/HapticManager.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/NotificationRouter.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/DeviceTokenService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/ConfettiView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/AvatarView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/PrimaryButton.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/SectionCard.swift -primary-file /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/App/AppDelegate.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/UserListView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/PlanFormFields.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapFilterView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/PlanDetailsView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/PlansView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/PlanService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/AuthService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/CreatePlanView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/ProfileView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Groups/EventGroupsView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Groups/GroupChatView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/PremiumComponents.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/SkeletonViews.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/AnimatedComponents.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Onboarding/OnboardingView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/FollowService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/UserService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/PublicProfileView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/ChatService.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/LocationManager.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Services/AddressCompleter.swift /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources/GeneratedAssetSymbols.swift -emit-dependencies-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/MapView.d -emit-const-values-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/MapView.swiftconstvalues -emit-reference-dependencies-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/MapView.swiftdeps -serialize-diagnostics-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/MapView.dia -emit-localized-strings -emit-localized-strings-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64 -target arm64-apple-ios17.0-simulator -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version SwiftUI 7.1.13.1 7.1.13 -module-can-import-version UIKit 9126.1.12.1 9126.1.12 -disable-cross-import-overlay-search -swift-module-cross-import AuthenticationServices /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Cryptexes/OS/System/Library/Frameworks/AuthenticationServices.framework/Modules/AuthenticationServices.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import AuthenticationServices /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk/System/Library/Frameworks/AuthenticationServices.framework/Modules/AuthenticationServices.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import MapKit /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/MapKit.framework/Modules/MapKit.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/WidgetKit.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/WidgetKit.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -I /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -module-cache-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/FriendMap_const_extract_protocols.json -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/alexdamore/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios -enable-anonymous-context-mangled-names -file-compilation-dir /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-generated-files.hmap -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-own-target-headers.hmap -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap-466722f0c7f6de2d5be8c6046c865250-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/FriendMap-project-headers.hmap -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources-normal/arm64 -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources/arm64 -Xcc -I/Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name FriendMap -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.1 -target-sdk-name iphonesimulator26.1 -clang-target arm64-apple-ios26.1-simulator -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Build/Intermediates.noindex/FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/MapView.o -index-unit-output-path /FriendMap.build/Debug-iphonesimulator/FriendMap.build/Objects-normal/arm64/MapView.o -index-store-path /Users/alexdamore/Library/Developer/Xcode/DerivedData/FriendMap-cuxsbvxkbehdpbgkxgosucrpdhzs/Index.noindex/DataStore -index-system-modules
+SwiftEmitModule normal arm64 Emitting\ module\ for\ FriendMap (in target 'FriendMap' from project 'FriendMap')
+
+EmitSwiftModule normal arm64 (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ PlanDetailsView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/PlanDetailsView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/PlanDetailsView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling PlanDetailsView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 Compiling\ CreatePlanView.swift,\ ProfileView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/CreatePlanView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/ProfileView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/CreatePlanView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Plans/CreatePlanView.swift:331:13: warning: immutable value 'friend' was never used; consider replacing with '_' or removing it
+        for friend in invitedFriends {
+            ^~~~~~
+            _
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/ProfileView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Profile/ProfileView.swift:158:14: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+            .onChange(of: selectedItem) { newItem in
+             ^
+
+SwiftCompile normal arm64 Compiling\ AvatarView.swift,\ PrimaryButton.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/AvatarView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/PrimaryButton.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/AvatarView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/PrimaryButton.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ ContentView.swift,\ LaunchScreenView.swift,\ StarRatingPickerView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/App/ContentView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Launch/LaunchScreenView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/StarRatingPickerView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/App/ContentView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/App/ContentView.swift:49:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+        .onChange(of: authService.isAuthenticated) { isAuthenticated in
+         ^
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/App/ContentView.swift:56:10: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+        .onChange(of: notificationRouter.pendingDeepLink) { deepLink in
+         ^
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/App/ContentView.swift:113:14: warning: 'onChange(of:perform:)' was deprecated in iOS 17.0: Use `onChange` with a two or zero parameter action closure instead.
+            .onChange(of: selectedTab) { newTab in
+             ^
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Launch/LaunchScreenView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/StarRatingPickerView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ EventGroupsView.swift,\ GroupChatView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Groups/EventGroupsView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Groups/GroupChatView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Groups/EventGroupsView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Groups/GroupChatView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ AnimatedComponents.swift,\ OnboardingView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/AnimatedComponents.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Onboarding/OnboardingView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/AnimatedComponents.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Components/AnimatedComponents.swift:215:25: warning: result of call to 'withAnimation' is unused
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7).delay(delay)) {
+                        ^            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Onboarding/OnboardingView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ PremiumComponents.swift,\ SkeletonViews.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/PremiumComponents.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/SkeletonViews.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/PremiumComponents.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Components/PremiumComponents.swift:179:43: warning: left side of nil coalescing operator '??' has non-optional type 'String', so the right side is never used
+                    Text(plan.addressText ?? "Location TBD")
+                         ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+                                         
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/SkeletonViews.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ SectionCard.swift,\ UserListView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/SectionCard.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/UserListView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/SectionCard.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/UserListView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ MapFilterView.swift,\ PlansView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapFilterView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/PlansView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapFilterView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Plans/PlansView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+/Users/alexdamore/Desktop/Vibe Code/Antigravity/Antigravity - Dec 11 2025 - Testing/friendmap/ios/FriendMap/Views/Plans/PlansView.swift:73:13: warning: variable 'plans' was never mutated; consider changing to 'let' constant
+        var plans = planStore.filteredPlans
+        ~~~ ^
+        let
+
+SwiftCompile normal arm64 Compiling\ SignInView.swift,\ NotificationPreferencesView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Auth/SignInView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/NotificationPreferencesView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Auth/SignInView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Profile/NotificationPreferencesView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 Compiling\ NotificationBellView.swift,\ ConfettiView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/NotificationBellView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/ConfettiView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/NotificationBellView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Components/ConfettiView.swift (in target 'FriendMap' from project 'FriendMap')
+    cd /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling SectionCard.swift, UserListView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SignInView.swift, NotificationPreferencesView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling PremiumComponents.swift, SkeletonViews.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AvatarView.swift, PrimaryButton.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling EventGroupsView.swift, GroupChatView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling ContentView.swift, LaunchScreenView.swift, StarRatingPickerView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AnimatedComponents.swift, OnboardingView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling NotificationBellView.swift, ConfettiView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling MapFilterView.swift, PlansView.swift (in target 'FriendMap' from project 'FriendMap')
+
+SwiftDriverJobDiscovery normal arm64 Compiling CreatePlanView.swift, ProfileView.swift (in target 'FriendMap' from project 'FriendMap')
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift (in target 'FriendMap' from project 'FriendMap')
+	SwiftCompile normal arm64 Compiling\ MapView.swift /Users/alexdamore/Desktop/Vibe\ Code/Antigravity/Antigravity\ -\ Dec\ 11\ 2025\ -\ Testing/friendmap/ios/FriendMap/Views/Map/MapView.swift (in target 'FriendMap' from project 'FriendMap')
+	Building project FriendMap with scheme FriendMap
+(3 failures)

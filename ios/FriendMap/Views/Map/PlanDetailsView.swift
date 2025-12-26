@@ -13,7 +13,13 @@ struct PlanDetailsView: View {
     @State private var showDeleteAlert = false
     @State private var isDeleting = false
     @State private var showEditSheet = false
-    @State private var attendeeProfiles: [UUID: UserProfile] = [:]
+    @State private var showGroupChat = false
+    @State private var showAttendeesSheet = false
+    
+    // Kick/Ban state
+    @State private var showKickConfirmation = false
+    @State private var userToKick: UUID? = nil
+    @State private var isKicking = false
     
     private var rsvpStatus: RSVPStatus {
         planStore.getRSVP(for: plan.id)
@@ -44,13 +50,16 @@ struct PlanDetailsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+                    // Premium header with gradient
+                    premiumHeader
+                    
                     // Private badge if applicable
                     if plan.isPrivate {
                         privateEventBadge
                     }
                     
-                    // Host info
+                    // Host info - moved up for trust signal
                     hostSection
                     
                     // Plan details (hidden for private if not approved)
@@ -64,13 +73,17 @@ struct PlanDetailsView: View {
                     // RSVP section
                     rsvpSection
                     
-                    // Attendees section (for hosts)
-                    if isHost {
-                        attendeesSection
-                        
-                        if !pendingApprovals.isEmpty {
-                            pendingApprovalsSection
-                        }
+                    // Join Chat button (visible to attendees)
+                    if rsvpStatus == .going || isHost {
+                        joinChatButton
+                    }
+                    
+                    // Attendees section - visible to everyone
+                    attendeesSection
+                    
+                    // Pending approvals section (for hosts only)
+                    if isHost && !pendingApprovals.isEmpty {
+                        pendingApprovalsSection
                     }
                     
                     // Safety buttons
@@ -81,10 +94,17 @@ struct PlanDetailsView: View {
                         deleteEventSection
                     }
                 }
-                .padding(DesignSystem.Spacing.md)
+                .padding(.horizontal, DesignSystem.Spacing.md)
+                .padding(.bottom, DesignSystem.Spacing.lg)
             }
+            .scrollIndicators(.hidden)
+            .background(DesignSystem.Colors.background)
             .navigationTitle("Plan Details")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(DesignSystem.Colors.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar) // Ensure text is visible if BG is dark
+
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     ShareLink(
@@ -99,13 +119,24 @@ struct PlanDetailsView: View {
                     Button("Done") {
                         dismiss()
                     }
+                    .fontWeight(.semibold)
                 }
             }
             .sheet(item: $selectedAttendee) { selection in
-                PublicProfileView(userId: selection.id)
+                NavigationStack {
+                    PublicProfileView(userId: selection.id)
+                }
             }
             .sheet(isPresented: $showEditSheet) {
                 EditPlanView(plan: plan)
+            }
+            .sheet(isPresented: $showGroupChat) {
+                NavigationStack {
+                    GroupChatView(plan: plan)
+                }
+            }
+            .sheet(isPresented: $showAttendeesSheet) {
+                attendeesListSheet
             }
             .alert("Block User", isPresented: $showBlockAlert) {
                 Button("Cancel", role: .cancel) {}
@@ -124,6 +155,211 @@ struct PlanDetailsView: View {
                 Text("Report this plan for inappropriate content? Our team will review it.")
             }
         }
+        .task {
+            await loadAttendeeProfiles()
+        }
+    }
+    
+    private var premiumHeader: some View {
+        VStack(spacing: DesignSystem.Spacing.md) {
+            // Activity icon with gradient ring and glow
+            ZStack {
+                // Outer glow
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(hex: "#667eea")?.opacity(0.3) ?? .purple.opacity(0.3),
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 35,
+                            endRadius: 60
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+                
+                // Gradient ring
+                Circle()
+                    .strokeBorder(
+                        AngularGradient(
+                            colors: [
+                                Color(hex: "#667eea") ?? .purple,
+                                Color(hex: "#764ba2") ?? .purple,
+                                Color(hex: "#66d3e4") ?? .cyan,
+                                Color(hex: "#667eea") ?? .purple
+                            ],
+                            center: .center
+                        ),
+                        lineWidth: 4
+                    )
+                    .frame(width: 80, height: 80)
+                
+                // Icon background
+                Circle()
+                    .fill(Color.black.opacity(0.3))
+                    .frame(width: 70, height: 70)
+                
+                Text(plan.emoji)
+                    .font(.system(size: 36))
+            }
+            
+            // Title with LIVE badge
+            HStack(spacing: DesignSystem.Spacing.sm) {
+                Text(plan.title)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                
+                if plan.isHappeningNow {
+                    HStack(spacing: 4) {
+                        PulsingDot(color: .green)
+                        Text("LIVE")
+                            .font(.caption.bold())
+                            .foregroundColor(.green)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.15))
+                    .cornerRadius(DesignSystem.CornerRadius.sm)
+                }
+            }
+            
+            // Location + Time on one line
+            HStack(spacing: 8) {
+                // Location
+                HStack(spacing: 4) {
+                    Image(systemName: "location.fill")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(truncatedLocationName)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                
+                Text("·")
+                    .foregroundColor(.secondary)
+                
+                // Time
+                HStack(spacing: 4) {
+                    Image(systemName: "clock.fill")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                    Text(relativeTimeString())
+                        .font(.subheadline.weight(.medium))
+                        .foregroundColor(.green)
+                    Text("·")
+                        .foregroundColor(.secondary)
+                    Text(plan.startsAt.formatted(date: .omitted, time: .shortened))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            // People going section with avatars
+            peopleGoingSection
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DesignSystem.Spacing.md)
+    }
+    
+    /// Truncates location to just venue name + street (no city/country/zip)
+    private var truncatedLocationName: String {
+        let components = plan.locationName.components(separatedBy: ",")
+        if components.count >= 2 {
+            // Take first two parts (venue, street)
+            let venuePart = components[0].trimmingCharacters(in: .whitespaces)
+            let streetPart = components[1].trimmingCharacters(in: .whitespaces)
+            return "\(venuePart), \(streetPart)"
+        }
+        return plan.locationName
+    }
+    
+    private var peopleGoingSection: some View {
+        VStack(spacing: 8) {
+            // Overlapping avatars
+            HStack(spacing: -12) {
+                let displayedAttendees = Array(attendees.prefix(4))
+                
+                ForEach(Array(displayedAttendees.enumerated()), id: \.element) { index, userId in
+                    let profile = planStore.getProfile(id: userId)
+                    let name = profile?.name ?? (userId == sessionStore.currentUser.id ? sessionStore.currentUser.name : "User")
+                    let avatarUrl = profile?.avatarUrl ?? (userId == sessionStore.currentUser.id ? sessionStore.currentUser.avatarUrl : nil)
+                    
+                    AvatarView(
+                        name: name,
+                        size: 40,
+                        url: URL(string: avatarUrl ?? "")
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(Color(UIColor.systemBackground), lineWidth: 2)
+                    )
+                    .zIndex(Double(4 - index))
+                }
+                
+                // Overflow indicator
+                if attendees.count > 4 {
+                    ZStack {
+                        Circle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 40, height: 40)
+                        Text("+\(attendees.count - 4)")
+                            .font(.caption.bold())
+                            .foregroundColor(.white)
+                    }
+                    .overlay(
+                        Circle()
+                            .stroke(Color(UIColor.systemBackground), lineWidth: 2)
+                    )
+                }
+            }
+            
+            // Social proof text
+            if attendees.isEmpty {
+                Text("Be the first to join \(plan.hostName)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            } else if attendees.count == 1 {
+                let userId = attendees.first!
+                let name = getAttendeeName(for: userId)
+                Text("\(name) is going")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            } else {
+                let userId = attendees.first!
+                let name = getAttendeeName(for: userId)
+                let othersCount = attendees.count - 1
+                Text("\(name) and \(othersCount) \(othersCount == 1 ? "other" : "others") are going")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.top, 8)
+    }
+    
+    /// Resolves attendee name - checks current user first, then profile cache
+    private func getAttendeeName(for userId: UUID) -> String {
+        if userId == sessionStore.currentUser.id {
+            return sessionStore.currentUser.name
+        }
+        return planStore.getProfile(id: userId)?.name ?? "Someone"
+    }
+    
+    private func relativeTimeString() -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(plan.startsAt) {
+            return "Today"
+        } else if calendar.isDateInTomorrow(plan.startsAt) {
+            return "Tomorrow"
+        } else {
+            return plan.startsAt.formatted(.dateTime.month(.wide).day())
+        }
+    }
+    
+    private func calculateDistance() -> String? {
+        // Placeholder - could integrate with LocationManager for actual distance
+        return nil
     }
     
     private var privateEventBadge: some View {
@@ -172,11 +408,15 @@ struct PlanDetailsView: View {
             HStack(spacing: DesignSystem.Spacing.md) {
                 AvatarView(
                     name: plan.hostName,
-                    size: 56,
+                    size: 50,
                     url: URL(string: plan.hostAvatar ?? "")
                 )
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.2), lineWidth: 2)
+                )
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Hosted by")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -185,6 +425,7 @@ struct PlanDetailsView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                 }
+
                 
                 Spacer()
                 
@@ -192,19 +433,28 @@ struct PlanDetailsView: View {
                     .foregroundColor(.secondary)
                     .font(.caption)
             }
-            .padding()
-            .background(DesignSystem.Colors.secondaryBackground)
-            .cornerRadius(DesignSystem.CornerRadius.md)
-            .shadowStyle(DesignSystem.Shadows.small)
+            .padding(.horizontal, DesignSystem.Spacing.md)
+            .padding(.vertical, DesignSystem.Spacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
         }
         .sheet(isPresented: $showHostProfile) {
-            PublicProfileView(userId: plan.hostUserId)
+            NavigationStack {
+                PublicProfileView(userId: plan.hostUserId)
+            }
         }
     }
     
     private var detailsSection: some View {
         SectionCard {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                // Event title row
                 HStack {
                     Text(plan.emoji)
                         .font(.title)
@@ -212,6 +462,7 @@ struct PlanDetailsView: View {
                         .font(.title2.bold())
                 }
                 
+                // Calendar/time
                 HStack {
                     Image(systemName: "calendar")
                         .foregroundColor(DesignSystem.Colors.primaryFallback)
@@ -219,6 +470,7 @@ struct PlanDetailsView: View {
                 }
                 .font(.subheadline)
                 
+                // Location
                 HStack {
                     Image(systemName: "mappin.circle.fill")
                         .foregroundColor(DesignSystem.Colors.secondaryFallback)
@@ -243,51 +495,120 @@ struct PlanDetailsView: View {
                 longitude: plan.longitude
             ))
         }
-        .frame(height: 150)
+        .frame(height: 120)
         .cornerRadius(DesignSystem.CornerRadius.lg)
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+        )
         .disabled(true)
     }
     
     private var rsvpSection: some View {
         VStack(spacing: DesignSystem.Spacing.sm) {
-            Text("Your Response")
-                .font(.headline)
-            
-            HStack(spacing: DesignSystem.Spacing.sm) {
-                // Only show Going/Maybe/None, not Pending in the picker
-                ForEach([RSVPStatus.none, RSVPStatus.going, RSVPStatus.maybe], id: \.self) { status in
-                    Button {
-                        withAnimation(.spring(response: 0.3)) {
-                            // Set the specific status that was tapped
-                            planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: status, isPrivate: plan.isPrivate, isHost: isHost)
-                            HapticManager.lightTap()
+            // Private event - not yet approved
+            if plan.isPrivate && !isHost && rsvpStatus != .going {
+                if rsvpStatus == .pending {
+                    // Pending approval state
+                    VStack(spacing: 12) {
+                        Image(systemName: "clock.badge.checkmark")
+                            .font(.title)
+                            .foregroundColor(.orange)
+                        
+                        Text("Request Sent!")
+                            .font(.headline)
+                        
+                        Text("The event host will review your request and get back to you soon.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        
+                        Button {
+                            withAnimation(.spring(response: 0.3)) {
+                                planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: .none, isPrivate: plan.isPrivate, isHost: isHost)
+                                HapticManager.lightTap()
+                            }
+                        } label: {
+                            Text("Cancel Request")
+                                .font(.subheadline)
+                                .foregroundColor(.red)
                         }
-                    } label: {
-                        HStack {
-                            Image(systemName: status.icon)
-                            Text(status.displayText)
+                    }
+                    .padding(DesignSystem.Spacing.md)
+                } else {
+                    // Not requested yet - show Request to Join button
+                    VStack(spacing: 12) {
+                        Text("🔒 Private Event")
+                            .font(.headline)
+                        
+                        Text("This event requires approval from the host to join.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        
+                        Button {
+                            withAnimation(.spring(response: 0.3)) {
+                                planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: .pending, isPrivate: plan.isPrivate, isHost: isHost)
+                                HapticManager.success()
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "person.badge.plus")
+                                Text("Request to Join")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.vertical, 14)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                LinearGradient(
+                                    colors: [.purple, .blue],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(DesignSystem.CornerRadius.md)
                         }
-                        .font(.subheadline.weight(.medium))
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 12)
-                        .background(rsvpStatus == status ? statusColor(status) : Color.gray.opacity(0.1))
-                        .foregroundColor(rsvpStatus == status ? .white : .primary)
-                        .cornerRadius(DesignSystem.CornerRadius.md)
+                    }
+                    .padding(DesignSystem.Spacing.md)
+                }
+            } else {
+                // Public event OR host OR already approved - show normal RSVP buttons
+                HStack(spacing: DesignSystem.Spacing.sm) {
+                    ForEach([RSVPStatus.going, RSVPStatus.maybe, RSVPStatus.none], id: \.self) { status in
+                        Button {
+                            withAnimation(.spring(response: 0.3)) {
+                                planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: status, isPrivate: plan.isPrivate, isHost: isHost)
+                                HapticManager.lightTap()
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: status.icon)
+                                Text(status == .none ? "Can't Go" : status.displayText)
+                            }
+                            .font(.subheadline.weight(.medium))
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                                    .fill(rsvpStatus == status ? statusColor(status) : Color.white.opacity(0.1))
+                            )
+                            .foregroundColor(rsvpStatus == status ? .white : .primary)
+                        }
                     }
                 }
-            }
-            
-            if rsvpStatus == .pending {
-                Text("⏳ Waiting for host approval")
-                    .font(.caption)
-                    .foregroundColor(.orange)
-                    .padding(.top, 4)
             }
         }
         .padding(DesignSystem.Spacing.md)
         .frame(maxWidth: .infinity)
-        .background(DesignSystem.Colors.secondaryBackground)
-        .cornerRadius(DesignSystem.CornerRadius.lg)
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+        )
     }
     
     @State private var selectedAttendee: SelectedAttendee?
@@ -296,6 +617,37 @@ struct PlanDetailsView: View {
         let id: UUID
     }
     
+    // MARK: - Join Chat Button
+    private var joinChatButton: some View {
+        Button {
+            HapticManager.mediumTap()
+            showGroupChat = true
+        } label: {
+            HStack(spacing: DesignSystem.Spacing.sm) {
+                Image(systemName: "bubble.left.and.bubble.right.fill")
+                    .font(.title3)
+                Text("Join The Chat")
+                    .font(.headline.weight(.semibold))
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, DesignSystem.Spacing.md)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(hex: "#FF6B35") ?? .orange,
+                        Color(hex: "#FFB347") ?? .yellow
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(DesignSystem.CornerRadius.lg)
+            .shadow(color: Color.orange.opacity(0.3), radius: 8, x: 0, y: 4)
+        }
+    }
+    
+    // MARK: - Attendees Section (Max 5, clickable)
     private var attendeesSection: some View {
         SectionCard(title: "Attendees (\(attendees.count))") {
             if attendees.isEmpty {
@@ -304,8 +656,11 @@ struct PlanDetailsView: View {
                     .foregroundColor(.secondary)
             } else {
                 VStack(spacing: DesignSystem.Spacing.sm) {
-                    ForEach(attendees, id: \.self) { userId in
-                        let profile = attendeeProfiles[userId]
+                    // Show max 5 attendees
+                    let displayedAttendees = Array(attendees.prefix(5))
+                    
+                    ForEach(displayedAttendees, id: \.self) { userId in
+                        let profile = planStore.getProfile(id: userId)
                         let name = profile?.name ?? sessionStore.currentUser.name
                         let avatarUrl = profile?.avatarUrl ?? sessionStore.currentUser.avatarUrl
                         
@@ -328,7 +683,29 @@ struct PlanDetailsView: View {
                             }
                         }
                     }
+                    
+                    // View All button if more than 5 attendees
+                    if attendees.count > 5 {
+                        Button {
+                            showAttendeesSheet = true
+                        } label: {
+                            HStack {
+                                Text("View All \(attendees.count) Attendees")
+                                    .font(.subheadline.weight(.medium))
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                            }
+                            .foregroundColor(DesignSystem.Colors.primaryFallback)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, DesignSystem.Spacing.sm)
+                        }
+                    }
                 }
+            }
+        }
+        .onTapGesture {
+            if !attendees.isEmpty {
+                showAttendeesSheet = true
             }
         }
         .task {
@@ -336,43 +713,137 @@ struct PlanDetailsView: View {
         }
     }
     
-    private func loadAttendeeProfiles() async {
-        guard let supabase = Config.supabase else { return }
-        
-        for userId in attendees {
-            // Skip if already loaded or is current user
-            if attendeeProfiles[userId] != nil { continue }
-            if userId == sessionStore.currentUser.id {
-                attendeeProfiles[userId] = sessionStore.currentUser
-                continue
+    // MARK: - Attendees List Sheet
+    private var attendeesListSheet: some View {
+        NavigationStack {
+            List {
+                ForEach(attendees, id: \.self) { userId in
+                    let profile = planStore.getProfile(id: userId)
+                    let name = profile?.name ?? "User"
+                    let avatarUrl = profile?.avatarUrl
+                    let isCurrentUser = userId == sessionStore.currentUser.id
+                    let isHostUser = userId == plan.hostUserId
+                    
+                    HStack(spacing: DesignSystem.Spacing.md) {
+                        // Tap area for profile navigation
+                        Button {
+                            showAttendeesSheet = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                selectedAttendee = SelectedAttendee(id: userId)
+                            }
+                        } label: {
+                            HStack(spacing: DesignSystem.Spacing.md) {
+                                AvatarView(
+                                    name: name,
+                                    size: 44,
+                                    url: URL(string: avatarUrl ?? "")
+                                )
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(name)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    
+                                    if isHostUser {
+                                        Text("Host")
+                                            .font(.caption)
+                                            .foregroundColor(.orange)
+                                    } else {
+                                        Text("Attending")
+                                            .font(.caption)
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Kick Out button (host only, not for self or other host)
+                        if isHost && !isCurrentUser && !isHostUser {
+                            Button {
+                                userToKick = userId
+                                showKickConfirmation = true
+                            } label: {
+                                Text("Kick Out")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(Color.red)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                        } else {
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
             }
-            
-            do {
-                let response: ProfileDTO = try await supabase
-                    .from("profiles")
-                    .select("id, name, avatar_url")
-                    .eq("id", value: userId.uuidString)
-                    .single()
-                    .execute()
-                    .value
-                
-                attendeeProfiles[userId] = UserProfile(
-                    id: response.id,
-                    name: response.name,
-                    age: 0,
-                    bio: "",
-                    avatarUrl: response.avatar_url
-                )
-            } catch {
-                Logger.error("Failed to load attendee profile: \(error.localizedDescription)")
+            .listStyle(.insetGrouped)
+            .navigationTitle("Attendees")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        showAttendeesSheet = false
+                    }
+                }
+            }
+            .alert("Remove from Event?", isPresented: $showKickConfirmation) {
+                Button("Cancel", role: .cancel) {
+                    userToKick = nil
+                }
+                Button("Kick Out", role: .destructive) {
+                    Task {
+                        await kickSelectedUser()
+                    }
+                }
+            } message: {
+                if let userId = userToKick, let profile = planStore.getProfile(id: userId) {
+                    Text("\(profile.name) will be permanently removed from this event and cannot rejoin.")
+                } else {
+                    Text("This user will be permanently removed from this event and cannot rejoin.")
+                }
             }
         }
+        .presentationDetents([.medium, .large])
     }
     
-    private struct ProfileDTO: Decodable {
-        let id: UUID
-        let name: String
-        let avatar_url: String?
+    private func kickSelectedUser() async {
+        guard let userId = userToKick else { return }
+        isKicking = true
+        
+        do {
+            try await planStore.kickUser(
+                userId,
+                from: plan.id,
+                by: sessionStore.currentUser.id,
+                reason: nil
+            )
+            
+            HapticManager.success()
+            Logger.info("✅ User kicked successfully")
+        } catch {
+            Logger.error("Failed to kick user: \(error.localizedDescription)")
+            HapticManager.error()
+        }
+        
+        isKicking = false
+        userToKick = nil
+    }
+    
+    private func loadAttendeeProfiles() async {
+        // Collect all IDs needed: attendees + host
+        var userIds = attendees
+        if !userIds.contains(plan.hostUserId) {
+            userIds.append(plan.hostUserId)
+        }
+        
+        await planStore.fetchProfiles(for: userIds)
     }
     
     private var pendingApprovalsSection: some View {
@@ -416,6 +887,7 @@ struct PlanDetailsView: View {
         case .maybe: return .orange
         case .none: return .gray
         case .pending: return .orange
+        case .invited: return .purple
         }
     }
     

@@ -48,10 +48,12 @@ struct GroupChatView: View {
             Task {
                 await chatService.fetchMessages(for: plan.id)
                 chatService.subscribe(to: plan.id)
+                chatService.markChatAsRead(planId: plan.id, userId: sessionStore.currentUser.id)
             }
         }
         .onDisappear {
             chatService.unsubscribe()
+            chatService.markChatAsRead(planId: plan.id, userId: sessionStore.currentUser.id)
         }
         .sheet(item: selectedUserIdFromWrapper) { wrapper in
             PublicProfileView(userId: wrapper.id)

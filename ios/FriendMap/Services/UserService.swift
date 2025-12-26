@@ -6,34 +6,43 @@ import Supabase
 final class UserService: ObservableObject {
     
     func fetchPublicProfile(userId: UUID) async throws -> UserProfile? {
-        guard let supabase = Config.supabase else { return nil }
+        let profiles = try await fetchProfiles(userIds: [userId])
+        return profiles.first
+    }
+    
+    /// Batch fetch profiles
+    func fetchProfiles(userIds: [UUID]) async throws -> [UserProfile] {
+        guard let supabase = Config.supabase, !userIds.isEmpty else { return [] }
         
-        // Fetch profile
+        // Deduplicate IDs
+        let uniqueIds = Array(Set(userIds)).map { $0.uuidString }
+        
+        // Fetch profiles
         let response: [ProfileDTO] = try await supabase
             .from("profiles")
             .select()
-            .eq("id", value: userId.uuidString)
+            .in("id", value: uniqueIds)
             .execute()
             .value
         
-        guard let profile = response.first else { return nil }
-        
         // Map to domain model
-        return UserProfile(
-            id: profile.id,
-            name: profile.name,
-            age: profile.age ?? 0,
-            bio: profile.bio ?? "",
-            avatarLocalAssetName: nil,
-            avatarUrl: profile.avatar_url,
-            countryOfBirth: profile.country_of_birth,
-            favoriteSong: profile.favorite_song,
-            funFact: profile.fun_fact,
-            profileColor: profile.profile_color,
-            followersCount: profile.followers_count ?? 0,
-            followingCount: profile.following_count ?? 0,
-            onboardingCompleted: profile.onboarding_completed ?? false
-        )
+        return response.map { profile in
+            UserProfile(
+                id: profile.id,
+                name: profile.name,
+                age: profile.age ?? 0,
+                bio: profile.bio ?? "",
+                avatarLocalAssetName: nil,
+                avatarUrl: profile.avatar_url,
+                countryOfBirth: profile.country_of_birth,
+                favoriteSong: profile.favorite_song,
+                funFact: profile.fun_fact,
+                profileColor: profile.profile_color,
+                followersCount: profile.followers_count ?? 0,
+                followingCount: profile.following_count ?? 0,
+                onboardingCompleted: profile.onboarding_completed ?? false
+            )
+        }
     }
 }
 

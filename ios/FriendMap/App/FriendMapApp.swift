@@ -9,6 +9,9 @@ struct FriendMapApp: App {
     @StateObject private var sessionStore = SessionStore()
     @StateObject private var planStore = PlanStore()
     @StateObject private var notificationRouter = NotificationRouter.shared
+    @StateObject private var dmService = DirectMessageService()
+    
+    @State private var showLaunchScreen = true
     
     init() {
         Logger.info("OurSpot app initializing...")
@@ -22,28 +25,42 @@ struct FriendMapApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authService)
-                .environmentObject(sessionStore)
-                .environmentObject(planStore)
-                .environmentObject(notificationRouter)
-                .task {
-                    // Register for push notifications if authorized
-                    if authService.isAuthenticated {
-                        await PushNotificationManager.registerIfAuthorized()
-                    }
-                }
-                .onChange(of: authService.isAuthenticated) { isAuthenticated in
-                    if isAuthenticated {
-                        Task {
+            ZStack {
+                ContentView()
+                    .environmentObject(authService)
+                    .environmentObject(sessionStore)
+                    .environmentObject(planStore)
+                    .environmentObject(notificationRouter)
+                    .environmentObject(dmService)
+                    .task {
+                        // Register for push notifications if authorized
+                        if authService.isAuthenticated {
                             await PushNotificationManager.registerIfAuthorized()
                         }
-                    } else {
-                        Task {
-                            await DeviceTokenService.shared.clearToken()
+                    }
+                    .onChange(of: authService.isAuthenticated) { isAuthenticated in
+                        if isAuthenticated {
+                            Task {
+                                await PushNotificationManager.registerIfAuthorized()
+                            }
+                        } else {
+                            Task {
+                                await DeviceTokenService.shared.clearToken()
+                            }
                         }
                     }
+                
+                // Animated launch screen overlay
+                if showLaunchScreen {
+                    LaunchScreenCoordinator {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showLaunchScreen = false
+                        }
+                    }
+                    .transition(.opacity)
+                    .zIndex(1)
                 }
+            }
         }
     }
 }

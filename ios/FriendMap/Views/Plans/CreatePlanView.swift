@@ -29,9 +29,18 @@ struct CreatePlanView: View {
     
     private let geocoder = CLGeocoder()
     
+    init(initialCoordinate: CLLocationCoordinate2D? = nil, initialAddress: String? = nil) {
+        if let coordinate = initialCoordinate {
+            _geocodedCoordinate = State(initialValue: coordinate)
+            _isGeocoding = State(initialValue: false)
+        }
+        if let address = initialAddress {
+            _addressText = State(initialValue: address)
+        }
+    }
+    
     private var isFormValid: Bool {
         !title.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !description.trimmingCharacters(in: .whitespaces).isEmpty &&
         !addressText.trimmingCharacters(in: .whitespaces).isEmpty
     }
     
@@ -133,12 +142,16 @@ struct CreatePlanView: View {
     }
     
     private func geocodeAndCreatePlan() {
+        Logger.info("Create button tapped - starting geocodeAndCreatePlan")
+        
         // If we already have coordinates from suggestion selection, use them
         if let coordinate = geocodedCoordinate {
+            Logger.info("Using existing coordinates: \(coordinate.latitude), \(coordinate.longitude)")
             createPlan(latitude: coordinate.latitude, longitude: coordinate.longitude)
             return
         }
         
+        Logger.info("No coordinates - starting geocoding for: \(addressText)")
         isGeocoding = true
         geocodeError = nil
         
@@ -160,9 +173,11 @@ struct CreatePlanView: View {
                 guard let placemark = placemarks?.first,
                       let location = placemark.location else {
                     geocodeError = "Location not found"
+                    Logger.error("No placemark found")
                     return
                 }
                 
+                Logger.info("Geocoded successfully: \(location.coordinate.latitude), \(location.coordinate.longitude)")
                 createPlan(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
             }
         }
@@ -170,7 +185,11 @@ struct CreatePlanView: View {
     
     private func createPlan(latitude: Double, longitude: Double) {
         Task {
-            await planStore.createPlan(
+            // Create a plan ID upfront so we can track it
+            let newPlanId = UUID()
+            
+            await planStore.createPlanWithId(
+                id: newPlanId,
                 title: title,
                 description: description,
                 startsAt: startsAt,
@@ -185,12 +204,36 @@ struct CreatePlanView: View {
                 isPrivate: isPrivate
             )
             
-            // Send invite notifications to selected friends
+            // Send invite notifications to selected friends (await to ensure they're sent)
+            Logger.info("🎯 CreatePlanView: Plan created, invitedFriends.count = \(invitedFriends.count)")
             if !invitedFriends.isEmpty {
-                // Get the newly created plan ID (it's the last one added)
-                if let newPlan = planStore.plans.last {
-                    sendInviteNotifications(planId: newPlan.id, planTitle: title)
-                }
+                Logger.info("🎯 CreatePlanView: About to call inviteUsers for \(invitedFriends.map { $0.name })")
+                // Create a temporary Plan object for the invite
+                let newPlan = Plan(
+                    id: newPlanId,
+                    hostUserId: sessionStore.currentUser.id,
+                    title: title,
+                    description: description,
+                    startsAt: startsAt,
+                    latitude: latitude,
+                    longitude: longitude,
+                    emoji: selectedEmoji,
+                    activityType: selectedActivityType,
+                    addressText: addressText,
+                    isPrivate: isPrivate,
+                    hostName: sessionStore.currentUser.name,
+                    hostAvatar: sessionStore.currentUser.avatarUrl
+                )
+                
+                await planStore.inviteUsers(to: newPlan, users: invitedFriends, currentUser: sessionStore.currentUser)
+                Logger.info("🎯 CreatePlanView: inviteUsers call completed")
+            } else {
+                Logger.info("🎯 CreatePlanView: No invited friends, skipping inviteUsers")
+            }
+            
+            // Auto-zoom to the newly created event on the map
+            if let newPlan = planStore.plans.first(where: { $0.id == newPlanId }) {
+                planStore.planToShowOnMap = newPlan
             }
             
             dismiss()
@@ -292,6 +335,7 @@ struct FlowLayout: Layout {
 
 extension CreatePlanView {
     func searchFriends(query: String) {
+        Logger.info("🔍 searchFriends called with query: '\(query)'")
         guard !query.isEmpty else {
             friendSearchResults = []
             return
@@ -300,14 +344,19 @@ extension CreatePlanView {
         Task {
             // Search from followers/following
             let results = await followService.searchFriends(query: query)
+            Logger.info("🔍 searchFriends got \(results.count) results for query '\(query)'")
             friendSearchResults = results.map { FriendSearchResult(id: $0.id, name: $0.name, avatarUrl: $0.avatarUrl) }
         }
     }
     
     func addInvite(_ friend: FriendSearchResult) {
+        Logger.info("➕ addInvite called for \(friend.name) (id: \(friend.id))")
         if !invitedFriends.contains(where: { $0.id == friend.id }) {
             invitedFriends.append(friend)
+            Logger.info("➕ Added \(friend.name) to invitedFriends, count is now: \(invitedFriends.count)")
             HapticManager.lightTap()
+        } else {
+            Logger.info("➕ \(friend.name) already in invitedFriends, skipping")
         }
         friendSearchText = ""
         friendSearchResults = []
@@ -315,19 +364,7 @@ extension CreatePlanView {
     
     func removeInvite(_ friend: FriendSearchResult) {
         invitedFriends.removeAll { $0.id == friend.id }
-    }
-    
-    func sendInviteNotifications(planId: UUID, planTitle: String) {
-        for friend in invitedFriends {
-            let notification = AppNotification.eventInvite(
-                from: sessionStore.currentUser.name,
-                eventName: planTitle,
-                planId: planId,
-                userId: sessionStore.currentUser.id
-            )
-            // This sends local notification - push would require backend
-            NotificationCenter.shared.addNotification(notification)
-        }
+        Logger.info("➖ Removed \(friend.name) from invitedFriends, count is now: \(invitedFriends.count)")
     }
 }
 

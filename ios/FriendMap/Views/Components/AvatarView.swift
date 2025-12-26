@@ -6,12 +6,14 @@ struct AvatarView: View {
     let size: CGFloat
     let assetName: String?
     let url: URL?
+    let showBorder: Bool
     
-    init(name: String, size: CGFloat = 44, url: URL? = nil, assetName: String? = nil) {
+    init(name: String, size: CGFloat = 44, url: URL? = nil, assetName: String? = nil, showBorder: Bool = true) {
         self.name = name
         self.size = size
         self.url = url
         self.assetName = assetName
+        self.showBorder = showBorder
     }
     
     var body: some View {
@@ -20,31 +22,18 @@ struct AvatarView: View {
                 .fill(gradientForName)
             
             if let url = url {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .tint(.white)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure:
-                        // Fallback to initials or asset
-                        if let assetName = assetName, UIImage(named: assetName) != nil {
-                            Image(assetName)
-                                .resizable()
-                                .scaledToFill()
-                        } else {
-                            Text(initials)
-                                .font(.system(size: size * 0.4, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                    @unknown default:
-                        EmptyView()
-                    }
+                CachedAsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: size, height: size)
+                        .clipShape(Circle())
+                } placeholder: {
+                    // Show initials while loading
+                    Text(initials)
+                        .font(.system(size: size * 0.4, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
                 }
-                .clipShape(Circle())
             } else if let assetName = assetName, UIImage(named: assetName) != nil {
                 Image(assetName)
                     .resizable()
@@ -60,6 +49,7 @@ struct AvatarView: View {
         .overlay(
             Circle()
                 .strokeBorder(Color.white, lineWidth: size > 40 ? 3 : 2)
+                .opacity(showBorder ? 1 : 0)  // Hide border when showBorder is false
         )
         .shadowStyle(DesignSystem.Shadows.small)
     }

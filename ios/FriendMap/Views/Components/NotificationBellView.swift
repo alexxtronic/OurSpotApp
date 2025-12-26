@@ -13,19 +13,33 @@ struct NotificationBellView: View {
             HapticManager.lightTap()
         } label: {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: "bell.fill")
-                    .font(.title3)
-                    .foregroundColor(.primary)
+                // Glass bubble background matching filter icons
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 50, height: 50)
+                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        )
+                    
+                    Image(systemName: "bell.fill")
+                        .font(.title3)
+                        .foregroundColor(.primary)
+                }
                 
-                // Badge
+                // Red badge
                 if notificationCenter.unreadCount > 0 {
-                    Text(notificationCenter.unreadCount > 9 ? "9+" : "\(notificationCenter.unreadCount)")
-                        .font(.caption2.bold())
-                        .foregroundColor(.white)
-                        .padding(4)
-                        .background(Color.red)
-                        .clipShape(Circle())
-                        .offset(x: 8, y: -8)
+                    ZStack {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 20, height: 20)
+                        Text(notificationCenter.unreadCount > 9 ? "9+" : "\(notificationCenter.unreadCount)")
+                            .font(.caption2.bold())
+                            .foregroundColor(.white)
+                    }
+                    .offset(x: 4, y: -4)
                 }
             }
         }
