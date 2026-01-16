@@ -860,7 +860,7 @@ body {
     font-size: 0.875rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .hero {
         grid-template-columns: 1fr;
         text-align: center;
@@ -879,11 +879,11 @@ body {
 
     .phone-mockup {
         order: -1;
-        /* Scale entire phone uniformly - much smaller */
-        transform: scale(0.35);
+        /* Scale entire phone uniformly */
+        transform: scale(0.5) !important;
         transform-origin: top center;
         /* Collapse the extra space from scaling */
-        margin: 0 auto -200px auto;
+        margin: 0 auto -150px auto;
         display: flex;
         justify-content: center;
     }
