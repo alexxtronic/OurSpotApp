@@ -123,9 +123,10 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Speech Bubbles Layer */}
-                            <SpeechBubbles />
                         </div>
+
+                        {/* Speech Bubbles Layer */}
+                        <SpeechBubbles />
                     </div>
                     <div className="phone-glow"></div>
                 </div>

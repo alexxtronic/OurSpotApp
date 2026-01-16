@@ -2,11 +2,9 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 20;
-    /* Above pins (10) but below event card (40) */
-    overflow: hidden;
-    border-radius: 48px;
-    /* Match phone screen */
+    z-index: 100;
+    /* High z-index */
+    overflow: visible;
 }
 
 .speech-bubble {
