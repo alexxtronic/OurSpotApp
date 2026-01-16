@@ -881,8 +881,8 @@ body {
         order: -1;
         /* Phone at TOP */
         transform: scale(0.25);
-        /* 620px * 0.25 = 155px visible. Collapse gap: */
-        margin: -230px 0;
+        /* Collapse gap above phone, but keep text clear below: */
+        margin: -230px 0 -100px 0;
         width: 100%;
         display: flex;
         justify-content: center;
