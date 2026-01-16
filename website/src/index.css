@@ -878,10 +878,11 @@ body {
     }
 
     .phone-mockup {
-        /* order: -1; Removed so it comes AFTER text */
-        transform: scale(0.4);
-        /* 620px * 0.4 = 248px. Gap is ~186px per side. -150px is safe to remove gaps but not overlap. */
-        margin: -150px 0;
+        order: -1;
+        /* Phone at TOP */
+        transform: scale(0.25);
+        /* 620px * 0.25 = 155px visible. Collapse gap: */
+        margin: -230px 0;
         width: 100%;
         display: flex;
         justify-content: center;
