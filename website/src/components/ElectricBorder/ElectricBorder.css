@@ -1,0 +1,47 @@
+.electric-border {
+    position: relative;
+    display: inline-block;
+}
+
+.eb-canvas-container {
+    position: absolute;
+    top: -60px;
+    /* Matching borderOffset in JS */
+    left: -60px;
+    width: calc(100% + 120px);
+    height: calc(100% + 120px);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.eb-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.eb-layers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.eb-content {
+    position: relative;
+    z-index: 1;
+    /* Content above layers but below canvas if intended, or above? */
+    /* If content is z-index 1, and canvas is 10, canvas lines draw ON TOP of content. */
+    border-radius: inherit;
+}
+
+.eb-glow-1,
+.eb-glow-2 {
+    /* Optional glow effects if desired, inferred from class names */
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}

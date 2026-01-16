@@ -1,0 +1,45 @@
+.circular-text {
+    position: relative;
+    width: 14rem;
+    /* Increased size */
+    height: 14rem;
+    font-family: 'Space Grotesk', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circular-text-spin {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    animation: spin var(--spin-duration) linear infinite;
+}
+
+.circular-text-spin span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0 0;
+    font-size: 1.1rem;
+    /* Increased font size */
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.circular-text:hover .circular-text-spin {
+    animation-play-state: paused;
+}
