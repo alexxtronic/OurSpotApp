@@ -918,10 +918,14 @@ body {
         padding: 0 var(--space-sm);
     }
 
-    /* Shrink h1 heading for mobile */
+    /* Shrink h1 heading for mobile - prevent 'For' wrapping */
     .heading-large {
-        font-size: 2rem !important;
+        font-size: 1.75rem !important;
         line-height: 1.1 !important;
+    }
+
+    .hero-title-wrapper {
+        margin-bottom: var(--space-xs) !important;
     }
 
     /* Tighten badge */
