@@ -880,10 +880,10 @@ body {
     .phone-mockup {
         order: -1;
         /* Scale entire phone uniformly */
-        transform: scale(0.5) !important;
+        transform: scale(0.7) !important;
         transform-origin: top center;
-        /* Collapse the extra space from scaling */
-        margin: 0 auto -150px auto;
+        /* Collapse the extra space and bring text right under */
+        margin: 0 auto -100px auto;
         display: flex;
         justify-content: center;
     }
