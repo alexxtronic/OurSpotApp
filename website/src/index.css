@@ -911,9 +911,21 @@ body {
     }
 
     .hero-subtitle {
-        line-height: 1.3;
-        margin-bottom: var(--space-md);
-        font-size: 1.1rem;
-        /* Slightly smaller to help fit */
+        line-height: 1.2;
+        margin-bottom: var(--space-xs);
+        margin-top: var(--space-xs);
+        font-size: 0.95rem;
+        padding: 0 var(--space-sm);
+    }
+
+    /* Shrink h1 heading for mobile */
+    .heading-large {
+        font-size: 2rem !important;
+        line-height: 1.1 !important;
+    }
+
+    /* Tighten badge */
+    .badge {
+        margin-bottom: var(--space-xs);
     }
 }
