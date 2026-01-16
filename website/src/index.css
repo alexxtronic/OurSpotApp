@@ -879,11 +879,12 @@ body {
 
     .phone-mockup {
         order: -1;
-        transform: scale(0.5);
-        /* Reduce occupied space since scale doesn't affect flow */
-        margin: -150px 0 -150px 0;
-        max-height: 320px;
-        /* Force container height */
+        transform: scale(0.75);
+        /* Adjust margins to reduce whitespace but prevent overlap */
+        margin: -60px 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
     }
 
     .hero-super-title {
