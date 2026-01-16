@@ -879,9 +879,9 @@ body {
 
     .phone-mockup {
         order: -1;
-        transform: scale(0.45);
-        /* Adjust margins closer since it's smaller */
-        margin: -120px 0;
+        transform: scale(0.25);
+        /* 620px * 0.75 / 2 ≈ 232px gap per side. -215px leaves ~17px gap. */
+        margin: -215px 0;
         width: 100%;
         display: flex;
         justify-content: center;
