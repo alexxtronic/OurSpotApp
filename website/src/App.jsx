@@ -4,6 +4,7 @@ import Aurora from './components/Aurora/Aurora'
 import ShinyText from './components/ShinyText/ShinyText'
 import CircularText from './components/CircularText/CircularText'
 import ElectricBorder from './components/ElectricBorder/ElectricBorder'
+import SpeechBubbles from './components/SpeechBubbles/SpeechBubbles'
 import './index.css'
 
 function App() {
