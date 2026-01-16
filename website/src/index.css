@@ -879,9 +879,9 @@ body {
 
     .phone-mockup {
         order: -1;
-        transform: scale(0.55);
+        transform: scale(0.45);
         /* Adjust margins closer since it's smaller */
-        margin: -100px 0;
+        margin: -120px 0;
         width: 100%;
         display: flex;
         justify-content: center;
