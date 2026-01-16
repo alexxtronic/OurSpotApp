@@ -38,10 +38,7 @@ function App() {
             {/* Hero Section */}
             <section className="hero">
                 <div className="hero-content">
-                    <div className="badge">
-                        <span className="badge-dot"></span>
-                        Now Available on iOS
-                    </div>
+
 
                     <div className="hero-title-wrapper">
                         <h1 className="sr-only">The Meetup App You've Been Waiting For.</h1>
@@ -64,6 +61,11 @@ function App() {
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLSfRdjusAZd9ItfX9G538RGfOZwrA_dMMZja8USxeAeTafi0Xw/viewform?fbzx=-547562085666947481" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
                             Apply to Join
                         </a>
+                    </div>
+
+                    <div className="badge" style={{ marginTop: '1.5rem', marginBottom: 0 }}>
+                        <span className="badge-dot"></span>
+                        Now Available on iOS
                     </div>
                 </div>
 

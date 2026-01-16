@@ -223,7 +223,7 @@ body {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--gold-400);
-    margin-bottom: var(--space-lg);
+    margin-top: var(--space-lg);
     animation: fadeInUp 0.8s var(--ease-out) both;
 }
 
@@ -894,7 +894,7 @@ body {
         transform: scale(0.7) !important;
         transform-origin: top center;
         /* Pull text right under the phone */
-        margin: 0 auto -180px auto;
+        margin: 0 auto -210px auto;
         display: flex;
         justify-content: center;
     }
