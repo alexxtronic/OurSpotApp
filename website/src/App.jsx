@@ -56,7 +56,7 @@ function App() {
 
                     <p className="hero-subtitle">
                         Make new friends anywhere in the world.<br />
-                        <span className="text-highlight">Apply for free membership now:</span>
+                        Apply for free membership now:
                     </p>
 
                     <div className="hero-ctas">
