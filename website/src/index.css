@@ -882,8 +882,8 @@ body {
         /* Scale entire phone uniformly */
         transform: scale(0.7) !important;
         transform-origin: top center;
-        /* Collapse the extra space and bring text right under */
-        margin: 0 auto -100px auto;
+        /* Pull text right under the phone */
+        margin: 0 auto -180px auto;
         display: flex;
         justify-content: center;
     }
