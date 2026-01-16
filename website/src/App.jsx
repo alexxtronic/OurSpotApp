@@ -30,7 +30,7 @@ function App() {
                         <img src="/logo.png" alt="OurSpot" className="logo-img" />
                         <span className="logo-text">OurSpot</span>
                     </div>
-                    <a href="#download" className="nav-cta">Get the App</a>
+                    <a href="https://forms.gle/Wq9J1A8zK8a5Z5Z86" className="nav-cta" target="_blank" rel="noopener noreferrer">Apply to Join</a>
                 </div>
             </nav>
 
