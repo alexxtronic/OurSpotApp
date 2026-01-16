@@ -1,0 +1,32 @@
+.speech-bubbles-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+    /* Above pins (10) but below event card (40) */
+    overflow: hidden;
+    border-radius: 48px;
+    /* Match phone screen */
+}
+
+.speech-bubble {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 10px 16px;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    /* Default tail position style */
+    color: #000;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.4);
+    transform-origin: bottom left;
+    max-width: 80%;
+}
+
+/* Optional: dynamic tail based on side, but sticking to bottom-left for simplicity or randomness could be better. 
+   For now, fixed style is cleaner. */
