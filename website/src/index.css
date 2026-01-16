@@ -879,13 +879,31 @@ body {
 
     .phone-mockup {
         order: -1;
-        /* Phone at TOP */
-        transform: scale(0.25);
-        /* Collapse gap above phone, but keep text clear below: */
-        margin: -230px 0 -100px 0;
-        width: 100%;
+        /* Phone at TOP - no transform needed, we resize the actual element */
+        margin: 0 auto var(--space-md) auto;
+        width: auto;
         display: flex;
         justify-content: center;
+    }
+
+    .phone-frame {
+        /* Actually shrink the phone, not just visually scale it */
+        width: 120px;
+        height: 248px;
+        border-radius: 22px;
+        padding: 3px;
+    }
+
+    .phone-screen {
+        border-radius: 19px;
+    }
+
+    .phone-frame::before {
+        /* Shrink the notch too */
+        width: 38px;
+        height: 11px;
+        top: 8px;
+        border-radius: 8px;
     }
 
     .hero-super-title {
