@@ -879,48 +879,16 @@ body {
 
     .phone-mockup {
         order: -1;
-        /* Phone at TOP - no transform needed, we resize the actual element */
-        margin: 0 auto var(--space-md) auto;
-        width: auto;
+        /* Scale entire phone uniformly - everything looks exactly like desktop, just smaller */
+        transform: scale(0.5);
+        transform-origin: top center;
+        /* Collapse the extra space from scaling */
+        margin: 0 auto -180px auto;
         display: flex;
         justify-content: center;
     }
 
-    .phone-frame {
-        /* 2.5x of 120x248 would be 300x620, but that's huge. Using ~1.5x for balance: */
-        width: 180px;
-        height: 372px;
-        border-radius: 34px;
-        padding: 5px;
-    }
-
-    .phone-screen {
-        border-radius: 29px;
-    }
-
-    .phone-frame::before {
-        /* Shrink the notch proportionally */
-        width: 58px;
-        height: 17px;
-        top: 12px;
-        border-radius: 12px;
-    }
-
-    /* Scale down all phone internal elements */
-    .phone-screen .map-bg,
-    .phone-screen .plan-pin,
-    .phone-screen .event-card-preview,
-    .phone-screen .nav-bar {
-        transform: scale(0.6);
-        transform-origin: center center;
-    }
-
-    /* Scale speech bubbles for mobile */
-    .speech-bubble {
-        font-size: 0.6rem;
-        padding: 6px 10px;
-        border-radius: 12px;
-    }
+    /* No individual overrides needed - transform: scale handles everything uniformly */
 
     .hero-super-title {
         font-size: 3rem;
