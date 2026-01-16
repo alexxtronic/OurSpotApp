@@ -864,17 +864,26 @@ body {
     .hero {
         grid-template-columns: 1fr;
         text-align: center;
-        padding-top: 100px;
-        gap: var(--space-2xl);
+        padding-top: 60px;
+        /* Reduced from 100px to give more room */
+        gap: var(--space-lg);
+        /* Reduced gap */
     }
 
     .hero-content {
         margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .phone-mockup {
         order: -1;
-        transform: scale(0.9);
+        transform: scale(0.5);
+        /* Reduce occupied space since scale doesn't affect flow */
+        margin: -150px 0 -150px 0;
+        max-height: 320px;
+        /* Force container height */
     }
 
     .hero-super-title {
@@ -883,5 +892,17 @@ body {
 
     .statements {
         grid-template-columns: 1fr;
+    }
+
+    /* Make button 20% bigger on mobile */
+    .hero-ctas .btn {
+        transform: scale(1.2);
+        margin: 10px;
+        /* Add margin to prevent overlap due to scale */
+    }
+
+    /* Ensure the badge is centered and not weird */
+    .badge {
+        align-self: center;
     }
 }
