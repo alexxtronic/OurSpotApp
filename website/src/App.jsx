@@ -5,6 +5,7 @@ import ShinyText from './components/ShinyText/ShinyText'
 import CircularText from './components/CircularText/CircularText'
 import ElectricBorder from './components/ElectricBorder/ElectricBorder'
 import SpeechBubbles from './components/SpeechBubbles/SpeechBubbles'
+import CountUp from './components/CountUp/CountUp'
 import './index.css'
 
 function App() {
@@ -55,13 +56,13 @@ function App() {
                     </div>
 
                     <p className="hero-subtitle">
-                        Make new friends anywhere in the world.<br />
+                        Make new friends, no creeps allowed.<br />
                         Apply for free membership now:
                     </p>
 
                     <div className="hero-ctas">
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLSfRdjusAZd9ItfX9G538RGfOZwrA_dMMZja8USxeAeTafi0Xw/viewform?fbzx=-547562085666947481" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                            Join the waitlist
+                            Apply to Join
                         </a>
                     </div>
                 </div>
@@ -136,8 +137,14 @@ function App() {
             <section className="showcase-section">
                 <div className="showcase-preview-wrapper">
                     <img src="/showcase-diagram.png" alt="OurSpot App Features" className="app-screen-img showcase-diagram" />
-
-
+                </div>
+                <div className="showcase-text">
+                    <h2 className="big-text">
+                        Never go out <span className="highlight">alone</span>.
+                    </h2>
+                    <p className="showcase-body">
+                        Just add an activity to the public map and new friends will request to join. From grabbing a coffee to dancing at a house party, anything's possible!
+                    </p>
                 </div>
             </section>
 
@@ -173,15 +180,15 @@ function App() {
             <section className="proof">
                 <div className="proof-stats">
                     <div className="stat">
-                        <span className="stat-number">10K+</span>
+                        <CountUp end={110000} suffix="+" duration={3500} />
                         <span className="stat-label">Plans Created</span>
                     </div>
                     <div className="stat">
-                        <span className="stat-number">50K+</span>
-                        <span className="stat-label">Hangouts Happened</span>
+                        <CountUp end={240000} suffix="+" duration={3500} />
+                        <span className="stat-label">New Friends Made</span>
                     </div>
                     <div className="stat">
-                        <span className="stat-number">0</span>
+                        <CountUp end={0} suffix="" duration={500} />
                         <span className="stat-label">Lonely Nights</span>
                     </div>
                 </div>
@@ -197,7 +204,7 @@ function App() {
                     <p className="cta-subtitle">Download OurSpot. It's free. Your friends are waiting.</p>
 
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSfRdjusAZd9ItfX9G538RGfOZwrA_dMMZja8USxeAeTafi0Xw/viewform?fbzx=-547562085666947481" className="btn btn-primary btn-large" target="_blank" rel="noopener noreferrer">
-                        Join the waitlist
+                        Apply to Join
                     </a>
                     <p className="cta-note">Spots opening weekly</p>
                 </div>

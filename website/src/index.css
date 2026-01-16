@@ -256,7 +256,7 @@ body {
     line-height: 1.0;
     letter-spacing: -0.04em;
     font-weight: 800;
-    margin-bottom: var(--space-md);
+    margin-bottom: 0;
     display: inline-block;
     /* Ensure block/inline-block for transforms if needed */
 }
@@ -272,7 +272,7 @@ body {
 }
 
 .hero-title-wrapper {
-    margin-bottom: var(--space-md);
+    margin-bottom: 0;
     animation: fadeInUp 0.8s var(--ease-out) 0.1s both;
 }
 
@@ -301,7 +301,8 @@ body {
     font-size: 1.25rem;
     color: var(--gray-400);
     line-height: 1.7;
-    margin-bottom: var(--space-xl);
+    margin-top: 0;
+    margin-bottom: var(--space-md);
     animation: fadeInUp 0.8s var(--ease-out) 0.2s both;
 }
 
@@ -612,14 +613,25 @@ body {
 /* Showcase Section */
 .showcase-section {
     padding: var(--space-3xl) var(--space-lg);
-    /* background: transparent; - explicit transparence or just remove */
     position: relative;
     overflow: visible;
-    /* Allow callouts to poke out if needed */
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     min-height: auto;
-    /* Allow auto height now */
+    gap: var(--space-xl);
+}
+
+.showcase-text {
+    text-align: center;
+    max-width: 700px;
+}
+
+.showcase-body {
+    font-size: 1.1rem;
+    color: var(--gray-400);
+    line-height: 1.6;
+    margin-top: var(--space-md);
 }
 
 .showcase-preview-wrapper {
@@ -754,7 +766,6 @@ body {
 /* Proof */
 .proof {
     padding: var(--space-2xl) var(--space-lg);
-    border-top: 1px solid var(--glass-border);
     max-width: 800px;
     margin: 0 auto;
 }
@@ -770,14 +781,14 @@ body {
 .stat-number {
     display: block;
     font-family: var(--font-display);
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: var(--white);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 .stat-label {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--gold-400);
     text-transform: uppercase;
     letter-spacing: 0.1em;
