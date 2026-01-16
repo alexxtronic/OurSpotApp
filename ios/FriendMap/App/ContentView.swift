@@ -109,12 +109,12 @@ struct ContentView: View {
                     }
                     .tag(Tab.map)
                 
-                EventGroupsView()
+                EventGroupsView(selectedTab: $selectedTab)
                     .tabItem {
                         Image(systemName: "bubble.left.and.bubble.right.fill")
                     }
                     .tag(Tab.groups)
-                    .badge(dmService.totalUnreadCount > 0 ? dmService.totalUnreadCount : 0)
+                    .badge(planStore.totalEventChatUnreadCount > 0 ? planStore.totalEventChatUnreadCount : 0)
                 
                 // Placeholder for center spacing - redirect to create sheet
                 Color.clear
@@ -149,18 +149,18 @@ struct ContentView: View {
                 }
             }
             
-            // Custom Center Button - Liquid Glass Style
+            // Custom Center Button - Orange Gradient Brand Style
             Button {
                 showCreatePlanSheet = true
             } label: {
                 ZStack {
-                    // Outer glow
+                    // Outer glow - warm orange
                     Circle()
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Color.cyan.opacity(0.4),
-                                    Color.teal.opacity(0.2),
+                                    Color(red: 0.95, green: 0.55, blue: 0.1).opacity(0.5),
+                                    Color(red: 0.9, green: 0.4, blue: 0.05).opacity(0.25),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -169,20 +169,29 @@ struct ContentView: View {
                             )
                         )
                         .frame(width: 88, height: 88)
-                        .blur(radius: 4)
+                        .blur(radius: 5)
                     
-                    // Glass circle
+                    // Glass circle with orange gradient fill
                     Circle()
-                        .fill(.ultraThinMaterial)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 1.0, green: 0.65, blue: 0.2),  // Light orange (top)
+                                    Color(red: 0.9, green: 0.45, blue: 0.05)  // Dark orange (bottom)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .frame(width: 70, height: 70)
                         .overlay(
                             Circle()
                                 .stroke(
                                     LinearGradient(
                                         colors: [
-                                            Color.white.opacity(0.6),
-                                            Color.cyan.opacity(0.3),
-                                            Color.teal.opacity(0.2)
+                                            Color.white.opacity(0.7),
+                                            Color(red: 1.0, green: 0.8, blue: 0.4).opacity(0.4),
+                                            Color(red: 0.85, green: 0.35, blue: 0.0).opacity(0.3)
                                         ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -190,18 +199,13 @@ struct ContentView: View {
                                     lineWidth: 1.5
                                 )
                         )
-                        .shadow(color: .cyan.opacity(0.3), radius: 10, x: 0, y: 5)
+                        .shadow(color: Color(red: 0.9, green: 0.4, blue: 0.0).opacity(0.4), radius: 12, x: 0, y: 6)
                     
-                    // Plus icon
+                    // Plus icon - white for contrast
                     Image(systemName: "plus")
-                        .font(.title.bold())
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.cyan, .teal],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                 }
             }
             .buttonStyle(PressButtonStyle())
@@ -367,11 +371,26 @@ struct ContentView: View {
     }
     
     private func handleDeepLink(_ url: URL) {
-        // Format: ourspot://plan/{uuid}
-        guard url.scheme == "ourspot",
-              url.host == "plan",
-              let planIdString = url.pathComponents.last,
-              let planId = UUID(uuidString: planIdString) else {
+        Logger.info("🔗 Handling Deep Link: \(url.absoluteString)")
+        
+        var targetPlanId: UUID?
+        
+        // Option 1: ourspot://plan/{uuid}
+        if url.scheme == "ourspot" && url.host == "plan",
+           let planIdString = url.pathComponents.last {
+            targetPlanId = UUID(uuidString: planIdString)
+        }
+        
+        // Option 2: https://ourspot.world/?planId={uuid}
+        if targetPlanId == nil, let components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
+            if let queryItems = components.queryItems,
+               let planIdString = queryItems.first(where: { $0.name == "planId" })?.value {
+                targetPlanId = UUID(uuidString: planIdString)
+            }
+        }
+        
+        guard let planId = targetPlanId else {
+            Logger.warning("❌ Invalid Deep Link: Could not parse plan ID")
             return
         }
         
@@ -380,7 +399,13 @@ struct ContentView: View {
             deepLinkPlan = plan
         } else {
             // In a real app, you would fetch the plan from Supabase here
-            Logger.warning("Deep link plan not found locally: \(planId)")
+            Logger.warning("Deep link plan not found locally: \(planId). Triggering fetch...")
+            Task {
+                await planStore.loadPlans(currentUserId: sessionStore.currentUser.id)
+                if let plan = planStore.plans.first(where: { $0.id == planId }) {
+                    deepLinkPlan = plan
+                }
+            }
         }
     }
     
@@ -433,13 +458,29 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Press Animation Button Style
+// MARK: - Premium Press Animation Button Style
 struct PressButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.85 : 1.0)
-            .opacity(configuration.isPressed ? 0.9 : 1.0)
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
+            // Scale with satisfying compression curve
+            .scaleEffect(configuration.isPressed ? 0.88 : 1.0)
+            // Subtle push-down rotation for depth
+            .rotation3DEffect(
+                .degrees(configuration.isPressed ? 5 : 0),
+                axis: (x: 1, y: 0, z: 0),
+                perspective: 0.5
+            )
+            // Brightness boost on press for "glow" effect
+            .brightness(configuration.isPressed ? 0.05 : 0)
+            // Slightly reduced opacity for depth
+            .opacity(configuration.isPressed ? 0.95 : 1.0)
+            // Premium spring animation - snappy press, bouncy release
+            .animation(
+                configuration.isPressed
+                    ? .spring(response: 0.15, dampingFraction: 0.7, blendDuration: 0.05) // Quick press
+                    : .spring(response: 0.35, dampingFraction: 0.55, blendDuration: 0.1), // Bouncy release
+                value: configuration.isPressed
+            )
     }
 }
 

@@ -21,7 +21,7 @@ final class BlockService: ObservableObject {
         saveBlockedUsers()
         
         // Post notification so other parts of the app can react immediately if needed
-        NotificationCenter.default.post(name: .didBlockUser, object: nil, userInfo: ["userId": userId])
+        Foundation.NotificationCenter.default.post(name: .didBlockUser, object: nil, userInfo: ["userId": userId])
         
         Logger.info("Blocked user: \(userId)")
     }

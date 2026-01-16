@@ -10,6 +10,7 @@ struct FriendMapApp: App {
     @StateObject private var planStore = PlanStore()
     @StateObject private var notificationRouter = NotificationRouter.shared
     @StateObject private var dmService = DirectMessageService()
+    @StateObject private var blockService = BlockService()
     
     @State private var showLaunchScreen = true
     
@@ -32,6 +33,7 @@ struct FriendMapApp: App {
                     .environmentObject(planStore)
                     .environmentObject(notificationRouter)
                     .environmentObject(dmService)
+                    .environmentObject(blockService)
                     .task {
                         // Register for push notifications if authorized
                         if authService.isAuthenticated {

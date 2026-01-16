@@ -139,7 +139,8 @@ final class PlanStore: ObservableObject {
         hostUserId: UUID,
         hostName: String,
         hostAvatar: String?,
-        isPrivate: Bool = false
+        isPrivate: Bool = false,
+        maxAttendees: Int? = nil
     ) async {
         let newPlan = Plan(
             id: id,
@@ -153,6 +154,7 @@ final class PlanStore: ObservableObject {
             activityType: activityType,
             addressText: addressText,
             isPrivate: isPrivate,
+            maxAttendees: maxAttendees,
             hostName: hostName,
             hostAvatar: hostAvatar
         )
@@ -250,14 +252,14 @@ final class PlanStore: ObservableObject {
         let next: RSVPStatus
         switch current {
         case .none:
-            // For private plans, add to pending approvals instead of direct going
-            if plan?.isPrivate == true && plan?.hostUserId != userId {
-                addPendingApproval(planId: planId, userId: userId)
-                next = .pending
-            } else {
-                next = .going
-                addAttendee(planId: planId, userId: userId)
+            // Check if event is full before allowing join
+            if isEventFull(planId: planId) {
+                Logger.warning("Cannot join event \(planId) - at capacity")
+                return
             }
+            // Simplified: Direct join for everyone
+            next = .going
+            addAttendee(planId: planId, userId: userId)
         case .going:
             next = .maybe
             removeAttendee(planId: planId, userId: userId)
@@ -267,6 +269,11 @@ final class PlanStore: ObservableObject {
             next = RSVPStatus.none
             removePendingApproval(planId: planId, userId: userId)
         case .invited:
+            // Check if event is full before allowing join
+            if isEventFull(planId: planId) {
+                Logger.warning("Cannot accept invite to event \(planId) - at capacity")
+                return
+            }
             // Treat invited like "none" but with a prompt to go
             // If they toggle it, they are accepting the invite
             next = .going
@@ -276,6 +283,26 @@ final class PlanStore: ObservableObject {
         Logger.info("RSVP for plan \(planId): \(next.displayText)")
     }
     
+    /// Checks if an event has reached its maximum attendee capacity
+    func isEventFull(planId: UUID) -> Bool {
+        guard let plan = plans.first(where: { $0.id == planId }),
+              let maxAttendees = plan.maxAttendees else {
+            return false // No limit or plan not found
+        }
+        let currentCount = attendees[planId]?.count ?? 0
+        return currentCount >= maxAttendees
+    }
+    
+    /// Returns remaining spots for an event, or nil if unlimited
+    func remainingSpots(planId: UUID) -> Int? {
+        guard let plan = plans.first(where: { $0.id == planId }),
+              let maxAttendees = plan.maxAttendees else {
+            return nil // Unlimited
+        }
+        let currentCount = attendees[planId]?.count ?? 0
+        return max(0, maxAttendees - currentCount)
+    }
+    
     /// Sets a specific RSVP status for a plan
     func setRSVP(planId: UUID, userId: UUID, status: RSVPStatus, isPrivate: Bool, isHost: Bool) {
         let currentStatus = rsvpStatus[planId] ?? RSVPStatus.none
@@ -283,18 +310,19 @@ final class PlanStore: ObservableObject {
         // Handle the transition based on what was selected
         switch status {
         case .going:
-            // For private plans, non-hosts go to pending
-            if isPrivate && !isHost {
-                addPendingApproval(planId: planId, userId: userId)
-                rsvpStatus[planId] = .pending
-            } else {
-                // Remove from pending if was pending
-                if currentStatus == .pending {
-                    removePendingApproval(planId: planId, userId: userId)
-                }
-                addAttendee(planId: planId, userId: userId)
-                rsvpStatus[planId] = .going
+            // Check if event is full before allowing join
+            if currentStatus != .going && isEventFull(planId: planId) {
+                Logger.warning("Cannot set RSVP to going for event \(planId) - at capacity")
+                return
             }
+            // Simplified: Direct join for everyone (private events behave like standard invites)
+            
+            // Remove from pending if was pending (cleanup)
+            if currentStatus == .pending {
+                removePendingApproval(planId: planId, userId: userId)
+            }
+            addAttendee(planId: planId, userId: userId)
+            rsvpStatus[planId] = .going
         case .maybe:
             // Remove from attendees if was going
             if currentStatus == .going {
@@ -340,20 +368,9 @@ final class PlanStore: ObservableObject {
         Logger.info("RSVP set for plan \(planId): \(status.displayText)")
     }
     
-    /// Approves a pending request for a private plan
-    func approveAttendee(planId: UUID, userId: UUID) {
-        removePendingApproval(planId: planId, userId: userId)
-        addAttendee(planId: planId, userId: userId)
-        // Update their RSVP status to going
-        // Note: In a real app this would notify the user
-        Logger.info("Approved user \(userId) for plan \(planId)")
-    }
-    
-    /// Denies a pending request for a private plan
-    func denyAttendee(planId: UUID, userId: UUID) {
-        removePendingApproval(planId: planId, userId: userId)
-        Logger.info("Denied user \(userId) for plan \(planId)")
-    }
+    // Simplified: Approval methods removed
+    // func approveAttendee(planId: UUID, userId: UUID) { ... }
+    // func denyAttendee(planId: UUID, userId: UUID) { ... }
     
     private func addAttendee(planId: UUID, userId: UUID) {
         if attendees[planId] == nil {
@@ -392,10 +409,13 @@ final class PlanStore: ObservableObject {
         return rsvpStatus[planId] ?? RSVPStatus.none
     }
     
-    /// Returns plans sorted by start date
+    /// Returns plans sorted by start date (includes live events up to 10 hours after start)
     var upcomingPlans: [Plan] {
-        plans
-            .filter { $0.startsAt > Date() }
+        let now = Date()
+        let tenHoursAgo = now.addingTimeInterval(-10 * 60 * 60)  // 10 hours ago
+        
+        return plans
+            .filter { $0.startsAt > tenHoursAgo }  // Include future events AND events that started within last 10 hours
             .sorted { $0.startsAt < $1.startsAt }
     }
     
@@ -474,6 +494,11 @@ final class PlanStore: ObservableObject {
     
     @Published var eventChats: [EventChat] = []
     private var chatService = ChatService()
+    
+    /// Total unread count for event group chats (NOT DMs)
+    var totalEventChatUnreadCount: Int {
+        eventChats.reduce(0) { $0 + $1.unreadCount }
+    }
     
     func loadEventChats(currentUserId: UUID) async {
         // Ensure plans are loaded first? Or just use what we have?

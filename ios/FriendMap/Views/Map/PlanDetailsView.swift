@@ -33,18 +33,21 @@ struct PlanDetailsView: View {
         planStore.getAttendees(for: plan.id)
     }
     
-    private var pendingApprovals: [UUID] {
-        planStore.getPendingApprovals(for: plan.id)
-    }
+    // Simplified: No pending approvals shown
+    // private var pendingApprovals: [UUID] {
+    //     planStore.getPendingApprovals(for: plan.id)
+    // }
     
     private var canSeeDetails: Bool {
-        // Host can always see, or if not private, or if approved (going)
-        isHost || !plan.isPrivate || rsvpStatus == .going
+        // Simplified: Host can see.
+        // If Invited/Going/Maybe (status != .none), you can see.
+        // If Public, everyone sees.
+        isHost || !plan.isPrivate || rsvpStatus != .none
     }
     
     private var shareURL: URL {
-        // Deep link format: ourspot://plan/{id}
-        URL(string: "https://ourspot.app/plan/\(plan.id.uuidString)")!
+        // Deep link format: https://ourspot.world/?planId={id}
+        URL(string: "https://ourspot.world/?planId=\(plan.id.uuidString)")!
     }
     
     var body: some View {
@@ -81,13 +84,13 @@ struct PlanDetailsView: View {
                     // Attendees section - visible to everyone
                     attendeesSection
                     
-                    // Pending approvals section (for hosts only)
-                    if isHost && !pendingApprovals.isEmpty {
-                        pendingApprovalsSection
-                    }
+                    // Pending approvals section removed
+                    // if isHost && !pendingApprovals.isEmpty { ... }
                     
-                    // Safety buttons
-                    safetySection
+                    // Safety buttons (only show if not host - can't block yourself)
+                    if !isHost {
+                        safetySection
+                    }
                     
                     // Delete button (host only)
                     if isHost {
@@ -132,7 +135,7 @@ struct PlanDetailsView: View {
             }
             .sheet(isPresented: $showGroupChat) {
                 NavigationStack {
-                    GroupChatView(plan: plan)
+                    GroupChatView(plan: plan, selectedTab: .constant(.map))
                 }
             }
             .sheet(isPresented: $showAttendeesSheet) {
@@ -334,6 +337,23 @@ struct PlanDetailsView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
+            
+            // Capacity indicator
+            if let maxAttendees = plan.maxAttendees {
+                if planStore.isEventFull(planId: plan.id) {
+                    Text("🚫 Event Full")
+                        .font(.caption.bold())
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.red.opacity(0.15))
+                        .cornerRadius(8)
+                } else if let remaining = planStore.remainingSpots(planId: plan.id) {
+                    Text("\(remaining) spot\(remaining == 1 ? "" : "s") left")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
+            }
         }
         .padding(.top, 8)
     }
@@ -367,10 +387,6 @@ struct PlanDetailsView: View {
             Image(systemName: "lock.fill")
             Text("Private Event")
             Spacer()
-            if !isHost && rsvpStatus == .pending {
-                Text("Awaiting Approval")
-                    .font(.caption)
-            }
         }
         .font(.caption.weight(.medium))
         .foregroundColor(.orange)
@@ -380,23 +396,7 @@ struct PlanDetailsView: View {
     }
     
     private var pendingApprovalSection: some View {
-        SectionCard {
-            VStack(spacing: DesignSystem.Spacing.md) {
-                Image(systemName: "lock.shield")
-                    .font(.system(size: 40))
-                    .foregroundColor(.orange)
-                
-                Text("Details Hidden")
-                    .font(.headline)
-                
-                Text("RSVP to request access. The host will approve your request before you can see the exact location and details.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-        }
+        EmptyView() // Removed
     }
     
     @State private var showHostProfile = false
@@ -506,96 +506,34 @@ struct PlanDetailsView: View {
     
     private var rsvpSection: some View {
         VStack(spacing: DesignSystem.Spacing.sm) {
-            // Private event - not yet approved
-            if plan.isPrivate && !isHost && rsvpStatus != .going {
-                if rsvpStatus == .pending {
-                    // Pending approval state
-                    VStack(spacing: 12) {
-                        Image(systemName: "clock.badge.checkmark")
-                            .font(.title)
-                            .foregroundColor(.orange)
-                        
-                        Text("Request Sent!")
-                            .font(.headline)
-                        
-                        Text("The event host will review your request and get back to you soon.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button {
-                            withAnimation(.spring(response: 0.3)) {
-                                planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: .none, isPrivate: plan.isPrivate, isHost: isHost)
-                                HapticManager.lightTap()
-                            }
-                        } label: {
-                            Text("Cancel Request")
-                                .font(.subheadline)
-                                .foregroundColor(.red)
+            // Simplified RSVP: Standard buttons for everyone
+            HStack(spacing: DesignSystem.Spacing.sm) {
+                ForEach([RSVPStatus.going, RSVPStatus.maybe, RSVPStatus.none], id: \.self) { status in
+                    let isGoingDisabled = status == .going && 
+                        rsvpStatus != .going && 
+                        planStore.isEventFull(planId: plan.id)
+                    
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            // Simplified: isPrivate flag might be used by store but we want standard behavior
+                            planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: status, isPrivate: false, isHost: isHost)
+                            HapticManager.lightTap()
                         }
-                    }
-                    .padding(DesignSystem.Spacing.md)
-                } else {
-                    // Not requested yet - show Request to Join button
-                    VStack(spacing: 12) {
-                        Text("🔒 Private Event")
-                            .font(.headline)
-                        
-                        Text("This event requires approval from the host to join.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button {
-                            withAnimation(.spring(response: 0.3)) {
-                                planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: .pending, isPrivate: plan.isPrivate, isHost: isHost)
-                                HapticManager.success()
-                            }
-                        } label: {
-                            HStack {
-                                Image(systemName: "person.badge.plus")
-                                Text("Request to Join")
-                            }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 14)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                LinearGradient(
-                                    colors: [.purple, .blue],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(DesignSystem.CornerRadius.md)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: isGoingDisabled ? "xmark.circle" : status.icon)
+                            Text(isGoingDisabled ? "Full" : (status == .none ? "Can't Go" : status.displayText))
                         }
+                        .font(.subheadline.weight(.medium))
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                                .fill(rsvpStatus == status ? statusColor(status) : Color.white.opacity(0.1))
+                        )
+                        .foregroundColor(rsvpStatus == status ? .white : (isGoingDisabled ? .secondary : .primary))
                     }
-                    .padding(DesignSystem.Spacing.md)
-                }
-            } else {
-                // Public event OR host OR already approved - show normal RSVP buttons
-                HStack(spacing: DesignSystem.Spacing.sm) {
-                    ForEach([RSVPStatus.going, RSVPStatus.maybe, RSVPStatus.none], id: \.self) { status in
-                        Button {
-                            withAnimation(.spring(response: 0.3)) {
-                                planStore.setRSVP(planId: plan.id, userId: sessionStore.currentUser.id, status: status, isPrivate: plan.isPrivate, isHost: isHost)
-                                HapticManager.lightTap()
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: status.icon)
-                                Text(status == .none ? "Can't Go" : status.displayText)
-                            }
-                            .font(.subheadline.weight(.medium))
-                            .padding(.vertical, 12)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                                    .fill(rsvpStatus == status ? statusColor(status) : Color.white.opacity(0.1))
-                            )
-                            .foregroundColor(rsvpStatus == status ? .white : .primary)
-                        }
-                    }
+                    .disabled(isGoingDisabled)
                 }
             }
         }
@@ -649,7 +587,13 @@ struct PlanDetailsView: View {
     
     // MARK: - Attendees Section (Max 5, clickable)
     private var attendeesSection: some View {
-        SectionCard(title: "Attendees (\(attendees.count))") {
+        let attendeeCountText = if let max = plan.maxAttendees {
+            "\(attendees.count)/\(max)"
+        } else {
+            "\(attendees.count)"
+        }
+        
+        return SectionCard(title: "Attendees (\(attendeeCountText))") {
             if attendees.isEmpty {
                 Text("No attendees yet")
                     .font(.subheadline)
@@ -847,38 +791,7 @@ struct PlanDetailsView: View {
     }
     
     private var pendingApprovalsSection: some View {
-        SectionCard(title: "Pending Approvals (\(pendingApprovals.count))") {
-            VStack(spacing: DesignSystem.Spacing.sm) {
-                ForEach(pendingApprovals, id: \.self) { userId in
-                    HStack {
-                        AvatarView(
-                            name: MockData.hostNames[userId] ?? "User",
-                            size: 36,
-                            assetName: MockData.hostAvatars[userId]
-                        )
-                        Text(MockData.hostNames[userId] ?? "User")
-                            .font(.subheadline)
-                        Spacer()
-                        
-                        Button {
-                            planStore.approveAttendee(planId: plan.id, userId: userId)
-                        } label: {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                                .font(.title2)
-                        }
-                        
-                        Button {
-                            planStore.denyAttendee(planId: plan.id, userId: userId)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.red)
-                                .font(.title2)
-                        }
-                    }
-                }
-            }
-        }
+        EmptyView() // Removed
     }
     
     private func statusColor(_ status: RSVPStatus) -> Color {

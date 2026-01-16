@@ -86,3 +86,8 @@ ios/FriendMap/Config/Config.plist
 
 ## Logs
 *.log
+
+## Website
+website/node_modules/
+website/dist/
+website_legacy/

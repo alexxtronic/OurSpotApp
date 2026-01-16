@@ -33,7 +33,7 @@ struct LaunchScreenView: View {
                 
                 // Tagline
                 if showTagline {
-                    Text("Plan. Meet. Vibe.")
+                    Text("Plan. Meet. Connect.")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.8))
                         .transition(.opacity)
@@ -47,51 +47,48 @@ struct LaunchScreenView: View {
     
     // MARK: - Animated Gradient Background
     
+    // MARK: - Animated Gradient Background
+    
     private var animatedGradientBackground: some View {
         ZStack {
-            // Base gradient
+            // Base background - Deep Black to Dark Orange
             LinearGradient(
                 colors: [
-                    Color(hex: "#667eea") ?? .purple,
-                    Color(hex: "#764ba2") ?? .purple,
-                    Color(hex: "#6B8DD6") ?? .blue
+                    Color.black,
+                    Color(red: 0.2, green: 0.1, blue: 0.05) // Very dark orange/brown at bottom
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
             
-            // Animated overlay circles
+            // Upper Right Bulb - Vibrant Orange
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [.white.opacity(0.15), .clear],
+                        colors: [Color.orange.opacity(0.6), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 400
+                    )
+                )
+                .frame(width: 600, height: 600)
+                .position(x: UIScreen.main.bounds.width, y: 0) // Top Right corner
+                .blur(radius: 50)
+            
+            // Bottom Left Bulb - Vibrant Orange
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color(red: 1.0, green: 0.5, blue: 0.0).opacity(0.5), .clear], // Red-Orange
                         center: .center,
                         startRadius: 0,
                         endRadius: 300
                     )
                 )
-                .frame(width: 600, height: 600)
-                .offset(x: -100, y: -200)
-                .rotationEffect(.degrees(gradientRotation))
-            
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [.cyan.opacity(0.2), .clear],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 250
-                    )
-                )
                 .frame(width: 500, height: 500)
-                .offset(x: 150, y: 300)
-                .rotationEffect(.degrees(-gradientRotation))
-        }
-        .onAppear {
-            withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
-                gradientRotation = 360
-            }
+                .position(x: 0, y: UIScreen.main.bounds.height) // Bottom Left corner
+                .blur(radius: 40)
         }
     }
     
@@ -99,11 +96,11 @@ struct LaunchScreenView: View {
     
     private var logoView: some View {
         ZStack {
-            // Outer pulse ring
+            // Outer pulse ring - Warm colors
             Circle()
                 .stroke(
                     LinearGradient(
-                        colors: [.white.opacity(0.5), .cyan.opacity(0.3)],
+                        colors: [.white.opacity(0.5), .orange.opacity(0.3)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
@@ -130,18 +127,12 @@ struct LaunchScreenView: View {
                 )
                 .shadow(color: .black.opacity(0.2), radius: 20, y: 10)
             
-            // Inner content - Map pin icon
+            // Inner content - High Five Hands Logo
             ZStack {
-                // Pin shape
-                Image(systemName: "mappin.circle.fill")
-                    .font(.system(size: 50, weight: .medium))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.white, .white.opacity(0.9)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                Image("AppLogo") // Uses the new uploaded asset
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
                     .scaleEffect(isAnimating ? 1.0 : 0.5)
                     .opacity(isAnimating ? 1.0 : 0)
             }

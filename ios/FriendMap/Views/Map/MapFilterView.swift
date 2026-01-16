@@ -43,12 +43,12 @@ struct MapOverlayControls: View {
                         HapticManager.lightTap()
                     } label: {
                         if planStore.activityFilter == type {
-                            Label(type.rawValue.capitalized, systemImage: "checkmark")
+                            Label(type.displayName, systemImage: "checkmark")
                         } else {
                             Label {
-                                Text(type.rawValue.capitalized)
+                                Text(type.displayName)
                             } icon: {
-                                Text(type.defaultEmoji)
+                                Image(type.icon)
                             }
                         }
                     }
@@ -56,8 +56,16 @@ struct MapOverlayControls: View {
             } label: {
                 ZStack {
                     GlassBubble(size: 50)
-                    Text(planStore.activityFilter?.defaultEmoji ?? "👋")
-                        .font(.title2)
+                    if let filter = planStore.activityFilter {
+                        Image(filter.icon)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 32, height: 32)
+                            .clipShape(Circle())
+                    } else {
+                        Text("👋")
+                            .font(.title2)
+                    }
                 }
             }
             

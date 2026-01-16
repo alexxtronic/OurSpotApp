@@ -1,19 +1,42 @@
 import SwiftUI
 
 /// Group chat view for a specific event
+/// Supports read-only mode for archived events (24hrs+ after start)
 struct GroupChatView: View {
     let plan: Plan
+    @Binding var selectedTab: ContentView.Tab
     
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var planStore: PlanStore
     @StateObject private var chatService = ChatService()
     
     @State private var messageText = ""
     @State private var selectedUserId: UUID?
     
+    /// Whether this chat is archived (10+ hours since event start - matches event visibility)
+    private var isArchived: Bool {
+        let hoursSinceStart = Date().timeIntervalSince(plan.startsAt) / 3600
+        return hoursSinceStart >= 10
+    }
+    
+    /// Whether the event is "live" (0-10 hours since start)
+    private var isLive: Bool {
+        let hoursSinceStart = Date().timeIntervalSince(plan.startsAt) / 3600
+        return hoursSinceStart >= 0 && hoursSinceStart < 10
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
-            // Event header
-            eventHeader
+            // Event header with live/archived status - TAPPABLE to go to map
+            Button {
+                // Navigate to map with this event
+                planStore.planToShowOnMap = plan
+                selectedTab = .map
+                HapticManager.lightTap()
+            } label: {
+                eventHeader
+            }
+            .buttonStyle(.plain)
             
             Divider()
             
@@ -39,8 +62,12 @@ struct GroupChatView: View {
             
             Divider()
             
-            // Message input
-            messageInput
+            // Message input or archived notice
+            if isArchived {
+                archivedNotice
+            } else {
+                messageInput
+            }
         }
         .navigationTitle("Event Chat")
         .navigationBarTitleDisplayMode(.inline)
@@ -69,21 +96,71 @@ struct GroupChatView: View {
     
     private var eventHeader: some View {
         HStack(spacing: DesignSystem.Spacing.md) {
-            Text(plan.emoji)
-                .font(.system(size: 32))
+            // Emoji with optional rainbow border for live events
+            ZStack {
+                if isLive {
+                    Circle()
+                        .stroke(
+                            AngularGradient(
+                                colors: [.red, .orange, .yellow, .green, .blue, .purple, .red],
+                                center: .center
+                            ),
+                            lineWidth: 3
+                        )
+                        .frame(width: 42, height: 42)
+                }
+                
+                Text(plan.emoji)
+                    .font(.system(size: 28))
+                    .frame(width: 36, height: 36)
+            }
+            .opacity(isArchived ? 0.6 : 1.0)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(plan.title)
-                    .font(.headline)
+                HStack(spacing: 8) {
+                    Text(plan.title)
+                        .font(.headline)
+                        .foregroundColor(isArchived ? .secondary : .primary)
+                    
+                    if isLive {
+                        Text("LIVE")
+                            .font(.caption2.bold())
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.red)
+                            .cornerRadius(4)
+                    }
+                    
+                    if isArchived {
+                        Text("ARCHIVED")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(4)
+                    }
+                }
+                
                 Text(plan.startsAt.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
+            
+            // Tap indicator
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
         .padding(DesignSystem.Spacing.md)
-        .background(DesignSystem.Colors.secondaryBackground)
+        .background(
+            isLive 
+                ? Color.orange.opacity(0.1) 
+                : DesignSystem.Colors.secondaryBackground
+        )
     }
     
     private func messageRow(_ message: ChatMessage) -> some View {
@@ -176,8 +253,22 @@ struct GroupChatView: View {
         .background(DesignSystem.Colors.secondaryBackground)
     }
     
+    private var archivedNotice: some View {
+        HStack {
+            Image(systemName: "archivebox.fill")
+                .foregroundColor(.secondary)
+            Text("This chat is archived and read-only")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(DesignSystem.Spacing.md)
+        .background(DesignSystem.Colors.secondaryBackground)
+    }
+    
     private func sendMessage() async {
         guard !messageText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        guard !isArchived else { return } // Safety check
         
         let content = messageText
         messageText = "" // Clear immediately for UX
@@ -213,11 +304,11 @@ struct ChatMessage: Identifiable, Equatable {
 struct IdentifiableUUID: Identifiable {
     let id: UUID
 }
-// Removed extraneous brace
 
 #Preview {
     NavigationStack {
-        GroupChatView(plan: MockData.samplePlans[0])
+        GroupChatView(plan: MockData.samplePlans[0], selectedTab: .constant(.groups))
             .environmentObject(SessionStore())
+            .environmentObject(PlanStore())
     }
 }

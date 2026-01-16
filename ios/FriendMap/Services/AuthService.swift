@@ -25,7 +25,6 @@ final class AuthService: ObservableObject {
     private func setupAuthStateListener() {
         guard let supabase = Config.supabase else {
             Logger.warning("Supabase not configured - auto-authenticate for offline mode")
-            isAuthenticated = true
             return
         }
         
@@ -48,6 +47,30 @@ final class AuthService: ObservableObject {
                 Logger.info("No existing session")
             }
         }
+    }
+    
+    // MARK: - Guest (Anonymous) Sign In
+    
+    func signInAnonymously() async {
+        guard let supabase = Config.supabase else {
+            self.error = "Supabase not configured"
+            return
+        }
+        
+        isLoading = true
+        error = nil
+        
+        do {
+            let session = try await supabase.auth.signInAnonymously()
+            self.currentSession = session
+            self.isAuthenticated = true
+            Logger.info("Signed in anonymously as guest")
+        } catch {
+            Logger.error("Anonymous sign in failed: \(error.localizedDescription)")
+            self.error = error.localizedDescription
+        }
+        
+        isLoading = false
     }
     
     // MARK: - Email Sign In
@@ -108,10 +131,34 @@ final class AuthService: ObservableObject {
         isLoading = false
     }
     
-    // MARK: - Sign In with Apple (placeholder)
+    // MARK: - Sign In with Apple
     
-    func signInWithApple() async {
-        self.error = "Sign in with Apple requires additional setup"
+    func signInWithApple(idToken: String, nonce: String) async {
+        guard let supabase = Config.supabase else {
+            self.error = "Supabase not configured"
+            return
+        }
+        
+        isLoading = true
+        error = nil
+        
+        do {
+            let session = try await supabase.auth.signInWithIdToken(
+                credentials: .init(
+                    provider: .apple,
+                    idToken: idToken,
+                    nonce: nonce
+                )
+            )
+            self.currentSession = session
+            self.isAuthenticated = true
+            Logger.info("Signed in with Apple")
+        } catch {
+            Logger.error("Apple sign in failed: \(error.localizedDescription)")
+            self.error = error.localizedDescription
+        }
+        
+        isLoading = false
     }
     
     // MARK: - Sign Out

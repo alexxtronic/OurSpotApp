@@ -11,11 +11,6 @@ final class ChatService: ObservableObject {
     func fetchMessages(for planId: UUID) async {
         guard let supabase = supabase else { return }
         
-        // 1. Lazy cleanup: Trigger deletion of old messages (fire & forget)
-        Task {
-            try? await supabase.database.rpc("delete_expired_chat_messages").execute()
-        }
-        
         do {
             let response: [ChatMessageDTO] = try await supabase
                 .from("event_messages")

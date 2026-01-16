@@ -13,6 +13,7 @@ struct Plan: Codable, Identifiable, Equatable, Hashable {
     var activityType: ActivityType
     var addressText: String
     var isPrivate: Bool
+    var maxAttendees: Int? // nil = unlimited
     
     // Host details
     var hostName: String

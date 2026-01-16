@@ -2,33 +2,35 @@ import Foundation
 
 /// Activity type for plans
 enum ActivityType: String, Codable, CaseIterable, Identifiable {
-    case social
-    case drinks
+    case social     // Casual hang - Default
+    case exploreTheCity
+    case sports     // Get active
     case coffee
+    case drinks     // Grab drinks
     case food
-    case gaming
-    case movies
-    case sports
-    case culture
-    case outdoors
+    case partyTime
     case nightlife
+    case culture    // Art & culture
     case liveMusic
+    case outdoors   // Nature
+    case movies     // Watch something
     case other
     
     var id: String { rawValue }
     
     var displayName: String {
         switch self {
+        case .sports: return "Get active"
         case .social: return "Casual hang"
         case .drinks: return "Grab drinks"
         case .coffee: return "Grab a coffee"
         case .food: return "Get food"
-        case .gaming: return "Play games"
         case .movies: return "Watch something"
-        case .sports: return "Get active"
         case .culture: return "Art & culture"
         case .outdoors: return "Go outside"
-        case .nightlife: return "Party time"
+        case .nightlife: return "Nightlife"
+        case .exploreTheCity: return "Explore the City"
+        case .partyTime: return "Party Time"
         case .liveMusic: return "Live music"
         case .other: return "Something else"
         }
@@ -36,51 +38,89 @@ enum ActivityType: String, Codable, CaseIterable, Identifiable {
     
     var defaultEmoji: String {
         switch self {
+        case .sports: return "🏃"
         case .social: return "👋"
         case .drinks: return "🍺"
         case .coffee: return "☕"
-        case .food: return "🍕"
-        case .gaming: return "🎮"
+        case .food: return "🍽️"
         case .movies: return "🍿"
-        case .sports: return "🏃"
         case .culture: return "🎨"
         case .outdoors: return "🌳"
-        case .nightlife: return "🎉"
+        case .nightlife: return "🪩"
+        case .exploreTheCity: return "🗺️"
+        case .partyTime: return "🎉"
         case .liveMusic: return "🎸"
         case .other: return "📍"
         }
     }
     
+    /// Asset name for the 3D icon
     var icon: String {
         switch self {
-        case .social: return "person.2.fill"
-        case .drinks: return "wineglass.fill"
-        case .coffee: return "cup.and.saucer.fill"
-        case .food: return "fork.knife"
-        case .gaming: return "gamecontroller.fill"
-        case .movies: return "film.fill"
-        case .sports: return "figure.run"
-        case .culture: return "theatermasks.fill"
-        case .outdoors: return "leaf.fill"
-        case .nightlife: return "party.popper.fill"
-        case .liveMusic: return "music.mic"
-        case .other: return "mappin"
+        case .sports: return "sports"
+        case .social: return "social"
+        case .drinks: return "drinks"
+        case .coffee: return "coffee"
+        case .food: return "food"
+        case .movies: return "movies"
+        case .culture: return "culture"
+        case .outdoors: return "nature" // Mapped to nature icon
+        case .nightlife: return "nightlife"
+        case .exploreTheCity: return "explorethecity"
+        case .partyTime: return "partytime"
+        case .liveMusic: return "livemusic"
+        case .other: return "other"
+        }
+    }
+    
+    /// Curated emojis for this activity type - shown in custom emoji picker
+    var availableEmojis: [String] {
+        switch self {
+        case .sports:
+            return ["🏃", "⚽", "🏀", "🎾", "🏓", "🏐", "🏈", "⚾", "🏒", "🏸",
+                    "🚴", "🏊", "🧘", "🏋️", "🤸", "⛷️", "🏂", "🛹", "🥊", "🤾",
+                    "🧗", "🏌️", "🎿", "🛼", "🚣", "🎳", "💪", "🏆"]
+        case .social:
+            return ["👋", "🤝", "💬", "🎲", "♟️", "🃏", "🧩", "📺", "🛋️", "🏠",
+                    "☕", "🍵", "🧁", "🎂", "🎈", "🤗", "😊", "👯", "🙌", "✨"]
+        case .drinks:
+            return ["🍺", "🍻", "🥂", "🍷", "🍸", "🍹", "🥃", "🍾", "🧉", "🍶",
+                    "🥤", "🧃", "🫗", "🪩", "🌃", "🍊", "🍋", "🫒", "🧊", "🔥"]
+        case .coffee:
+            return ["☕", "🧋", "🍵", "🫖", "🥐", "🥯", "🍩", "🧁", "🍪", "🥧",
+                    "📖", "💻", "📝", "🎧", "☀️", "🌤️", "🪴", "💭", "✨", "🤎"]
+        case .food:
+            return ["🍽️", "🍕", "🍔", "🍣", "🍜", "🍝", "🌮", "🌯", "🥗", "🍱",
+                    "🍛", "🥘", "🍲", "🥙", "🧆", "🍳", "🥞", "🧇", "🍖", "🍗",
+                    "🍤", "🦐", "🦞", "🦑", "🍰", "🎂", "🍨", "🍦"]
+        case .movies:
+            return ["🍿", "🎬", "🎥", "📽️", "🎞️", "📺", "🛋️", "🎭", "👀", "🎧",
+                    "🥤", "🍫", "🍭", "🍬", "😱", "😂", "😭", "🤔", "⭐", "🌟"]
+        case .culture:
+            return ["🎨", "🖼️", "🎭", "🎪", "📚", "📖", "🏛️", "🗽", "🏰", "⛩️",
+                    "🕌", "🎻", "🎼", "✍️", "🖌️", "📷", "🔭", "🔬", "🧬", "💡"]
+        case .outdoors:
+            return ["🌳", "🏕️", "⛰️", "🏔️", "🌲", "🌴", "🏖️", "🌊", "🚶", "🥾",
+                    "🧗", "🏄", "🛶", "🚣", "🎣", "🌅", "🌄", "🦋", "🐿️", "🌸",
+                    "🌺", "🌻", "🍂", "❄️", "☀️", "🌈", "⛺", "🔦"]
+        case .nightlife:
+            return ["🌙", "🌃", "🏙️", "🍸", "🍹", "🌚", "🎆", "🎇", "🌠", "🕯️",
+                    "🔥", "💫", "✨", "😈", "🕺", "💃", "🕶️", "🪩", "🎰", "🎲"]
+        case .exploreTheCity:
+            return ["🗺️", "🏙️", "🚶", "📸", "🚲", "🛴", "🚕", "🚌", "🚇", "🌉",
+                    "🏰", "🏛️", "🏢", "🏬", "🏪", "🏫", "🏩", "💒", "🎡", "⛲"]
+        case .partyTime:
+            return ["🎉", "🎊", "🪩", "🥳", "👯", "👯‍♂️", "👯‍♀️", "🍻", "🥂", "🍾",
+                    "🥤", "🎈", "🎁", "🎂", "🍰", "🧁", "🍭", "🍬", "🍫", "🍿"]
+        case .liveMusic:
+            return ["🎸", "🎹", "🎷", "🎺", "🥁", "🎻", "🎤", "🎵", "🎶", "🎼",
+                    "🎧", "🔊", "🎪", "🎫", "🤘", "🙌", "👏", "🔥", "⭐", "✨"]
+        case .other:
+            return ["📍", "⭐", "❤️", "🔥", "✨", "🎯", "💡", "🚀", "🌟", "💫",
+                    "🎁", "🎀", "💝", "🦄", "🌈", "☀️", "🌙", "⚡", "💎", "🏅"]
         }
     }
 }
 
-/// Common emojis for plan selection
-enum PlanEmoji {
-    static let all: [String] = [
-        "🍕", "🍔", "🍣", "🍜", "🍳", "🥗",  // Food
-        "☕", "🍺", "🍷", "🧋", "🍹",         // Drinks
-        "🏃", "⚽", "🏀", "🎾", "🚴", "🏊",   // Sports
-        "🎨", "🎭", "🎬", "📚", "🎵", "🖼️",   // Culture
-        "🌳", "🏖️", "⛰️", "🚶", "🧘", "🌅",   // Outdoors
-        "🎉", "💃", "🎤", "🎪", "🪩",         // Nightlife
-        "🎸", "🎹", "🎷", "🎺", "🥁",         // Live Music
-        "👋", "🤝", "💬", "🎮", "🎲",         // Social
-        "📍", "⭐", "❤️", "🔥", "✨"          // Other
-    ]
-}
+
 

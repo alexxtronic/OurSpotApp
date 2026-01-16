@@ -4,6 +4,7 @@ import MapKit
 /// Map view showing plan pins around Copenhagen
 struct MapView: View {
     @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var blockService: BlockService
     @StateObject private var locationManager = LocationManager()
     @State private var selectedPlan: Plan?
     @State private var showPlanDetails = false  // For hero animation
@@ -42,6 +43,11 @@ struct MapView: View {
     // Filtered plans based on search and filters
     private var searchFilteredPlans: [Plan] {
         planStore.filteredPlans.filter { plan in
+            // Block filter
+            if blockService.isBlocked(userId: plan.hostUserId.uuidString) {
+                return false
+            }
+            
             // Search text filter
             let matchesSearch = searchText.isEmpty || 
                 plan.title.localizedCaseInsensitiveContains(searchText) ||
@@ -58,7 +64,15 @@ struct MapView: View {
         }
     }
     
+    // Check if any filter is currently active
+    private var hasActiveFilters: Bool {
+        selectedActivityFilter != nil || selectedDateFilter != .all || !searchText.isEmpty
+    }
+    
     var body: some View {
+        // Compute clusters based on current zoom level - performed outside Map builder to help compiler
+        let clusters = MapClusterHelper.clusterPlans(searchFilteredPlans, span: mapSpan)
+        
         NavigationStack {
             ZStack {
                 MapReader { proxy in
@@ -66,45 +80,8 @@ struct MapView: View {
                         Map(position: $cameraPosition) {
                             UserAnnotation()
                             
-                            // Compute clusters based on current zoom level
-                            let clusters = MapClusterHelper.clusterPlans(searchFilteredPlans, span: mapSpan)
-                            
                             ForEach(clusters) { cluster in
-                                if cluster.isSingle, let plan = cluster.singlePlan {
-                                    // Single plan - show normal annotation
-                                    Annotation("", coordinate: CLLocationCoordinate2D(
-                                        latitude: plan.latitude,
-                                        longitude: plan.longitude
-                                    )) {
-
-                                        PlanAnnotationView(plan: plan, scale: zoomScale, isSelected: selectedPlan?.id == plan.id)
-                                            .onTapGesture {
-                                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                    selectedPlan = plan
-                                                    showPlanDetails = true
-                                                }
-                                                HapticManager.mediumTap()
-                                            }
-                                    }
-                                } else {
-                                    // Cluster - show cluster annotation
-                                    Annotation("", coordinate: cluster.center) {
-                                        ClusterAnnotationView(cluster: cluster, scale: zoomScale)
-                                            .onTapGesture {
-                                                // Zoom into the cluster
-                                                withAnimation {
-                                                    cameraPosition = .region(MKCoordinateRegion(
-                                                        center: cluster.center,
-                                                        span: MKCoordinateSpan(
-                                                            latitudeDelta: mapSpan * 0.3,
-                                                            longitudeDelta: mapSpan * 0.3
-                                                        )
-                                                    ))
-                                                }
-                                                HapticManager.lightTap()
-                                            }
-                                    }
-                                }
+                                annotationContent(for: cluster)
                             }
                         }
                         .mapStyle(.standard(elevation: .realistic, pointsOfInterest: .excludingAll))
@@ -143,18 +120,150 @@ struct MapView: View {
                             selectedActivityFilter: $selectedActivityFilter,
                             selectedDateFilter: $selectedDateFilter,
                             isExpanded: $isSearchExpanded,
+
                             onSearch: {
                                 HapticManager.lightTap()
+                                performLocationSearch()
                             }
                         )
-                        
-                        // Right side - Location Button removed to allow search bar expansion
-
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     
+
+                    
+                    // Filters & Quick Actions
+                    if isSearchExpanded {
+                        // Full-width filters when expanded
+                        MapFiltersView(
+                            selectedActivityFilter: $selectedActivityFilter,
+                            selectedDateFilter: $selectedDateFilter,
+                            onSearch: {
+                                HapticManager.lightTap()
+                                performLocationSearch()
+                            }
+                        )
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    } else {
+
+    // Quick Action Bubbles (only visible when search is NOT expanded)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                // 1. Plans Today
+                                QuickActionBubble(
+                                    text: "Plans Today",
+                                    icon: "calendar",
+                                    isSystemImage: true,
+                                    isActive: selectedDateFilter == .today && selectedActivityFilter == nil && searchText.isEmpty
+                                ) {
+                                    selectedDateFilter = .today
+                                    selectedActivityFilter = nil
+                                    searchText = ""
+                                    HapticManager.lightTap()
+                                }
+                                
+                                // 2. Yoga with new friends
+                                QuickActionBubble(
+                                    text: "Yoga with new friends",
+                                    icon: "figure.yoga",
+                                    isSystemImage: true,
+                                    isActive: searchText.lowercased() == "yoga" && selectedActivityFilter == nil && selectedDateFilter == .all
+                                ) {
+                                    searchText = "yoga"
+                                    selectedActivityFilter = nil
+                                    selectedDateFilter = .all
+                                    HapticManager.lightTap()
+                                }
+                                
+                                // 3. Grab a coffee
+                                QuickActionBubble(
+                                    text: "Grab a coffee",
+                                    icon: ActivityType.coffee.icon,
+                                    isSystemImage: false,
+                                    isActive: selectedActivityFilter == .coffee && searchText.isEmpty
+                                ) {
+                                    selectedActivityFilter = .coffee
+                                    selectedDateFilter = .all
+                                    searchText = ""
+                                    HapticManager.lightTap()
+                                }
+                                
+                                // 4. Nightlife this weekend
+                                QuickActionBubble(
+                                    text: "Nightlife this weekend",
+                                    icon: ActivityType.nightlife.icon, // "nightlife"
+                                    isSystemImage: false,
+                                    isActive: selectedActivityFilter == .nightlife && selectedDateFilter == .thisWeekend && searchText.isEmpty
+                                ) {
+                                    selectedActivityFilter = .nightlife
+                                    selectedDateFilter = .thisWeekend
+                                    searchText = ""
+                                    HapticManager.lightTap()
+                                }
+                                
+                                // 5. Go for beers tonight
+                                QuickActionBubble(
+                                    text: "Go for beers tonight",
+                                    icon: ActivityType.drinks.icon, // "drinks"
+                                    isSystemImage: false,
+                                    isActive: selectedActivityFilter == .drinks && selectedDateFilter == .today && searchText.isEmpty
+                                ) {
+                                    selectedActivityFilter = .drinks
+                                    selectedDateFilter = .today
+                                    searchText = ""
+                                    HapticManager.lightTap()
+                                }
+                                
+                                // 6. See live music this week
+                                QuickActionBubble(
+                                    text: "See live music this week",
+                                    icon: ActivityType.liveMusic.icon, // "livemusic"
+                                    isSystemImage: false,
+                                    isActive: selectedActivityFilter == .liveMusic && selectedDateFilter == .thisWeek && searchText.isEmpty
+                                ) {
+                                    selectedActivityFilter = .liveMusic
+                                    selectedDateFilter = .thisWeek
+                                    searchText = ""
+                                    HapticManager.lightTap()
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                        }
+
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        
+                        // Reset Filters button - appears when any filter is active
+                        if hasActiveFilters {
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    selectedActivityFilter = nil
+                                    selectedDateFilter = .all
+                                    searchText = ""
+                                }
+                                HapticManager.mediumTap()
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Text("Reset Filters")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.red.opacity(0.85))
+                                )
+                                .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
+                            }
+                            .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    
                     Spacer()
+                        .allowsHitTesting(false) // Allow taps to pass through to map annotations
                     
                     // Bottom Controls layer
                     HStack {
@@ -188,7 +297,7 @@ struct MapView: View {
                                 .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                         }
                         .padding(.trailing, 16)
-                        .padding(.bottom, 20) // Positioned above Tab Bar (approx 50-80pt usually needed, but inside safe area usually handles it. Will add padding to be safe).
+                        .padding(.bottom, 30) // Positioned closer to center console
                     }
                 }
             }
@@ -308,7 +417,7 @@ struct MapView: View {
                         .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
                 }
                 .padding(.horizontal, 40)
-                .padding(.bottom, 20) // Position just above tab bar
+                .padding(.bottom, 70) // Position well above tab bar
             }
         }
         .transition(.opacity)
@@ -351,6 +460,75 @@ struct MapView: View {
             }
         }
     }
+    
+    // Helper to reduce complexity in Map content builder
+    @MapContentBuilder
+    private func annotationContent(for cluster: PlanCluster) -> some MapContent {
+        if cluster.isSingle, let plan = cluster.singlePlan {
+            // Single plan - show normal annotation
+            Annotation("", coordinate: CLLocationCoordinate2D(
+                latitude: plan.latitude,
+                longitude: plan.longitude
+            )) {
+
+                PlanAnnotationView(plan: plan, scale: zoomScale, isSelected: selectedPlan?.id == plan.id)
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            selectedPlan = plan
+                            showPlanDetails = true
+                        }
+                        HapticManager.mediumTap()
+                    }
+            }
+        } else {
+            // Cluster - show cluster annotation
+            Annotation("", coordinate: cluster.center) {
+                ClusterAnnotationView(cluster: cluster, scale: zoomScale)
+                    .onTapGesture {
+                        // Zoom into the cluster
+                        withAnimation {
+                            cameraPosition = .region(MKCoordinateRegion(
+                                center: cluster.center,
+                                span: MKCoordinateSpan(
+                                    latitudeDelta: mapSpan * 0.3,
+                                    longitudeDelta: mapSpan * 0.3
+                                )
+                            ))
+                        }
+                        HapticManager.lightTap()
+                    }
+            }
+        }
+    }
+    
+    private func performLocationSearch() {
+        guard !searchText.isEmpty else { return }
+        
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = searchText
+        
+        let search = MKLocalSearch(request: request)
+        
+        search.start { response, error in
+            guard let mapItem = response?.mapItems.first, let location = mapItem.placemark.location else {
+                Logger.warning("Location search failed or no results")
+                return 
+            }
+            
+            // Move map to location
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+                cameraPosition = .region(MKCoordinateRegion(
+                    center: location.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1) // City level
+                ))
+            }
+            
+            // Clear search text so users can see events in that city
+            searchText = ""
+            
+            Logger.info("Map moved to location search result: \(mapItem.name ?? "Unknown")")
+        }
+    }
 }
 
 /// Map annotation - liquid glass bubble with emoji and title
@@ -360,84 +538,83 @@ struct PlanAnnotationView: View {
     var isSelected: Bool = false
     
     // Base dimensions - larger for visibility
-    private let baseSize: CGFloat = 56
-    private let baseEmojiSize: CGFloat = 28
+    // Base dimensions - larger for visibility
+    private let baseSize: CGFloat = 62 // increased ~11% from 56
+    private let baseEmojiSize: CGFloat = 31 // increased ~11% from 28
+    
+    @State private var isAnimating = false
     
     private var scaledSize: CGFloat { baseSize * scale }
     private var scaledEmojiSize: CGFloat { baseEmojiSize * scale }
     
+    /// Whether event is "live" (started within last 10 hours)
+    private var isLive: Bool {
+        let hoursSinceStart = Date().timeIntervalSince(plan.startsAt) / 3600
+        return hoursSinceStart >= 0 && hoursSinceStart < 10
+    }
+    
     var body: some View {
         VStack(spacing: 3 * scale) {
-            // Glass bubble with glow
+            // LIVE badge - shown above the bubble for live events
+            if isLive {
+                Text("LIVE")
+                    .font(.system(size: 9 * scale, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6 * scale)
+                    .padding(.vertical, 2 * scale)
+                    .background(Color.red)
+                    .cornerRadius(4 * scale)
+            }
+            
+            // Simple Minimalist Gradient Bubble container
             ZStack {
-                // Outer glow - subtle light effect
-                 Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color.white.opacity(0.3),
-                                Color.white.opacity(0.1),
-                                Color.clear
-                            ],
-                            center: .topLeading,
-                            startRadius: 0,
-                            endRadius: scaledSize * 0.8
-                        )
-                    )
-                    .frame(width: scaledSize + 8, height: scaledSize + 8)
+                // Background Circle (Black for high contrast with 3D icons, or keep eggshell logic?)
+                // Since the 3D icons have their own black background, we can just clip them.
+                // But we need a border/stroke for branding/Live status
                 
-                // Main glass bubble - more opaque
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.85),
-                                Color.white.opacity(0.5)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color(hex: "E6DFCD") ?? .white) // Slightly darker eggshell/beige
                     .frame(width: scaledSize, height: scaledSize)
                     .overlay(
-                        // Strong border with gradient for liquid glass effect
+                        // Rainbow stroke for live events, otherwise branded orange
                         Circle()
                             .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.9),
-                                        Color.white.opacity(0.4)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2
+                                isLive 
+                                    ? AnyShapeStyle(AngularGradient(
+                                        colors: [.red, .orange, .yellow, .green, .blue, .purple, .red],
+                                        center: .center
+                                    ))
+                                    : AnyShapeStyle(DesignSystem.Colors.primary),
+                                lineWidth: isLive ? 3 : 2
                             )
                     )
-                    // Prism/Rainbow Effect
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                AngularGradient(
-                                    colors: [.red, .orange, .yellow, .green, .blue, .purple, .red],
-                                    center: .center
-                                ),
-                                lineWidth: 1.5
-                            )
-                            .opacity(0.5)
-                            .blur(radius: 1)
-                    )
-                    .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 3)
+                    .shadow(color: Color.black.opacity(0.25), radius: 5, x: 0, y: 3)
                 
-                // Emoji
-                Text(plan.emoji)
-                    .font(.system(size: scaledEmojiSize))
+                // 3D Icon Image
+                let iconScale: CGFloat = plan.activityType == .culture ? 1.25 : 1.0
+                Image(plan.activityType.icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: (scaledSize - 4) * iconScale, height: (scaledSize - 4) * iconScale)
+                    .clipShape(Circle())
+            }
+            .offset(y: isAnimating ? -4 : 0) // Subtle bounce animation
+            .onAppear {
+                // Add random delay so they don't all bounce in perfect sync
+                let delay = Double.random(in: 0...1.0)
+                withAnimation(
+                    .easeInOut(duration: 1.5)
+                    .repeatForever(autoreverses: true)
+                    .delay(delay)
+                ) {
+                    isAnimating = true
+                }
             }
             // Host avatar - small circle overlapping bottom-right of the bubble
             .overlay(alignment: .bottomTrailing) {
                 AvatarView(
                     name: plan.hostName,
-                    size: 22 * scale,
+                    size: 24.5 * scale, // Increased ~11% from 22
                     url: URL(string: plan.hostAvatar ?? ""),
                     showBorder: false  // Clean circle, no white border
                 )
@@ -461,11 +638,275 @@ struct PlanAnnotationView: View {
                 )
                 .lineLimit(1)
         }
+        .contentShape(Rectangle()) // Ensure entire area is tappable
     }
+
 }
+
 
 #Preview {
     MapView()
         .environmentObject(PlanStore())
         .environmentObject(SessionStore())
+}
+
+/// Quick action bubble for one-tap filtering
+struct QuickActionBubble: View {
+    let text: String
+    let icon: String // Asset name or System Name
+    var isSystemImage: Bool = true // Default to true
+    var isActive: Bool = false
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if isSystemImage {
+                    Image(systemName: icon)
+                        .font(.system(size: 14, weight: isActive ? .semibold : .regular))
+                        .foregroundColor(isActive ? .orange : .primary)
+                } else {
+                    Image(icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                        .clipShape(Circle())
+                }
+                
+                Text(text)
+                    .font(.system(size: 14, weight: isActive ? .semibold : .medium))
+                    .foregroundColor(isActive ? .orange : .primary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Group {
+                    if isActive {
+                        // Orange gradient glow background when active
+                        LinearGradient(
+                            colors: [
+                                Color.orange.opacity(0.2),
+                                Color(red: 1.0, green: 0.6, blue: 0.2).opacity(0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    } else {
+                        Color.clear
+                    }
+                }
+            )
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(
+                        isActive
+                            ? LinearGradient(
+                                colors: [Color.orange, Color(red: 1.0, green: 0.65, blue: 0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                              )
+                            : LinearGradient(
+                                colors: [Color.white.opacity(0.3), Color.white.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                              ),
+                        lineWidth: isActive ? 1.5 : 1
+                    )
+            )
+            .shadow(
+                color: isActive ? Color.orange.opacity(0.3) : Color.black.opacity(0.1),
+                radius: isActive ? 8 : 4,
+                y: 2
+            )
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(isActive ? 1.02 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isActive)
+    }
+}
+
+// MARK: - Filter Views
+
+/// Horizontal scrolling filters for Activity and Date
+struct MapFiltersView: View {
+    @Binding var selectedActivityFilter: ActivityType?
+    @Binding var selectedDateFilter: DateFilter
+    let onSearch: () -> Void
+    
+    @State private var showDatePicker = false
+    @State private var tempDate = Date()
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Activity filter chips
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    // "All" chip
+                    FilterChip(
+                        label: "All",
+                        iconName: nil,
+                        isSelected: selectedActivityFilter == nil
+                    ) {
+                        selectedActivityFilter = nil
+                        onSearch()
+                    }
+                    
+                    // Activity type chips
+                    ForEach(ActivityType.allCases, id: \.self) { activity in
+                        let scale: CGFloat = {
+                            switch activity {
+                            case .culture: return 1.25
+                            case .sports, .exploreTheCity: return 1.20
+                            default: return 1.0
+                            }
+                        }()
+                        
+                        FilterChip(
+                            label: activity.displayName,
+                            iconName: activity.icon,
+                            iconScale: scale,
+                            isSelected: selectedActivityFilter == activity
+                        ) {
+                            selectedActivityFilter = activity
+                            onSearch()
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+            
+            // Date filter chips
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(DateFilter.standardOptions, id: \.self) { filter in
+                        DateFilterChip(
+                            label: filter.displayName,
+                            isSelected: selectedDateFilter == filter
+                        ) {
+                            selectedDateFilter = filter
+                            onSearch()
+                        }
+                    }
+                    
+                    // Custom Date Chip
+                    let isCustomSelected = isCustomDateSelected
+                    DateFilterChip(
+                        label: isCustomSelected ? selectedDateFilter.displayName : "Select Date",
+                        isSelected: isCustomSelected
+                    ) {
+                        showDatePicker = true
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .padding(.vertical, 8)
+        .sheet(isPresented: $showDatePicker) {
+            NavigationStack {
+                VStack {
+                    DatePicker(
+                        "Select Date",
+                        selection: $tempDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .padding()
+                    
+                    Spacer()
+                }
+                .navigationTitle("Filter by Date")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            showDatePicker = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Apply") {
+                            selectedDateFilter = .custom(tempDate)
+                            showDatePicker = false
+                            onSearch()
+                        }
+                        .fontWeight(.bold)
+                    }
+                }
+                .presentationDetents([.medium])
+            }
+        }
+    }
+    
+    private var isCustomDateSelected: Bool {
+        if case .custom = selectedDateFilter { return true }
+        return false
+    }
+}
+
+/// Activity filter chip with glass effect - Updated to match QuickActionBubble style
+struct FilterChip: View {
+    let label: String
+    let iconName: String?
+    var iconScale: CGFloat = 1.0
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if let icon = iconName {
+                    Image(icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20 * iconScale, height: 20 * iconScale)
+                        .clipShape(Circle())
+                }
+                Text(label)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundColor(.primary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10) // Slightly taller to match QuickActionBubble feel
+            .background(isSelected ? Color.blue.opacity(0.3) : Color.clear)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule()) // Capsule shape
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.blue.opacity(0.5) : Color.white.opacity(0.3), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Date filter chip - Updated to match QuickActionBubble style
+struct DateFilterChip: View {
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 14))
+                Text(label)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundColor(.primary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(isSelected ? Color.green.opacity(0.3) : Color.clear)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.green.opacity(0.5) : Color.white.opacity(0.3), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
 }

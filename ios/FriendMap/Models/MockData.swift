@@ -63,6 +63,7 @@ enum MockData {
                 activityType: .drinks,
                 addressText: "Nyhavn 17, Copenhagen",
                 isPrivate: false,
+                maxAttendees: nil,
                 hostName: mockUsers[0].name,
                 hostAvatar: mockUsers[0].avatar
             ),
@@ -78,6 +79,7 @@ enum MockData {
                 activityType: .nightlife,
                 addressText: "Vesterbrogade 3, Copenhagen",
                 isPrivate: false,
+                maxAttendees: nil,
                 hostName: mockUsers[1].name,
                 hostAvatar: mockUsers[1].avatar
             ),
@@ -93,6 +95,7 @@ enum MockData {
                 activityType: .sports,
                 addressText: "Rosenborg Castle Gardens",
                 isPrivate: false,
+                maxAttendees: nil,
                 hostName: mockUsers[2].name,
                 hostAvatar: mockUsers[2].avatar
             ),
@@ -108,6 +111,7 @@ enum MockData {
                 activityType: .food,
                 addressText: "Reffen, Refshalevej 167",
                 isPrivate: false,
+                maxAttendees: nil,
                 hostName: mockUsers[3].name,
                 hostAvatar: mockUsers[3].avatar
             ),
@@ -123,6 +127,7 @@ enum MockData {
                 activityType: .social,
                 addressText: "Strøget, Copenhagen",
                 isPrivate: false,
+                maxAttendees: nil,
                 hostName: mockUsers[4].name,
                 hostAvatar: mockUsers[4].avatar
             ),
@@ -138,6 +143,7 @@ enum MockData {
                 activityType: .outdoors,
                 addressText: "Amager Strandpark",
                 isPrivate: true,
+                maxAttendees: nil,
                 hostName: mockUsers[5].name,
                 hostAvatar: mockUsers[5].avatar
             ),
@@ -153,6 +159,7 @@ enum MockData {
                 activityType: .culture,
                 addressText: "Superkilen, Nørrebro",
                 isPrivate: false,
+                maxAttendees: nil,
                 hostName: mockUsers[0].name,
                 hostAvatar: mockUsers[0].avatar
             ),
@@ -168,6 +175,7 @@ enum MockData {
                 activityType: .culture,
                 addressText: "Freetown Christiania",
                 isPrivate: true,
+                maxAttendees: nil,
                 hostName: mockUsers[2].name,
                 hostAvatar: mockUsers[2].avatar
             )

@@ -24,34 +24,36 @@ enum DesignSystem {
     
     // MARK: - Colors
     enum Colors {
-        static let primary = Color("Primary", bundle: nil)
-        static let secondary = Color("Secondary", bundle: nil)
+
+        // Direct override for Rebranding
+        static let primary = Color(hex: "cc990c") ?? .yellow // Dark Gold
+        static let secondary = Color(hex: "e8be4a") ?? .orange // Light Gold
         
         // Fallback colors if assets not set up
-        static let primaryFallback = Color(red: 0.25, green: 0.47, blue: 0.85) // Copenhagen blue
-        static let secondaryFallback = Color(red: 0.94, green: 0.36, blue: 0.45) // Coral accent
-        static let background = Color(UIColor.systemBackground)
-        static let secondaryBackground = Color(UIColor.secondarySystemBackground)
-        static let tertiaryBackground = Color(UIColor.tertiarySystemBackground)
+        static let primaryFallback = Color(hex: "cc990c") ?? .yellow // Dark Gold
+        static let secondaryFallback = Color(hex: "e8be4a") ?? .orange // Light Gold
+        static let background = Color(hex: "000000") ?? .black
+        static let secondaryBackground = Color(hex: "1a1a1a") ?? .gray
+        static let tertiaryBackground = Color(hex: "2a2a2a") ?? .gray.opacity(0.5)
     }
     
     // MARK: - Premium Gradients
     enum Gradients {
-        /// Primary brand gradient (purple to blue)
+        /// Primary brand gradient (Dark Gold to Light Gold)
         static let primary = LinearGradient(
-            colors: [Color(hex: "6366F1") ?? .purple, Color(hex: "8B5CF6") ?? .purple],
+            colors: [Color(hex: "cc990c") ?? .yellow, Color(hex: "e8be4a") ?? .orange],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
         
-        /// Accent gradient (pink to orange)
+        /// Accent gradient (Light Gold to Black)
         static let accent = LinearGradient(
-            colors: [Color(hex: "EC4899") ?? .pink, Color(hex: "F97316") ?? .orange],
+            colors: [Color(hex: "e8be4a") ?? .orange, Color(hex: "000000") ?? .black],
             startPoint: .leading,
             endPoint: .trailing
         )
         
-        /// Success gradient (teal to green)
+        /// Success gradient (teal to green) - Keeping as is for now, or could be Gold to Green
         static let success = LinearGradient(
             colors: [Color(hex: "14B8A6") ?? .teal, Color(hex: "22C55E") ?? .green],
             startPoint: .leading,
@@ -92,7 +94,7 @@ enum DesignSystem {
         static let small = ShadowStyle(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
         static let medium = ShadowStyle(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
         static let large = ShadowStyle(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
-        static let glow = ShadowStyle(color: Color(hex: "6366F1")?.opacity(0.5) ?? .purple.opacity(0.5), radius: 20, x: 0, y: 0)
+        static let glow = ShadowStyle(color: Color(hex: "e8be4a")?.opacity(0.5) ?? .yellow.opacity(0.5), radius: 20, x: 0, y: 0)
     }
     
     // MARK: - Animation

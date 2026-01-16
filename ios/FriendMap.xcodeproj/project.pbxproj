@@ -16,6 +16,7 @@
 		17607F6F408C5772A448B825 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25FB3BD59090D40C23A78D79 /* SessionStore.swift */; };
 		1B9875E76F472C2BCC6E682B /* StarRatingPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0467E8252C43F6BA9301EC58 /* StarRatingPickerView.swift */; };
 		1D6ADF4B4972449F3964E7B7 /* NotificationPreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EAA196B54045D99B38C2F6D /* NotificationPreferencesView.swift */; };
+		282E61F02F17CCCE00C02739 /* BlockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282E61EF2F17CCCE00C02739 /* BlockService.swift */; };
 		28467ADC2EFEA933002F8C86 /* MapClusterHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28467ADB2EFEA933002F8C86 /* MapClusterHelper.swift */; };
 		28467ADE2EFEA9AE002F8C86 /* ClusterAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28467ADD2EFEA9AE002F8C86 /* ClusterAnnotationView.swift */; };
 		28467AE02EFEB531002F8C86 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28467ADF2EFEB531002F8C86 /* CachedAsyncImage.swift */; };
@@ -85,6 +86,7 @@
 		245067FF48A5E158D4A469D4 /* PlanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanService.swift; sourceTree = "<group>"; };
 		251E8CCA6B17C2B809EB0834 /* SkeletonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonViews.swift; sourceTree = "<group>"; };
 		25FB3BD59090D40C23A78D79 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		282E61EF2F17CCCE00C02739 /* BlockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockService.swift; sourceTree = "<group>"; };
 		28467ADB2EFEA933002F8C86 /* MapClusterHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapClusterHelper.swift; sourceTree = "<group>"; };
 		28467ADD2EFEA9AE002F8C86 /* ClusterAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClusterAnnotationView.swift; sourceTree = "<group>"; };
 		28467ADF2EFEB531002F8C86 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
@@ -319,6 +321,7 @@
 		8D628F9531A554E4E7158CE6 /* FriendMap */ = {
 			isa = PBXGroup;
 			children = (
+				282E61EF2F17CCCE00C02739 /* BlockService.swift */,
 				70D803E989172060B39FD77A /* Assets.xcassets */,
 				7CCE75D07061062D35D926B2 /* Info.plist */,
 				6F95C49BACC6E92A19C2A92F /* App */,
@@ -457,6 +460,7 @@
 				5EBD4F8BDE48A414F01DF7BC /* ConfettiView.swift in Sources */,
 				753CD2D58C89B847612DED80 /* Config.swift in Sources */,
 				F8946F784BE5260792E710C5 /* ContentView.swift in Sources */,
+				282E61F02F17CCCE00C02739 /* BlockService.swift in Sources */,
 				491B7401DF7F36C0CC500277 /* CreatePlanView.swift in Sources */,
 				6BD5CC4F71675894A7BF50A1 /* DesignSystem.swift in Sources */,
 				E4D6021BE705103C2B4B2561 /* DeviceTokenService.swift in Sources */,
@@ -527,8 +531,12 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.alexdamore.friendmap;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -674,8 +682,12 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.alexdamore.friendmap;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};

@@ -56,64 +56,7 @@ struct MapSearchBar: View {
             )
             .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
             
-            // Filters (when expanded)
-            if isExpanded {
-                VStack(spacing: 8) {
-                    // Activity filter chips
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            // "All" chip
-                            FilterChip(
-                                label: "All",
-                                emoji: nil,
-                                isSelected: selectedActivityFilter == nil
-                            ) {
-                                selectedActivityFilter = nil
-                                onSearch()
-                            }
-                            
-                            // Activity type chips
-                            ForEach(ActivityType.allCases, id: \.self) { activity in
-                                FilterChip(
-                                    label: activity.displayName,
-                                    emoji: activity.defaultEmoji,
-                                    isSelected: selectedActivityFilter == activity
-                                ) {
-                                    selectedActivityFilter = activity
-                                    onSearch()
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                    
-                    // Date filter chips
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(DateFilter.standardOptions, id: \.self) { filter in
-                                DateFilterChip(
-                                    label: filter.displayName,
-                                    isSelected: selectedDateFilter == filter
-                                ) {
-                                    selectedDateFilter = filter
-                                    onSearch()
-                                }
-                            }
-                            
-                            // Custom Date Chip
-                            let isCustomSelected = isCustomDateSelected
-                            DateFilterChip(
-                                label: isCustomSelected ? selectedDateFilter.displayName : "Select Date",
-                                isSelected: isCustomSelected
-                            ) {
-                                showDatePicker = true
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
+            .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
         }
         .sheet(isPresented: $showDatePicker) {
             NavigationStack {
@@ -162,6 +105,7 @@ enum DateFilter: Hashable, Equatable {
     case all
     case today
     case thisWeek
+    case thisWeekend  // Friday, Saturday, Sunday
     case thisMonth
     case custom(Date)
     
@@ -175,6 +119,7 @@ enum DateFilter: Hashable, Equatable {
         case .all: return "All Dates"
         case .today: return "Today"
         case .thisWeek: return "This Week"
+        case .thisWeekend: return "This Weekend"
         case .thisMonth: return "This Month"
         case .custom(let date):
             let formatter = DateFormatter()
@@ -185,77 +130,57 @@ enum DateFilter: Hashable, Equatable {
     
     func matches(date: Date) -> Bool {
         let calendar = Calendar.current
+        let now = Date()
+        
         switch self {
         case .all:
             return true
         case .today:
             return calendar.isDateInToday(date)
         case .thisWeek:
-            return calendar.isDate(date, equalTo: Date(), toGranularity: .weekOfYear)
+            // Use 7-day rolling window from today (not calendar week)
+            let startOfToday = calendar.startOfDay(for: now)
+            guard let sevenDaysLater = calendar.date(byAdding: .day, value: 7, to: startOfToday) else {
+                return false
+            }
+            return date >= startOfToday && date < sevenDaysLater
+        case .thisWeekend:
+            // Find the next Friday, Saturday, Sunday (or current day if already weekend)
+            let startOfToday = calendar.startOfDay(for: now)
+            let weekday = calendar.component(.weekday, from: now) // 1=Sun, 7=Sat
+            
+            // Calculate days until Friday (6)
+            var daysUntilFriday = (6 - weekday + 7) % 7
+            if daysUntilFriday == 0 && weekday != 6 {
+                daysUntilFriday = 7 // If today is not Friday, go to next Friday
+            }
+            if weekday == 1 { // Sunday - we're already in weekend, start from today
+                daysUntilFriday = 0
+            } else if weekday == 7 { // Saturday - we're already in weekend, start from yesterday actually means today
+                daysUntilFriday = 0
+            } else if weekday == 6 { // Friday
+                daysUntilFriday = 0
+            }
+            
+            // Simpler approach: just check if date falls on Fri/Sat/Sun within the next 7 days
+            let dateWeekday = calendar.component(.weekday, from: date)
+            let isFridaySaturdaySunday = dateWeekday == 6 || dateWeekday == 7 || dateWeekday == 1
+            
+            guard let sevenDaysLater = calendar.date(byAdding: .day, value: 7, to: startOfToday) else {
+                return false
+            }
+            
+            return date >= startOfToday && date < sevenDaysLater && isFridaySaturdaySunday
         case .thisMonth:
-            return calendar.isDate(date, equalTo: Date(), toGranularity: .month)
+            // Use 30-day rolling window from today (not calendar month)
+            let startOfToday = calendar.startOfDay(for: now)
+            guard let thirtyDaysLater = calendar.date(byAdding: .day, value: 30, to: startOfToday) else {
+                return false
+            }
+            return date >= startOfToday && date < thirtyDaysLater
         case .custom(let customDate):
             return calendar.isDate(date, inSameDayAs: customDate)
         }
-    }
-}
-
-/// Activity filter chip with glass effect
-struct FilterChip: View {
-    let label: String
-    let emoji: String?
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                if let emoji = emoji {
-                    Text(emoji)
-                        .font(.system(size: 14))
-                }
-                Text(label)
-                    .font(.system(size: 13, weight: .medium))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color.blue.opacity(0.3) : Color.clear)
-            .background(.ultraThinMaterial)
-            .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(isSelected ? Color.blue.opacity(0.5) : Color.white.opacity(0.2), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-/// Date filter chip
-struct DateFilterChip: View {
-    let label: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 11))
-                Text(label)
-                    .font(.system(size: 12, weight: .medium))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.green.opacity(0.3) : Color.clear)
-            .background(.ultraThinMaterial)
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color.green.opacity(0.5) : Color.white.opacity(0.2), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
     }
 }
 

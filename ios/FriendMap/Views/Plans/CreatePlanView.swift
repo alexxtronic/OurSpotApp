@@ -19,6 +19,14 @@ struct CreatePlanView: View {
     @State private var geocodedCoordinate: CLLocationCoordinate2D?
     @State private var geocodeError: String?
     @State private var isPrivate = false
+    @State private var isCreating = false
+    @State private var maxAttendeesText = ""
+    @State private var isKeyboardVisible = false
+    
+    private var maxAttendees: Int? {
+        guard !maxAttendeesText.isEmpty else { return nil }
+        return Int(maxAttendeesText)
+    }
     
     // Invite friends state
     @State private var friendSearchText = ""
@@ -45,7 +53,8 @@ struct CreatePlanView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        ZStack {
+            NavigationStack {
             Form {
                 // Shared form fields (title, category, when, where, privacy)
                 PlanFormFields(
@@ -120,7 +129,35 @@ struct CreatePlanView: View {
                 } footer: {
                     Text("Invited friends will receive a notification.")
                 }
+                
+                // Max Attendees section
+                Section {
+                    HStack {
+                        Text("Max Attendees")
+                        Spacer()
+                        TextField("Unlimited", text: $maxAttendeesText)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                            .onChange(of: maxAttendeesText) { _, newValue in
+                                // Only allow numbers
+                                let filtered = newValue.filter { $0.isNumber }
+                                if filtered != newValue {
+                                    maxAttendeesText = filtered
+                                }
+                            }
+                    }
+                } header: {
+                    Text("Attendee Limit")
+                } footer: {
+                    if let max = maxAttendees {
+                        Text("Only \(max) people can RSVP as going.")
+                    } else {
+                        Text("Leave blank for unlimited attendees.")
+                    }
+                }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Create Plan")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -135,9 +172,43 @@ struct CreatePlanView: View {
                         geocodeAndCreatePlan()
                     }
                     .font(.headline)
-                    .disabled(!isFormValid || isGeocoding)
+                    .disabled(!isFormValid || isGeocoding || isCreating)
                 }
             }
+            } // closes NavigationStack
+            
+            // Floating keyboard dismiss button - hovers above keyboard
+            if isKeyboardVisible {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            HapticManager.lightTap()
+                        } label: {
+                            Image(systemName: "keyboard.chevron.compact.down")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 40, height: 40)
+                                .background(
+                                    Circle()
+                                        .fill(Color.black.opacity(0.7))
+                                )
+                                .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
+                        }
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 12)
+                    }
+                }
+                .transition(.opacity)
+            }
+        } // closes ZStack
+        .onReceive(Foundation.NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(Foundation.NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            isKeyboardVisible = false
         }
     }
     
@@ -184,7 +255,16 @@ struct CreatePlanView: View {
     }
     
     private func createPlan(latitude: Double, longitude: Double) {
+        // Prevent double-submission
+        guard !isCreating else {
+            Logger.warning("createPlan called while already creating - ignoring duplicate")
+            return
+        }
+        isCreating = true
+        
         Task {
+            defer { isCreating = false }
+            
             // Create a plan ID upfront so we can track it
             let newPlanId = UUID()
             
@@ -201,7 +281,8 @@ struct CreatePlanView: View {
                 hostUserId: sessionStore.currentUser.id,
                 hostName: sessionStore.currentUser.name,
                 hostAvatar: sessionStore.currentUser.avatarUrl,
-                isPrivate: isPrivate
+                isPrivate: isPrivate,
+                maxAttendees: maxAttendees
             )
             
             // Send invite notifications to selected friends (await to ensure they're sent)
@@ -241,45 +322,6 @@ struct CreatePlanView: View {
     }
 }
 
-
-/// Emoji picker grid view
-struct EmojiPickerView: View {
-    @Binding var selectedEmoji: String
-    @Environment(\.dismiss) private var dismiss
-    
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
-    
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(PlanEmoji.all, id: \.self) { emoji in
-                        Button {
-                            selectedEmoji = emoji
-                            dismiss()
-                        } label: {
-                            Text(emoji)
-                                .font(.largeTitle)
-                                .frame(width: 50, height: 50)
-                                .background(selectedEmoji == emoji ? Color.blue.opacity(0.2) : Color.clear)
-                                .cornerRadius(10)
-                        }
-                    }
-                }
-                .padding()
-            }
-            .navigationTitle("Choose Icon")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
 
 // MARK: - Friend Search Model
 

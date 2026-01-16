@@ -39,8 +39,9 @@ struct PlansView: View {
     // MARK: - Plan Groupings
     
     private var hostingPlans: [Plan] {
+        let tenHoursAgo = Date().addingTimeInterval(-10 * 60 * 60)
         var plans = planStore.plans
-            .filter { $0.hostUserId == sessionStore.currentUser.id && $0.startsAt > Date() }
+            .filter { $0.hostUserId == sessionStore.currentUser.id && $0.startsAt > tenHoursAgo }
         
         // Apply date filter if set
         if let filterDate = filterDate {
@@ -52,10 +53,11 @@ struct PlansView: View {
     }
     
     private var attendingPlans: [Plan] {
+        let tenHoursAgo = Date().addingTimeInterval(-10 * 60 * 60)
         var plans = planStore.plans
             .filter { plan in
                 plan.hostUserId != sessionStore.currentUser.id &&
-                plan.startsAt > Date() &&
+                plan.startsAt > tenHoursAgo &&
                 (planStore.getRSVP(for: plan.id) == .going || planStore.getRSVP(for: plan.id) == .maybe)
             }
         

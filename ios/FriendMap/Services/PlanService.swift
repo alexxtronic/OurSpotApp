@@ -17,10 +17,12 @@ final class PlanService: ObservableObject {
         
         // Select all plan fields plus host profile name and avatar
         // Safety limit to prevent unbounded queries at scale
+        // Include events from 10 hours ago to show "live" events that have already started
+        let tenHoursAgo = Date().addingTimeInterval(-10 * 60 * 60)
         let response: [PlanDTO] = try await supabase
             .from("plans")
             .select("*, profiles:host_user_id(name, avatar_url)")
-            .gte("starts_at", value: ISO8601DateFormatter().string(from: Date()))
+            .gte("starts_at", value: ISO8601DateFormatter().string(from: tenHoursAgo))
             .order("starts_at", ascending: true)
             .limit(500)
             .execute()
@@ -32,6 +34,8 @@ final class PlanService: ObservableObject {
             Logger.debug("   Host ID: \(dto.host_user_id)")
             Logger.debug("   Host Name (DTO): \(dto.profiles?.name ?? "NIL")")
             Logger.debug("   Host Avatar (DTO): \(dto.profiles?.avatar_url ?? "NIL")")
+            
+
             
             return Plan(
                 id: dto.id,
@@ -45,6 +49,7 @@ final class PlanService: ObservableObject {
                 activityType: ActivityType(rawValue: dto.activity_type ?? "social") ?? .social,
                 addressText: dto.address_text ?? "",
                 isPrivate: dto.is_private ?? false,
+                maxAttendees: dto.max_attendees,
                 hostName: dto.profiles?.name ?? "Unknown Host",
                 hostAvatar: dto.profiles?.avatar_url
             )
@@ -123,7 +128,8 @@ final class PlanService: ObservableObject {
                 emoji: plan.emoji,
                 activity_type: plan.activityType.rawValue,
                 address_text: plan.addressText,
-                is_private: plan.isPrivate
+                is_private: plan.isPrivate,
+                max_attendees: plan.maxAttendees
             ))
             .execute()
         
@@ -212,6 +218,7 @@ private struct PlanDTO: Decodable {
     let activity_type: String?
     let address_text: String?
     let is_private: Bool?
+    let max_attendees: Int?
     let profiles: ProfileDTO?
 }
 
@@ -232,6 +239,7 @@ private struct PlanInsertDTO: Encodable {
     let activity_type: String
     let address_text: String
     let is_private: Bool
+    let max_attendees: Int?
 }
 
 private struct RSVPDTO: Decodable {

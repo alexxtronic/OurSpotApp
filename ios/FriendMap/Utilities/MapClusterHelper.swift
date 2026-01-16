@@ -52,7 +52,7 @@ struct MapClusterHelper {
     static func clusterPlans(
         _ plans: [Plan],
         span: Double,
-        clusterThreshold: Double = 0.08
+        clusterThreshold: Double = 0.05 // Reduced from 0.08 for less aggressive clustering
     ) -> [PlanCluster] {
         guard !plans.isEmpty else { return [] }
         

@@ -1,9 +1,14 @@
 import SwiftUI
 import PhotosUI
+import Contacts
+import CoreLocation
 
 /// Premium onboarding flow shown after sign-up
 struct OnboardingView: View {
     @EnvironmentObject private var sessionStore: SessionStore
+    // Inject LocationManager via environment if available, or create state object/use shared instance logic
+    // Assuming simple request logic for now
+    
     var onComplete: () -> Void
     
     @State private var currentStep = 0
@@ -18,7 +23,11 @@ struct OnboardingView: View {
     @State private var isUploadingPhoto = false
     @FocusState private var isTextFieldFocused: Bool
     
-    private let totalSteps = 5
+    // Permission States
+    @State private var locationAuthorized = false
+    @State private var contactsAuthorized = false
+    
+    private let totalSteps = 6
     
     var body: some View {
         ZStack {
@@ -41,10 +50,35 @@ struct OnboardingView: View {
                     howItWorksScreen.tag(1)
                     chatScreen.tag(2)
                     trustScreen.tag(3)
-                    profileScreen.tag(4)
+                    permissionsScreen.tag(4)
+                    profileScreen.tag(5)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentStep)
+            }
+            
+            // Skip button in top-right (only show before profile screen)
+            if currentStep < 5 {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            HapticManager.lightTap()
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                currentStep = 5 // Skip to profile screen
+                            }
+                        } label: {
+                            Text("Skip")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                        }
+                    }
+                    .padding(.top, 50)
+                    .padding(.trailing, 8)
+                    Spacer()
+                }
             }
         }
         .ignoresSafeArea(.keyboard) // Don't let keyboard push up content
@@ -64,6 +98,9 @@ struct OnboardingView: View {
             if !sessionStore.currentUser.name.isEmpty && sessionStore.currentUser.name != "New User" {
                 displayName = sessionStore.currentUser.name
             }
+            
+            // Check initial permissions
+            checkPermissions()
             
             // Initial keyboard setup
             hideKeyboard()
@@ -87,9 +124,9 @@ struct OnboardingView: View {
         // Always remove existing first to avoid duplicates
         removeKeyboardMonitor()
         
-        // If we are on the first few screens (0-3), BLOCK the keyboard
-        // If we are on Profile screen (4), ALLOW the keyboard
-        if step < 4 {
+        // If we are on the first few screens (0-4), BLOCK the keyboard
+        // If we are on Profile screen (5), ALLOW the keyboard
+        if step < 5 {
             keyboardObserver = Foundation.NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { _ in
                 hideKeyboard()
             }
@@ -109,7 +146,7 @@ struct OnboardingView: View {
         HStack(spacing: 8) {
             ForEach(0..<totalSteps, id: \.self) { step in
                 Circle()
-                    .fill(step <= currentStep ? Color.orange : Color.gray.opacity(0.3))
+                    .fill(step <= currentStep ? DesignSystem.Colors.primary : Color.gray.opacity(0.3))
                     .frame(width: 8, height: 8)
                     .scaleEffect(step == currentStep ? 1.2 : 1.0)
                     .animation(.spring(response: 0.3), value: currentStep)
@@ -174,13 +211,7 @@ struct OnboardingView: View {
             // Icon
             Image(systemName: "mappin.and.ellipse")
                 .font(.system(size: 60))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.orange, .yellow],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .foregroundStyle(DesignSystem.Gradients.primary)
                 .scaleEffect(animateContent ? 1.0 : 0.5)
                 .opacity(animateContent ? 1.0 : 0)
             
@@ -228,13 +259,7 @@ struct OnboardingView: View {
                 
                 Image(systemName: "bubble.left.and.bubble.right.fill")
                     .font(.system(size: 50))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.orange, .yellow],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundStyle(DesignSystem.Gradients.primary)
             }
             .scaleEffect(animateContent ? 1.0 : 0.5)
             .opacity(animateContent ? 1.0 : 0)
@@ -295,7 +320,89 @@ struct OnboardingView: View {
         .padding(.horizontal, 32)
     }
     
-    // MARK: - Screen 5: Profile Setup
+    // MARK: - Screen 5: Permissions
+    
+    private var permissionsScreen: some View {
+        VStack(spacing: 32) {
+            Spacer()
+            
+            VStack(spacing: 16) {
+                Image(systemName: "location.viewfinder")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.orange, .yellow)
+                
+                Text("Enable Permissions")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(.black)
+                
+                Text("To find events and friends nearby, we need your permission.")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            .opacity(animateContent ? 1.0 : 0)
+            .offset(y: animateContent ? 0 : 20)
+            
+            VStack(spacing: 16) {
+                // Location Button
+                Button {
+                    requestLocationPermission()
+                } label: {
+                    HStack {
+                        Image(systemName: "location.fill")
+                            .frame(width: 24)
+                        Text("Enable Location")
+                        Spacer()
+                        if locationAuthorized {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        }
+                    }
+                    .font(.headline)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .foregroundColor(locationAuthorized ? .green : .primary)
+                }
+                .disabled(locationAuthorized)
+                
+                // Contacts Button
+                Button {
+                    requestContactsPermission()
+                } label: {
+                    HStack {
+                        Image(systemName: "person.2.fill")
+                            .frame(width: 24)
+                        Text("Enable Contacts")
+                        Spacer()
+                        if contactsAuthorized {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        }
+                    }
+                    .font(.headline)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .foregroundColor(contactsAuthorized ? .green : .primary)
+                }
+                .disabled(contactsAuthorized)
+            }
+            .padding(.horizontal)
+            .opacity(animateContent ? 1.0 : 0)
+            .scaleEffect(animateContent ? 1.0 : 0.9)
+            
+            Spacer()
+            
+            nextButton()
+        }
+        .padding(.horizontal, 32)
+    }
+    
+    // MARK: - Screen 6: Profile Setup (Previously 5)
     
     private var profileScreen: some View {
         VStack(spacing: 20) {
@@ -460,7 +567,7 @@ struct OnboardingView: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundColor(.orange)
+                .foregroundColor(DesignSystem.Colors.primary)
                 .frame(width: 28)
             
             Text(text)
@@ -564,6 +671,44 @@ struct OnboardingView: View {
                 window.endEditing(true)
                 window.rootViewController?.view.endEditing(true)
             }
+    }
+    
+    // MARK: - Permission Helpers
+    
+    private func checkPermissions() {
+        // Check Location
+        let status = CLLocationManager.authorizationStatus()
+        locationAuthorized = (status == .authorizedWhenInUse || status == .authorizedAlways)
+        
+        // Check Contacts
+        let contactStatus = CNContactStore.authorizationStatus(for: .contacts)
+        contactsAuthorized = (contactStatus == .authorized)
+    }
+    
+    private func requestLocationPermission() {
+        // Ideally use the LocationManager, but for now we direct request
+        // Since we are inside a View, we can't easily access the delegate callback here 
+        // without a View-Model or EnvironmentObject that publishes changes.
+        // We'll rely on the app's LocationManager if available, or just trigger the prompt.
+        let locationManager = CLLocationManager()
+        locationManager.requestWhenInUseAuthorization()
+        
+        // Optimistically check after a delay (or rely on app lifecycle)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            checkPermissions()
+        }
+    }
+    
+    private func requestContactsPermission() {
+        let store = CNContactStore()
+        store.requestAccess(for: .contacts) { granted, error in
+            DispatchQueue.main.async {
+                self.contactsAuthorized = granted
+                if let error = error {
+                    Logger.error("Contact permission error: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 

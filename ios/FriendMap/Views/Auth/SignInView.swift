@@ -1,4 +1,6 @@
 import SwiftUI
+import CryptoKit
+import AuthenticationServices
 
 /// Sign in screen with Apple and email options
 struct SignInView: View {
@@ -15,6 +17,9 @@ struct SignInView: View {
         case name, email, password
     }
     @FocusState private var focusedField: FormField?
+    
+    // Apple Sign-In nonce for security
+    @State private var currentNonce: String?
     
     var body: some View {
         NavigationStack {
@@ -40,29 +45,60 @@ struct SignInView: View {
                 
                 // Auth buttons
                 VStack(spacing: DesignSystem.Spacing.md) {
-                    // Sign in with Apple
-                    SignInWithAppleButton(type: .signIn, style: .black) { request in
-                        request.requestedScopes = [.email, .fullName]
-                    } onCompletion: { result in
+                    // FIRST - Guest login (most prominent for easy access)
+                    Button {
                         Task {
-                            await authService.signInWithApple()
+                            await authService.signInAnonymously()
                         }
+                    } label: {
+                        HStack {
+                            Image(systemName: "person.crop.circle.badge.questionmark")
+                            Text("Continue as Guest")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(DesignSystem.Colors.primaryFallback)
+                        .cornerRadius(DesignSystem.CornerRadius.md)
                     }
-                    .frame(height: 50)
-                    .cornerRadius(DesignSystem.CornerRadius.md)
                     
                     // Divider
                     HStack {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .frame(height: 1)
-                        Text("or")
+                        Text("or create an account")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .frame(height: 1)
                     }
+                    
+                    // Sign in with Apple
+                    SignInWithAppleButton(type: .signIn, style: .black) { request in
+                        let nonce = randomNonceString()
+                        currentNonce = nonce
+                        request.requestedScopes = [.email, .fullName]
+                        request.nonce = sha256(nonce)
+                    } onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                               let identityToken = appleIDCredential.identityToken,
+                               let tokenString = String(data: identityToken, encoding: .utf8),
+                               let nonce = currentNonce {
+                                Task {
+                                    await authService.signInWithApple(idToken: tokenString, nonce: nonce)
+                                }
+                            }
+                        case .failure(let error):
+                            Logger.error("Apple Sign-In failed: \(error.localizedDescription)")
+                        }
+                    }
+                    .frame(height: 50)
+                    .cornerRadius(DesignSystem.CornerRadius.md)
                     
                     // Email sign in button
                     Button {
@@ -95,12 +131,22 @@ struct SignInView: View {
                 Spacer()
                 
                 // Terms
-                Text("By continuing, you agree to our Terms of Service and Privacy Policy")
+                VStack(spacing: 4) {
+                    Text("By continuing, you agree to our")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    HStack(spacing: 4) {
+                        Link("Terms of Service", destination: URL(string: "https://alexxtronic.github.io/ourspot-legal/terms-of-service.html")!)
+                        Text("and")
+                        Link("Privacy Policy", destination: URL(string: "https://alexxtronic.github.io/ourspot-legal/privacy-policy.html")!)
+                    }
                     .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, DesignSystem.Spacing.lg)
-                    .padding(.bottom, DesignSystem.Spacing.md)
+                    .foregroundColor(.secondary) // or .blue if you want them to stand out more, but secondary is subtle
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, DesignSystem.Spacing.lg)
+                .padding(.bottom, DesignSystem.Spacing.md)
             }
             .sheet(isPresented: $showEmailForm) {
                 emailFormSheet
@@ -114,7 +160,10 @@ struct SignInView: View {
                         .tint(.white)
                 }
             }
+            .background(Color.black)
         }
+        .background(Color.black.ignoresSafeArea())
+        .preferredColorScheme(.dark)
     }
     
     private var emailFormSheet: some View {
@@ -190,7 +239,6 @@ struct SignInView: View {
 }
 
 // Sign in with Apple button wrapper
-import AuthenticationServices
 
 struct SignInWithAppleButton: UIViewRepresentable {
     let type: ASAuthorizationAppleIDButton.ButtonType
@@ -243,6 +291,31 @@ struct SignInWithAppleButton: UIViewRepresentable {
             parent.onCompletion(.failure(error))
         }
     }
+}
+
+// MARK: - Nonce Generation for Apple Sign-In
+
+/// Generates a random nonce string for Apple Sign-In security
+private func randomNonceString(length: Int = 32) -> String {
+    precondition(length > 0)
+    var randomBytes = [UInt8](repeating: 0, count: length)
+    let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+    if errorCode != errSecSuccess {
+        fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+    }
+    
+    let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+    let nonce = randomBytes.map { byte in
+        charset[Int(byte) % charset.count]
+    }
+    return String(nonce)
+}
+
+/// Creates a SHA256 hash of the nonce for Apple Sign-In
+private func sha256(_ input: String) -> String {
+    let inputData = Data(input.utf8)
+    let hashedData = SHA256.hash(data: inputData)
+    return hashedData.compactMap { String(format: "%02x", $0) }.joined()
 }
 
 #Preview {

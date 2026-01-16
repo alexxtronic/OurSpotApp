@@ -30,6 +30,12 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
                     }
             }
         }
+        .onChange(of: url) { _, newUrl in
+            // Reset state and reload when URL changes
+            self.image = nil
+            self.isLoading = false
+            loadImage()
+        }
     }
     
     private func loadImage() {
@@ -71,5 +77,13 @@ final class ImageCache {
     
     func set(_ image: UIImage, for url: URL) {
         cache.setObject(image, forKey: url as NSURL)
+    }
+    
+    func remove(for url: URL) {
+        cache.removeObject(forKey: url as NSURL)
+    }
+    
+    func clearAll() {
+        cache.removeAllObjects()
     }
 }
