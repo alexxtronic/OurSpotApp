@@ -879,11 +879,11 @@ body {
 
     .phone-mockup {
         order: -1;
-        /* Scale entire phone uniformly - everything looks exactly like desktop, just smaller */
-        transform: scale(0.5);
+        /* Scale entire phone uniformly - much smaller */
+        transform: scale(0.35);
         transform-origin: top center;
         /* Collapse the extra space from scaling */
-        margin: 0 auto -180px auto;
+        margin: 0 auto -200px auto;
         display: flex;
         justify-content: center;
     }
