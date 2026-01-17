@@ -63,6 +63,34 @@ struct FriendMapApp: App {
                     .zIndex(1)
                 }
             }
+            .onOpenURL { url in
+                handleIncomingURL(url)
+            }
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+                guard let url = userActivity.webpageURL else { return }
+                handleIncomingURL(url)
+            }
+        }
+    }
+    
+    /// Handles incoming deep links and universal links
+    private func handleIncomingURL(_ url: URL) {
+        Logger.info("🔗 App received URL: \(url.absoluteString)")
+        
+        let pathComponents = url.pathComponents
+        
+        // Expected format: /event/<uuid>
+        // pathComponents: ["/", "event", "UUID"]
+        
+        if pathComponents.count >= 3, pathComponents[1] == "event" {
+            let uuidString = pathComponents[2]
+            if let eventId = UUID(uuidString: uuidString) {
+                Task {
+                    await planStore.handleDeepLink(eventId: eventId)
+                }
+            } else {
+                Logger.warning("🔗 Invalid UUID in event link: \(uuidString)")
+            }
         }
     }
 }

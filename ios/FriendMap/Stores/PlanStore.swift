@@ -568,6 +568,59 @@ final class PlanStore: ObservableObject {
     func getProfile(id: UUID) -> UserProfile? {
         profiles[id]
     }
+    
+    // MARK: - Deep Linking
+    
+    /// Handles an incoming deep link for a specific event
+    func handleDeepLink(eventId: UUID) async {
+        Logger.info("🔗 Handling deep link for event: \(eventId)")
+        
+        // 1. Check if we already have it in memory
+        if let existingPlan = plans.first(where: { $0.id == eventId }) {
+            Logger.info("🔗 Plan found in memory, navigating...")
+            // Ensure UI updates on main thread
+            await MainActor.run {
+                self.planToShowOnMap = existingPlan
+            }
+            return
+        }
+        
+        // 2. Fetch from backend if not found locally
+        do {
+            Logger.info("🔗 Plan not in memory, fetching from backend...")
+            if let fetchedPlan = try await planService.fetchPlan(id: eventId) {
+                // Fetch necessary context (attendees, my RSVP)
+                // We do this concurrently for speed
+                async let attendees = planService.fetchAttendeesForPlans(planIds: [eventId])
+                async let myRSVPs = planService.fetchMyRSVPs(userId: userService.getCurrentUserId() ?? UUID())
+                
+                let (fetchedAttendees, fetchedRSVPs) = try await (attendees, myRSVPs)
+                
+                await MainActor.run {
+                    // Merge data
+                    if !self.plans.contains(where: { $0.id == eventId }) {
+                        self.plans.append(fetchedPlan)
+                    }
+                    
+                    if let planAttendees = fetchedAttendees[eventId] {
+                        self.attendees[eventId] = planAttendees
+                    }
+                    
+                    if let rsvp = fetchedRSVPs[eventId] {
+                        self.rsvpStatus[eventId] = rsvp
+                    }
+                    
+                    // Trigger navigation
+                    self.planToShowOnMap = fetchedPlan
+                    Logger.info("🔗 Deep link navigation triggered for: \(fetchedPlan.title)")
+                }
+            } else {
+                Logger.warning("🔗 Deep link failed: Plan not found (might be deleted or invalid ID)")
+            }
+        } catch {
+            Logger.error("🔗 Deep link fetch failed: \(error.localizedDescription)")
+        }
+    }
 }
 
 /// Date filter options for map

@@ -56,6 +56,40 @@ final class PlanService: ObservableObject {
         }
     }
     
+    
+    // MARK: - Fetch Single Plan
+    
+    func fetchPlan(id: UUID) async throws -> Plan? {
+        guard let supabase = Config.supabase else { return nil }
+        
+        let response: [PlanDTO] = try await supabase
+            .from("plans")
+            .select("*, profiles:host_user_id(name, avatar_url)")
+            .eq("id", value: id.uuidString)
+            .limit(1)
+            .execute()
+            .value
+        
+        guard let dto = response.first else { return nil }
+        
+        return Plan(
+            id: dto.id,
+            hostUserId: dto.host_user_id,
+            title: dto.title,
+            description: dto.description ?? "",
+            startsAt: dto.starts_at,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+            emoji: dto.emoji ?? "📍",
+            activityType: ActivityType(rawValue: dto.activity_type ?? "social") ?? .social,
+            addressText: dto.address_text ?? "",
+            isPrivate: dto.is_private ?? false,
+            maxAttendees: dto.max_attendees,
+            hostName: dto.profiles?.name ?? "Unknown Host",
+            hostAvatar: dto.profiles?.avatar_url
+        )
+    }
+
     // MARK: - Fetch RSVPs for a User
     
     /// Fetches the current user's RSVP status for all plans
