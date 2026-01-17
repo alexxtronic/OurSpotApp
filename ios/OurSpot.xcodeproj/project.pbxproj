@@ -145,6 +145,7 @@
 		A3A5AF095F809DF5D15186E8 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
 		A3CC3D2670E2FF81BA7F8BD3 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
 		A3CF6749DA7FAB7BDC247494 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		A3FF39A1AD4B519509CFE5A1 /* FriendMap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FriendMap.entitlements; sourceTree = "<group>"; };
 		A5AD3EC6E0856720A49463CF /* CreatePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePlanView.swift; sourceTree = "<group>"; };
 		A71F56A227EB02B0A3AF6451 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		A75F3AE982D1081DA3643C49 /* OurSpot.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OurSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -373,6 +374,7 @@
 			children = (
 				3AAC8FB85BFB704918B53D66 /* Assets.xcassets */,
 				7CF622D89F0AE3C9A0A1C187 /* BlockService.swift */,
+				A3FF39A1AD4B519509CFE5A1 /* FriendMap.entitlements */,
 				176DC1949BC39A2EA956CB7F /* import_icons.py */,
 				F5BF4DCDFF507E7B923E37F8 /* Info.plist */,
 				6E14BF6ACC4C82118E8A7319 /* App */,
@@ -600,6 +602,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FriendMap/FriendMap.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -621,6 +624,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FriendMap/FriendMap.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = NO;
