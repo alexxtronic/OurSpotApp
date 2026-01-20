@@ -96,7 +96,7 @@ struct SignInView: View {
                     .cornerRadius(DesignSystem.CornerRadius.md)
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                            .stroke(colorScheme == .dark ? Color.white : Color.clear, lineWidth: 1)
+                            .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 1)
                     )
                     
                     // Email sign in button
