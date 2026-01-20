@@ -46,8 +46,8 @@ struct PlanDetailsView: View {
     }
     
     private var shareURL: URL {
-        // Deep link format: https://ourspot.world/?planId={id}
-        URL(string: "https://ourspot.world/?planId=\(plan.id.uuidString)")!
+        // Universal Link format: https://ourspot.world/event/{id}
+        URL(string: "https://ourspot.world/event/\(plan.id.uuidString)")!
     }
     
     var body: some View {
@@ -101,12 +101,11 @@ struct PlanDetailsView: View {
                 .padding(.bottom, DesignSystem.Spacing.lg)
             }
             .scrollIndicators(.hidden)
-            .background(DesignSystem.Colors.background)
+            .background(DesignSystem.Colors.adaptiveBackground)
             .navigationTitle("Plan Details")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(DesignSystem.Colors.background, for: .navigationBar)
+            .toolbarBackground(DesignSystem.Colors.adaptiveBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar) // Ensure text is visible if BG is dark
 
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

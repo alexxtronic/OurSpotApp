@@ -343,7 +343,6 @@ struct MapView: View {
                         ))
                     }
                     selectedPlan = plan
-                    planStore.planToShowOnMap = nil
                 }
             }
             .overlay {
@@ -474,8 +473,7 @@ struct MapView: View {
                 PlanAnnotationView(plan: plan, scale: zoomScale, isSelected: selectedPlan?.id == plan.id)
                     .onTapGesture {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            selectedPlan = plan
-                            showPlanDetails = true
+                            planStore.planToShowOnMap = plan
                         }
                         HapticManager.mediumTap()
                     }

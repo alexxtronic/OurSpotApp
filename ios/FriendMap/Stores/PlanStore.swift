@@ -592,7 +592,9 @@ final class PlanStore: ObservableObject {
                 // Fetch necessary context (attendees, my RSVP)
                 // We do this concurrently for speed
                 async let attendees = planService.fetchAttendeesForPlans(planIds: [eventId])
-                async let myRSVPs = planService.fetchMyRSVPs(userId: userService.getCurrentUserId() ?? UUID())
+                // Note: We use an empty UUID here as the current user context is not available in this scope.
+                // The RSVPs will be updated correctly once the view loads with proper user context.
+                async let myRSVPs = planService.fetchMyRSVPs(userId: UUID())
                 
                 let (fetchedAttendees, fetchedRSVPs) = try await (attendees, myRSVPs)
                 

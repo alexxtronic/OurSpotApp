@@ -42,15 +42,16 @@ struct FriendMapApp: App {
                     }
                     .onChange(of: authService.isAuthenticated) { isAuthenticated in
                         if isAuthenticated {
-                            Task {
-                                await PushNotificationManager.registerIfAuthorized()
-                            }
-                        } else {
-                            Task {
-                                await DeviceTokenService.shared.clearToken()
-                            }
-                        }
+                    Task {
+                        await PushNotificationManager.registerIfAuthorized()
                     }
+                } else {
+                    Task {
+                        await DeviceTokenService.shared.clearToken()
+                    }
+                    blockService.clear()
+                }
+            }
                 
                 // Animated launch screen overlay
                 if showLaunchScreen {

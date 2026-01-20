@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreLocation
 import MapKit
+import UserNotifications
 
 /// Form for creating a new plan with emoji picker and address autocomplete
 struct CreatePlanView: View {
@@ -315,6 +316,13 @@ struct CreatePlanView: View {
             // Auto-zoom to the newly created event on the map
             if let newPlan = planStore.plans.first(where: { $0.id == newPlanId }) {
                 planStore.planToShowOnMap = newPlan
+            }
+            
+            // Request push notification permission if not yet determined (e.g. first event created)
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            if settings.authorizationStatus == .notDetermined {
+                Logger.info("Requesting push notification permission after creating first event")
+                let _ = await PushNotificationManager.requestPermission()
             }
             
             dismiss()

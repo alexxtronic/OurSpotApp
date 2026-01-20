@@ -72,8 +72,8 @@ struct DirectMessageChatView: View {
                     .padding(.vertical, 10)
                     .background(
                         isFromMe 
-                            ? DesignSystem.Colors.primaryFallback
-                            : DesignSystem.Colors.secondaryBackground
+                            ? DesignSystem.Colors.chatUserBubble
+                            : DesignSystem.Colors.chatOtherBubble
                     )
                     .foregroundColor(isFromMe ? .white : .primary)
                     .cornerRadius(18)
@@ -95,7 +95,7 @@ struct DirectMessageChatView: View {
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(DesignSystem.Colors.secondaryBackground)
+                .background(DesignSystem.Colors.tertiaryBackground)
                 .cornerRadius(20)
                 .lineLimit(1...5)
             
@@ -113,7 +113,7 @@ struct DirectMessageChatView: View {
             .disabled(messageText.trimmingCharacters(in: .whitespaces).isEmpty)
         }
         .padding(DesignSystem.Spacing.md)
-        .background(Color(UIColor.systemBackground))
+        .background(DesignSystem.Colors.secondaryBackground) // Uses adaptive background now
     }
     
     // MARK: - Actions

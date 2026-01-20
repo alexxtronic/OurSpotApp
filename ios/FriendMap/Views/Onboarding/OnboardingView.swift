@@ -32,7 +32,7 @@ struct OnboardingView: View {
     var body: some View {
         ZStack {
             // Background - tap to dismiss keyboard
-            Color.white
+            DesignSystem.Colors.screenBackground
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -70,7 +70,7 @@ struct OnboardingView: View {
                         } label: {
                             Text("Skip")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.gray)
+                                .foregroundColor(DesignSystem.Colors.textSecondary)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
                         }
@@ -171,7 +171,7 @@ struct OnboardingView: View {
             // Headline
             Text("Never go out alone again")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .foregroundColor(DesignSystem.Colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .opacity(animateContent ? 1.0 : 0)
                 .offset(y: animateContent ? 0 : 20)
@@ -179,7 +179,7 @@ struct OnboardingView: View {
             // Subhead
             Text("No creeps allowed")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.gray)
+                .foregroundColor(DesignSystem.Colors.textSecondary)
                 .opacity(animateContent ? 1.0 : 0)
                 .offset(y: animateContent ? 0 : 20)
             
@@ -217,7 +217,7 @@ struct OnboardingView: View {
             
             Text("Drop a plan on the map")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .foregroundColor(DesignSystem.Colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .opacity(animateContent ? 1.0 : 0)
             
@@ -266,13 +266,13 @@ struct OnboardingView: View {
             
             Text("Private group chat lets you\ncoordinate before meeting")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .foregroundColor(DesignSystem.Colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .opacity(animateContent ? 1.0 : 0)
             
             Text("All chats are temporary & deleted\nafter the event is over")
                 .font(.system(size: 16))
-                .foregroundColor(.gray)
+                .foregroundColor(DesignSystem.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .opacity(animateContent ? 1.0 : 0)
                 .offset(y: animateContent ? 0 : 10)
@@ -301,13 +301,13 @@ struct OnboardingView: View {
             
             Text("This is NOT a dating app.")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .foregroundColor(DesignSystem.Colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .opacity(animateContent ? 1.0 : 0)
             
             Text("Users are reviewed by the community,\nno creeps allowed")
                 .font(.system(size: 16))
-                .foregroundColor(.gray)
+                .foregroundColor(DesignSystem.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .opacity(animateContent ? 1.0 : 0)
                 .offset(y: animateContent ? 0 : 10)
@@ -333,11 +333,11 @@ struct OnboardingView: View {
                 
                 Text("Enable Permissions")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    .foregroundColor(DesignSystem.Colors.textPrimary)
                 
                 Text("To find events and friends nearby, we need your permission.")
                     .font(.system(size: 16))
-                    .foregroundColor(.gray)
+                    .foregroundColor(DesignSystem.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }
@@ -362,9 +362,9 @@ struct OnboardingView: View {
                     .font(.headline)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(DesignSystem.Colors.inputBackground)
                     .cornerRadius(12)
-                    .foregroundColor(locationAuthorized ? .green : .primary)
+                    .foregroundColor(locationAuthorized ? .green : DesignSystem.Colors.textPrimary)
                 }
                 .disabled(locationAuthorized)
                 
@@ -385,9 +385,9 @@ struct OnboardingView: View {
                     .font(.headline)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(DesignSystem.Colors.inputBackground)
                     .cornerRadius(12)
-                    .foregroundColor(contactsAuthorized ? .green : .primary)
+                    .foregroundColor(contactsAuthorized ? .green : DesignSystem.Colors.textPrimary)
                 }
                 .disabled(contactsAuthorized)
             }
@@ -410,7 +410,7 @@ struct OnboardingView: View {
             
             Text("Let's set up your profile")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .foregroundColor(DesignSystem.Colors.textPrimary)
                 .opacity(animateContent ? 1.0 : 0)
             
             // Photo picker
@@ -462,15 +462,15 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Name")
                     .font(.caption)
-                    .foregroundColor(.black.opacity(0.6))
+                    .foregroundColor(DesignSystem.Colors.textSecondary)
                     .fontWeight(.medium)
                 
                 TextField("Your name", text: $displayName)
                     .font(.body)
-                    .foregroundColor(.black)
+                    .foregroundColor(DesignSystem.Colors.textPrimary)
                     .focused($isTextFieldFocused)
                     .padding(16)
-                    .background(Color.gray.opacity(0.1))
+                    .background(DesignSystem.Colors.inputBackground)
                     .cornerRadius(12)
             }
             .padding(.top, 8)
@@ -481,20 +481,20 @@ struct OnboardingView: View {
                 HStack {
                     Text("Bio")
                         .font(.caption)
-                        .foregroundColor(.black.opacity(0.6))
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
                         .fontWeight(.medium)
                     Text("(optional)")
                         .font(.caption)
-                        .foregroundColor(.black.opacity(0.4))
+                        .foregroundColor(DesignSystem.Colors.textSecondary.opacity(0.7))
                 }
                 
                 TextField("I like to go out for coffee...", text: $bio, axis: .vertical)
                     .font(.body)
-                    .foregroundColor(.black)
+                    .foregroundColor(DesignSystem.Colors.textPrimary)
                     .focused($isTextFieldFocused)
                     .lineLimit(3...5)
                     .padding(16)
-                    .background(Color.gray.opacity(0.1))
+                    .background(DesignSystem.Colors.inputBackground)
                     .cornerRadius(12)
             }
             .opacity(animateContent ? 1.0 : 0)
@@ -559,7 +559,7 @@ struct OnboardingView: View {
             
             Text(text)
                 .font(.system(size: 16))
-                .foregroundColor(.black.opacity(0.7))
+                .foregroundColor(DesignSystem.Colors.textSecondary)
         }
     }
     
@@ -572,7 +572,7 @@ struct OnboardingView: View {
             
             Text(text)
                 .font(.system(size: 15))
-                .foregroundColor(.black.opacity(0.7))
+                .foregroundColor(DesignSystem.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }

@@ -33,8 +33,8 @@ struct LaunchScreenView: View {
                 
                 // Tagline
                 if showTagline {
-                    Text("Plan. Meet. Connect.")
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                    Text("Make new friends, no creeps allowed.")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.8))
                         .transition(.opacity)
                 }

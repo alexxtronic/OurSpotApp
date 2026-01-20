@@ -32,9 +32,58 @@ enum DesignSystem {
         // Fallback colors if assets not set up
         static let primaryFallback = Color(hex: "cc990c") ?? .yellow // Dark Gold
         static let secondaryFallback = Color(hex: "e8be4a") ?? .orange // Light Gold
+        
+        // MARK: - Adaptive Semantic Colors
+        // These will automatically adapt to Light/Dark mode
+        
+        /// Main background color (Black in Dark Mode, White in Light Mode)
+        static let screenBackground = Color("ScreenBackground") // Define in Assets or use code below
+        
+        /// Secondary background for cards/sheets (Dark Gray in Dark Mode, Light Gray/White in Light Mode)
+        static let cardBackground = Color("CardBackground")
+        
+        /// Primary text color (White in Dark Mode, Black in Light Mode)
+        static let textPrimary = Color.primary
+        
+        /// Secondary text color (Light Gray in Dark Mode, Dark Gray in Light Mode)
+        static let textSecondary = Color.secondary
+        
+        /// Input field background
+        static let inputBackground = Color.primary.opacity(0.1)
+        
+        // Legacy/Fixed colors (Use with caution in Light Mode)
         static let background = Color(hex: "000000") ?? .black
-        static let secondaryBackground = Color(hex: "1a1a1a") ?? .gray
-        static let tertiaryBackground = Color(hex: "2a2a2a") ?? .gray.opacity(0.5)
+        
+        // NOW ADAPTIVE: Dark Gray in Dark Mode, System Gray 6 (Light Gray) in Light Mode
+        static let secondaryBackground = adaptive(
+            dark: Color(hex: "1a1a1a") ?? .gray,
+            light: Color(hex: "f2f2f7") ?? .white
+        )
+        
+        static let tertiaryBackground = adaptive(
+            dark: Color(hex: "2a2a2a") ?? .gray.opacity(0.5),
+            light: Color(hex: "e5e5ea") ?? .gray.opacity(0.2) // Slightly darker for visibility in light mode
+        )
+        
+        // Chat Colors
+        static let chatUserBubble = Color.blue.opacity(0.8)
+        static let chatOtherBubble = adaptive(
+            dark: Color(hex: "2a2a2a") ?? .gray.opacity(0.5),
+            light: Color(hex: "e5e5ea") ?? .gray.opacity(0.2)
+        )
+        
+        // Helper to get adaptive color directly from code if Asset catalog updates are delayed
+        static func adaptive(dark: Color, light: Color) -> Color {
+            Color(UIColor { traitCollection in
+                return traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+            })
+        }
+        
+        // Pre-defined adaptive colors if not using Assets yet
+        static let adaptiveBackground = adaptive(dark: .black, light: .white)
+        static let adaptiveCard = adaptive(dark: Color(hex: "1a1a1a") ?? .gray, light: Color(hex: "f2f2f7") ?? .white)
+        static let adaptiveText = adaptive(dark: .white, light: .black)
+        static let adaptiveSecondaryText = adaptive(dark: .gray, light: .gray)
     }
     
     // MARK: - Premium Gradients

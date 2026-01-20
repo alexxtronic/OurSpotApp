@@ -8,7 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID")!;
 const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID")!;
 const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY")!;
-const APNS_BUNDLE_ID = Deno.env.get("APNS_BUNDLE_ID") || "com.ourspot.app";
+const APNS_BUNDLE_ID = Deno.env.get("APNS_BUNDLE_ID") || "com.ourspot.world";
 const APNS_ENVIRONMENT = Deno.env.get("APNS_ENVIRONMENT") || "production"; // "development" for sandbox
 
 // Supabase setup

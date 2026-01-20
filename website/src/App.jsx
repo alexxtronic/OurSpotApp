@@ -213,7 +213,7 @@ function App() {
                     <div className="footer-links">
                         <a href="https://alexxtronic.github.io/ourspot-legal/privacy-policy.html">Privacy</a>
                         <a href="https://alexxtronic.github.io/ourspot-legal/terms-of-service.html">Terms</a>
-                        <a href="mailto:ourspothelper@gmail.com">Support</a>
+                        <a href="https://alexxtronic.github.io/ourspot-legal/support.html">Support</a>
                     </div>
                     <p className="footer-copy">© 2025 OurSpot. Made for people who touch grass.</p>
                 </div>

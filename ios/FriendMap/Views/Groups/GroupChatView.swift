@@ -202,7 +202,7 @@ struct GroupChatView: View {
                     Text(message.content)
                         .padding(.horizontal, DesignSystem.Spacing.md)
                         .padding(.vertical, DesignSystem.Spacing.sm)
-                        .background(isMe ? DesignSystem.Colors.primaryFallback : DesignSystem.Colors.secondaryBackground)
+                        .background(isMe ? DesignSystem.Colors.chatUserBubble : DesignSystem.Colors.chatOtherBubble)
                         .foregroundColor(isMe ? .white : .primary)
                         .cornerRadius(DesignSystem.CornerRadius.lg)
                         .opacity(message.status == .sending ? 0.7 : 1.0)

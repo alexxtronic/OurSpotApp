@@ -5,6 +5,7 @@ import AuthenticationServices
 /// Sign in screen with Apple and email options
 struct SignInView: View {
     @EnvironmentObject private var authService: AuthService
+    @Environment(\.colorScheme) var colorScheme
     
     @State private var showEmailForm = false
     @State private var isSignUp = false
@@ -56,28 +57,22 @@ struct SignInView: View {
                             Text("Continue as Guest")
                         }
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(.white) // Keep white on colored button
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background(DesignSystem.Colors.primaryFallback)
                         .cornerRadius(DesignSystem.CornerRadius.md)
                     }
                     
-                    // Divider
-                    HStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 1)
-                        Text("or create an account")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 1)
-                    }
+                    // "or create an account" text (No dividers, larger font)
+                    Text("or create an account")
+                        .font(.system(size: 16, weight: .medium)) // ~40% larger than caption (11-12pt)
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
+                        .padding(.vertical, 4)
                     
                     // Sign in with Apple
-                    SignInWithAppleButton(type: .signIn, style: .black) { request in
+                    // Use adaptive style: White for Dark Mode (visibility), Black for Light Mode
+                    SignInWithAppleButton(type: .signIn, style: colorScheme == .dark ? .white : .black) { request in
                         let nonce = randomNonceString()
                         currentNonce = nonce
                         request.requestedScopes = [.email, .fullName]
@@ -99,6 +94,10 @@ struct SignInView: View {
                     }
                     .frame(height: 50)
                     .cornerRadius(DesignSystem.CornerRadius.md)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                            .stroke(colorScheme == .dark ? Color.white : Color.clear, lineWidth: 1)
+                    )
                     
                     // Email sign in button
                     Button {
@@ -110,10 +109,10 @@ struct SignInView: View {
                             Text("Continue with Email")
                         }
                         .font(.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(DesignSystem.Colors.textPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.gray.opacity(0.1))
+                        .background(DesignSystem.Colors.inputBackground)
                         .cornerRadius(DesignSystem.CornerRadius.md)
                     }
                 }
@@ -134,7 +133,7 @@ struct SignInView: View {
                 VStack(spacing: 4) {
                     Text("By continuing, you agree to our")
                         .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(DesignSystem.Colors.textSecondary)
                     
                     HStack(spacing: 4) {
                         Link("Terms of Service", destination: URL(string: "https://alexxtronic.github.io/ourspot-legal/terms-of-service.html")!)
@@ -142,7 +141,7 @@ struct SignInView: View {
                         Link("Privacy Policy", destination: URL(string: "https://alexxtronic.github.io/ourspot-legal/privacy-policy.html")!)
                     }
                     .font(.caption2)
-                    .foregroundColor(.secondary) // or .blue if you want them to stand out more, but secondary is subtle
+                    .foregroundColor(DesignSystem.Colors.textSecondary)
                 }
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, DesignSystem.Spacing.lg)
@@ -160,10 +159,10 @@ struct SignInView: View {
                         .tint(.white)
                 }
             }
-            .background(Color.black)
+            .background(DesignSystem.Colors.screenBackground)
         }
-        .background(Color.black.ignoresSafeArea())
-        .preferredColorScheme(.dark)
+        .background(DesignSystem.Colors.screenBackground.ignoresSafeArea())
+        // Removed .preferredColorScheme(.dark) to enable Light Mode support
     }
     
     private var emailFormSheet: some View {

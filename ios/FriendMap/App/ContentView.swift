@@ -7,6 +7,7 @@ struct ContentView: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var notificationRouter: NotificationRouter
     @EnvironmentObject private var dmService: DirectMessageService
+    @EnvironmentObject private var blockService: BlockService
     
     @State private var deepLinkPlan: Plan?
     
@@ -26,8 +27,12 @@ struct ContentView: View {
                         .sheet(item: $deepLinkPlan) { plan in
                             PlanDetailsView(plan: plan)
                         }
-                        .onOpenURL { url in
-                            handleDeepLink(url)
+                        .onChange(of: planStore.planToShowOnMap) { plan in
+                            if let plan = plan {
+                                deepLinkPlan = plan
+                                // Nil it so that the same plan can be triggered again (e.g. if sheet is dismissed and re-opened)
+                                planStore.planToShowOnMap = nil
+                            }
                         }
                 } else {
                     // Show onboarding for new users
@@ -56,6 +61,7 @@ struct ContentView: View {
                 // Fetch notifications for the current user
                 await NotificationCenter.shared.fetchNotifications(for: sessionStore.currentUser.id)
                 await dmService.fetchConversations(currentUserId: sessionStore.currentUser.id)
+                await blockService.refresh(userId: sessionStore.currentUser.id)
             }
         }
         .onChange(of: authService.isAuthenticated) { isAuthenticated in
@@ -64,6 +70,7 @@ struct ContentView: View {
                     await syncProfileIfNeeded()
                     await NotificationCenter.shared.fetchNotifications(for: sessionStore.currentUser.id)
                     await dmService.fetchConversations(currentUserId: sessionStore.currentUser.id)
+                    await blockService.refresh(userId: sessionStore.currentUser.id)
                 }
             }
         }
@@ -223,8 +230,7 @@ struct ContentView: View {
             // Only show confetti if a plan was actually created
             if planStore.plans.count > planCountBeforeSheet {
                 showConfetti = true
-                
-                Logger.info("First plan created! hasSeenTabCoachMarks = \(hasSeenTabCoachMarks)")
+                Logger.info("Plan created! hasSeenTabCoachMarks = \(hasSeenTabCoachMarks)")
                 
                 // Trigger tab coach marks after first plan creation
                 if !hasSeenTabCoachMarks {
@@ -368,45 +374,6 @@ struct ContentView: View {
             break
         }
         HapticManager.lightTap()
-    }
-    
-    private func handleDeepLink(_ url: URL) {
-        Logger.info("🔗 Handling Deep Link: \(url.absoluteString)")
-        
-        var targetPlanId: UUID?
-        
-        // Option 1: ourspot://plan/{uuid}
-        if url.scheme == "ourspot" && url.host == "plan",
-           let planIdString = url.pathComponents.last {
-            targetPlanId = UUID(uuidString: planIdString)
-        }
-        
-        // Option 2: https://ourspot.world/?planId={uuid}
-        if targetPlanId == nil, let components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
-            if let queryItems = components.queryItems,
-               let planIdString = queryItems.first(where: { $0.name == "planId" })?.value {
-                targetPlanId = UUID(uuidString: planIdString)
-            }
-        }
-        
-        guard let planId = targetPlanId else {
-            Logger.warning("❌ Invalid Deep Link: Could not parse plan ID")
-            return
-        }
-        
-        // Find plan locally
-        if let plan = planStore.plans.first(where: { $0.id == planId }) {
-            deepLinkPlan = plan
-        } else {
-            // In a real app, you would fetch the plan from Supabase here
-            Logger.warning("Deep link plan not found locally: \(planId). Triggering fetch...")
-            Task {
-                await planStore.loadPlans(currentUserId: sessionStore.currentUser.id)
-                if let plan = planStore.plans.first(where: { $0.id == planId }) {
-                    deepLinkPlan = plan
-                }
-            }
-        }
     }
     
     private func handleNotificationDeepLink(_ deepLink: NotificationDeepLink) {

@@ -1,11 +1,20 @@
 {
-    "applinks": {
-        "apps": [],
-        "details": [
-            {
-                "appID": "284G637Q9X.com.alexdamore.friendmap",
-                "paths": [ "/event/*" ]
-            }
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "284G637Q9X.com.alexdamore.friendmap",
+        "paths": ["/event/*"],
+        "components": [
+          {
+            "/": "/event/*",
+            "comment": "Matches any event link"
+          }
         ]
-    }
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["284G637Q9X.com.alexdamore.friendmap"]
+  }
 }
