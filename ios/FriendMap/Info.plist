@@ -35,5 +35,7 @@
 	<string>OurSpot uses your contacts to help you find and connect with friends already on the platform.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>OurSpot uses your location to show you nearby plans and friends.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>OurSpot needs access to your photos to let you choose a profile picture.</string>
 </dict>
 </plist>

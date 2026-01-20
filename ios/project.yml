@@ -53,7 +53,7 @@ targets:
         CFBundleDisplayName: OurSpot
         CFBundleName: OurSpot
         CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "4"
+        CFBundleVersion: "5"
         UILaunchScreen:
           UIColorName: ""
           UIImageName: ""
@@ -61,3 +61,4 @@ targets:
           - UIInterfaceOrientationPortrait
         NSContactsUsageDescription: "OurSpot uses your contacts to help you find and connect with friends already on the platform."
         NSLocationWhenInUseUsageDescription: "OurSpot uses your location to show you nearby plans and friends."
+        NSPhotoLibraryUsageDescription: "OurSpot needs access to your photos to let you choose a profile picture."
