@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -146,7 +146,7 @@
 		A3FF39A1AD4B519509CFE5A1 /* FriendMap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FriendMap.entitlements; sourceTree = "<group>"; };
 		A5AD3EC6E0856720A49463CF /* CreatePlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePlanView.swift; sourceTree = "<group>"; };
 		A71F56A227EB02B0A3AF6451 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
-		A75F3AE982D1081DA3643C49 /* OurSpot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OurSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A75F3AE982D1081DA3643C49 /* OurSpot.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OurSpot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAB7CDD684C050A7903CD77E /* MapFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFilterView.swift; sourceTree = "<group>"; };
 		AFEB56B2E76D9D9AC6DF512C /* DirectMessageChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectMessageChatView.swift; sourceTree = "<group>"; };
 		B0A312B72EB1D326DF2ED449 /* DirectMessagesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectMessagesListView.swift; sourceTree = "<group>"; };
@@ -467,6 +467,7 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					5B5C4C63CA9354376518B9EE = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -484,6 +485,7 @@
 			packageReferences = (
 				BC4344551237A709B37ACB21 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -598,8 +600,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = FriendMap/FriendMap.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = HFC498ZVXN;
+				CURRENT_PROJECT_VERSION = 6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FriendMap/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -607,7 +608,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ourspot.world;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -621,8 +622,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = FriendMap/FriendMap.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = HFC498ZVXN;
+				CURRENT_PROJECT_VERSION = 6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FriendMap/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -630,7 +630,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ourspot.world;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;

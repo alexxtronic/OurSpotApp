@@ -67,6 +67,7 @@ final class SessionStore: ObservableObject {
                     countryOfBirth: profile.country_of_birth,
                     favoriteSong: profile.favorite_song,
                     funFact: profile.fun_fact,
+                    instagramHandle: profile.instagram_handle,
                     profileColor: profile.profile_color,
                     followersCount: profile.followers_count ?? 0,
                     followingCount: profile.following_count ?? 0,
@@ -97,13 +98,14 @@ final class SessionStore: ObservableObject {
         isLoading = false
     }
     
-    func updateProfile(name: String, age: Int, bio: String, countryOfBirth: String?, favoriteSong: String?, funFact: String?, profileColor: String?) {
+    func updateProfile(name: String, age: Int, bio: String, countryOfBirth: String?, favoriteSong: String?, funFact: String?, instagramHandle: String?, profileColor: String?) {
         currentUser.name = name
         currentUser.age = age
         currentUser.bio = bio
         currentUser.countryOfBirth = countryOfBirth
         currentUser.favoriteSong = favoriteSong
         currentUser.funFact = funFact
+        currentUser.instagramHandle = instagramHandle
         currentUser.profileColor = profileColor
         saveToUserDefaults()
         
@@ -122,6 +124,7 @@ final class SessionStore: ObservableObject {
                         fun_fact: funFact,
                         referral_source: currentUser.referralSource,
                         favorite_song: favoriteSong,
+                        instagram_handle: instagramHandle,
                         profile_color: profileColor
                     ))
                     .eq("id", value: currentUser.id.uuidString)
@@ -284,6 +287,7 @@ private struct ProfileDTO: Decodable {
     let country_of_birth: String?
     let favorite_song: String?
     let fun_fact: String?
+    let instagram_handle: String?
     let profile_color: String?
 }
 
@@ -305,5 +309,6 @@ private struct ProfileUpdateDTO: Encodable {
     var fun_fact: String?
     var referral_source: String?
     var favorite_song: String?
+    var instagram_handle: String?
     var profile_color: String?
 }

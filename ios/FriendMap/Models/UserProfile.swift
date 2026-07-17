@@ -13,6 +13,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var countryOfBirth: String?
     var favoriteSong: String?
     var funFact: String?
+    var instagramHandle: String?
     var profileColor: String?
     
     // Social stats
@@ -41,6 +42,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
         countryOfBirth: String? = nil,
         favoriteSong: String? = nil,
         funFact: String? = nil,
+        instagramHandle: String? = nil,
         profileColor: String? = nil,
         followersCount: Int = 0,
         followingCount: Int = 0,
@@ -60,6 +62,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
         self.countryOfBirth = countryOfBirth
         self.favoriteSong = favoriteSong
         self.funFact = funFact
+        self.instagramHandle = instagramHandle
         self.profileColor = profileColor
         self.followersCount = followersCount
         self.followingCount = followingCount

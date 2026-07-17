@@ -17,9 +17,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>6</string>
+	<key>NSContactsUsageDescription</key>
+	<string>OurSpot uses your contacts to help you find and connect with friends already on the platform.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>OurSpot uses your location to show you nearby plans and friends.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>OurSpot needs access to your photos to let you choose a profile picture.</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
@@ -31,11 +37,5 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
-	<key>NSContactsUsageDescription</key>
-	<string>OurSpot uses your contacts to help you find and connect with friends already on the platform.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>OurSpot uses your location to show you nearby plans and friends.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>OurSpot needs access to your photos to let you choose a profile picture.</string>
 </dict>
 </plist>
