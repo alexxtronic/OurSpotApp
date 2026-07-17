@@ -1,4 +1,8 @@
 -- OurSpot Social Features Migration
+-- SUPERSEDED: this draft (12:58) predates and was fully split into
+-- 004_add_follows_table.sql, 005_add_profile_columns.sql,
+-- 006_create_event_messages.sql, and 008_auto_update_follow_counts.sql
+-- (all created later the same day). Kept for history only; not applied.
 -- Run in Supabase SQL Editor
 
 -- ============================================

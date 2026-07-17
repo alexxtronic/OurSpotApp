@@ -91,3 +91,9 @@ ios/FriendMap/Config/Config.plist
 website/node_modules/
 website/dist/
 website_legacy/
+
+# Local Netlify folder
+.netlify
+
+# Supabase CLI local state
+supabase/.temp/

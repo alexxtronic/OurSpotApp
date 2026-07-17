@@ -5,8 +5,8 @@
 -- IMPORTANT: You must manually create a bucket named 'avatars' in the Supabase Dashboard > Storage
 -- This script sets up the policies for that bucket.
 
--- Enable RLS for storage.objects if not already
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Note: RLS is already enabled on storage.objects by default in Supabase,
+-- and it's owned by supabase_storage_admin, so we don't (and can't) re-enable it here.
 
 -- 1. Allow Public Access to Avatars (Read)
 CREATE POLICY "Public Access to Avatars"

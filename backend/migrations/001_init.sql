@@ -5,6 +5,9 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Enable PostGIS (needed for the geospatial index below)
+CREATE EXTENSION IF NOT EXISTS "postgis";
+
 -- ============================================
 -- PROFILES TABLE
 -- User profile information
