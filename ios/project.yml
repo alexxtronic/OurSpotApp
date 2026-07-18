@@ -15,7 +15,7 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: "HFC498ZVXN"
     CODE_SIGN_STYLE: Automatic
     INFOPLIST_FILE: FriendMap/Info.plist
 
