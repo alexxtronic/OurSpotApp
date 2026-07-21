@@ -12,7 +12,6 @@ xcuserdata/
 ## Xcode patch
 *.swp
 *.lock
-profile
 timeline.xctimeline
 playground.xcworkspace
 
@@ -91,6 +90,10 @@ ios/FriendMap/Config/Config.plist
 website/node_modules/
 website/dist/
 website_legacy/
+
+## iOS tooling
+ios/node_modules/
+ios/build_log*.txt
 
 # Local Netlify folder
 .netlify
