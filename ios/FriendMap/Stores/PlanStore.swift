@@ -472,14 +472,6 @@ final class PlanStore: ObservableObject {
         invitedPlans.count
     }
 
-    /// Helper to test invitations (REMOVE IN PROD)
-    func testInvite() {
-        if let firstPlan = plans.first {
-            rsvpStatus[firstPlan.id] = .invited
-            checkForNewInvites()
-        }
-    }
-    
     // MARK: - Plan Sections
     
     /// Plans I'm going to or maybe attending (not hosting)
