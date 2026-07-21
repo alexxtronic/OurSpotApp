@@ -15,7 +15,7 @@ A Copenhagen-only, invite-only social map app for friends to share and discover 
 1. **Open the project in Xcode:**
    ```bash
    cd friendmap/ios
-   open FriendMap.xcodeproj
+   open OurSpot.xcodeproj
    ```
 
 2. **Select a simulator** (iPhone 15 recommended)
@@ -44,7 +44,7 @@ If you want to connect to a real backend:
 ```
 friendmap/
 ├── ios/                          # iOS app
-│   ├── FriendMap.xcodeproj       # Xcode project
+│   ├── OurSpot.xcodeproj         # Xcode project (generated via `xcodegen` from project.yml)
 │   └── FriendMap/
 │       ├── App/                  # App entry point
 │       ├── Models/               # Data models
