@@ -20,7 +20,8 @@ final class PlanStore: ObservableObject {
     @Published var planToShowOnMap: Plan?
     
     @Published var profiles: [UUID: UserProfile] = [:]
-    
+    @Published var error: String?
+
     private let planService = PlanService()
     private let userService = UserService()
     
@@ -94,6 +95,7 @@ final class PlanStore: ObservableObject {
     }
     
     /// Creates a new plan and adds it to the store
+    @discardableResult
     func createPlan(
         title: String,
         description: String,
@@ -107,7 +109,7 @@ final class PlanStore: ObservableObject {
         hostName: String,
         hostAvatar: String?,
         isPrivate: Bool = false
-    ) async {
+    ) async -> Bool {
         await createPlanWithId(
             id: UUID(),
             title: title,
@@ -124,8 +126,11 @@ final class PlanStore: ObservableObject {
             isPrivate: isPrivate
         )
     }
-    
-    /// Creates a new plan with a specific ID (useful when you need to reference the plan ID immediately)
+
+    /// Creates a new plan with a specific ID (useful when you need to reference the plan ID immediately).
+    /// Only added to local state once the server confirms the save -- returns false (and sets `error`)
+    /// if the save fails, instead of leaving a phantom plan that only exists locally.
+    @discardableResult
     func createPlanWithId(
         id: UUID,
         title: String,
@@ -141,7 +146,8 @@ final class PlanStore: ObservableObject {
         hostAvatar: String?,
         isPrivate: Bool = false,
         maxAttendees: Int? = nil
-    ) async {
+    ) async -> Bool {
+        error = nil
         let newPlan = Plan(
             id: id,
             hostUserId: hostUserId,
@@ -158,18 +164,18 @@ final class PlanStore: ObservableObject {
             hostName: hostName,
             hostAvatar: hostAvatar
         )
-        
-        // Optimistic update
-        plans.append(newPlan)
-        rsvpStatus[newPlan.id] = .going
-        attendees[newPlan.id] = [hostUserId] // Host is automatically attending
-        
+
         do {
             try await planService.createPlan(newPlan)
+            plans.append(newPlan)
+            rsvpStatus[newPlan.id] = .going
+            attendees[newPlan.id] = [hostUserId] // Host is automatically attending
             Logger.info("Created new plan: \(title)")
+            return true
         } catch {
             Logger.error("Failed to create plan in Supabase: \(error.localizedDescription)")
-            // Revert on failure? For now just log
+            self.error = "Couldn't create this event. Check your connection and try again."
+            return false
         }
     }
     

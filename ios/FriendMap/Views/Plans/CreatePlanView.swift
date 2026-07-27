@@ -21,6 +21,7 @@ struct CreatePlanView: View {
     @State private var geocodeError: String?
     @State private var isPrivate = false
     @State private var isCreating = false
+    @State private var showCreateError = false
     @State private var maxAttendeesText = ""
     @State private var isKeyboardVisible = false
     
@@ -211,8 +212,13 @@ struct CreatePlanView: View {
         .onReceive(Foundation.NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             isKeyboardVisible = false
         }
+        .alert("Couldn't Create Event", isPresented: $showCreateError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(planStore.error ?? "Something went wrong. Please try again.")
+        }
     }
-    
+
     private func geocodeAndCreatePlan() {
         Logger.info("Create button tapped - starting geocodeAndCreatePlan")
         
@@ -268,8 +274,8 @@ struct CreatePlanView: View {
             
             // Create a plan ID upfront so we can track it
             let newPlanId = UUID()
-            
-            await planStore.createPlanWithId(
+
+            let created = await planStore.createPlanWithId(
                 id: newPlanId,
                 title: title,
                 description: description,
@@ -285,7 +291,12 @@ struct CreatePlanView: View {
                 isPrivate: isPrivate,
                 maxAttendees: maxAttendees
             )
-            
+
+            guard created else {
+                showCreateError = true
+                return
+            }
+
             // Send invite notifications to selected friends (await to ensure they're sent)
             Logger.info("🎯 CreatePlanView: Plan created, invitedFriends.count = \(invitedFriends.count)")
             if !invitedFriends.isEmpty {
