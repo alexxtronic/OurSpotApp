@@ -19,7 +19,7 @@
 - **Do NOT** manually edit `project.pbxproj` extensively.
 - **To Change Project Settings**: Edit `ios/project.yml`.
 - **To Regenerate Project**: Run `xcodegen generate` in the `ios/` directory.
-- **Signing**: `DEVELOPMENT_TEAM` is often empty in `project.yml`. You may need to select "Personal Team" in Xcode after generation.
+- **Signing**: `DEVELOPMENT_TEAM` is set to `HFC498ZVXN` in `project.yml` (was empty until a July 2026 session fixed it — see `UPDATES.md` — empty `DEVELOPMENT_TEAM` makes `xcodebuild archive` fail outright).
 
 ## 4. UI Architecture
 - **DesignSystem**: Located in `ios/FriendMap/Views/Components/DesignSystem.swift`. ALWAYS use this for colors and fonts. Do not hardcode colors.
@@ -36,3 +36,15 @@
 - **Tech**: React + Vite + Tailwind (managed via `index.css` mostly).
 - **Deployment**: GitHub Pages.
 - **Note**: `dist/` and `node_modules/` are ignored.
+
+## 7. Backend Recovery & Security Hardening (July 2026)
+- **See `UPDATES.md`** for a full log: the original Supabase project died (paused >90 days,
+  unrecoverable), the app was migrated to a new project (`ammeeipxspudkbsrtkyn`) with a
+  from-scratch schema apply, an RLS infinite-recursion bug and a real device-token-leak
+  vulnerability were found and fixed, and a string of "silent failure" bugs (plan
+  creation/deletion, avatar upload, an orphaned-profile account lockout) were diagnosed and
+  fixed with live verification against the database.
+- **Current migration count**: 31 (`backend/migrations/001` through `031`). Check
+  `UPDATES.md`'s "Current State" section before assuming any given migration has actually
+  been applied to the live project — this session authored several that still needed
+  manual confirmation.
