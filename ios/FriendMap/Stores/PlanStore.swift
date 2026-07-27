@@ -179,28 +179,27 @@ final class PlanStore: ObservableObject {
         }
     }
     
-    /// Deletes a plan from local storage and Supabase
+    /// Deletes a plan from Supabase, then local storage. Local state is only
+    /// touched after the server confirms the delete, so a failure (network,
+    /// RLS, etc.) leaves the plan exactly where it was instead of vanishing
+    /// from the UI while still existing on the server.
     func deletePlan(_ plan: Plan) async throws {
-        // Optimistic removal
+        try await planService.deletePlan(plan.id)
         plans.removeAll { $0.id == plan.id }
         rsvpStatus.removeValue(forKey: plan.id)
         attendees.removeValue(forKey: plan.id)
         pendingApprovals.removeValue(forKey: plan.id)
-        
-        // Delete from Supabase
-        try await planService.deletePlan(plan.id)
         Logger.info("Deleted plan: \(plan.title)")
     }
-    
-    /// Updates an existing plan
+
+    /// Updates an existing plan in Supabase, then local state -- same
+    /// failure-ordering fix as deletePlan, so a failed update doesn't leave
+    /// local state showing edits that were never actually saved.
     func updatePlan(_ updatedPlan: Plan) async throws {
-        // Update local state
+        try await planService.updatePlan(updatedPlan)
         if let index = plans.firstIndex(where: { $0.id == updatedPlan.id }) {
             plans[index] = updatedPlan
         }
-        
-        // Update in Supabase
-        try await planService.updatePlan(updatedPlan)
     }
     
     /// Kicks a user from an event and permanently bans them

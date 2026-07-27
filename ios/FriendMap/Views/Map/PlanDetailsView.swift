@@ -11,6 +11,7 @@ struct PlanDetailsView: View {
     @State private var showBlockAlert = false
     @State private var showReportAlert = false
     @State private var showDeleteAlert = false
+    @State private var showDeleteError = false
     @State private var isDeleting = false
     @State private var showEditSheet = false
     @State private var showGroupChat = false
@@ -878,8 +879,13 @@ struct PlanDetailsView: View {
         } message: {
             Text("This action cannot be undone. All RSVPs and messages will also be deleted.")
         }
+        .alert("Couldn't Delete Event", isPresented: $showDeleteError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Something went wrong deleting this event. Please check your connection and try again.")
+        }
     }
-    
+
     private func deleteEvent() {
         isDeleting = true
         Task {
@@ -890,6 +896,7 @@ struct PlanDetailsView: View {
             } catch {
                 Logger.error("Failed to delete event: \(error.localizedDescription)")
                 HapticManager.error()
+                showDeleteError = true
             }
             isDeleting = false
         }
