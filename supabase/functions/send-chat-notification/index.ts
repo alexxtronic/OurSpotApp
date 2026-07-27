@@ -15,6 +15,10 @@ const APNS_ENVIRONMENT = Deno.env.get("APNS_ENVIRONMENT") || "production"; // "d
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// Shared secret verifying the request actually came from our DB trigger,
+// not just anyone holding the app's public API key.
+const WEBHOOK_SECRET = Deno.env.get("CHAT_WEBHOOK_SECRET")!;
+
 interface ChatMessage {
     id: string;
     plan_id: string;
@@ -34,21 +38,48 @@ interface SenderInfo {
 
 serve(async (req) => {
     try {
-        // Parse webhook payload
-        const payload = await req.json();
-        const message: ChatMessage = payload.record;
+        // Verify this request actually came from our DB trigger, not just
+        // anyone holding the app's public API key.
+        const providedSecret = req.headers.get("x-webhook-secret");
+        if (!WEBHOOK_SECRET || providedSecret !== WEBHOOK_SECRET) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                status: 401,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
 
-        if (!message) {
-            return new Response(JSON.stringify({ error: "No message in payload" }), {
+        // Parse webhook payload -- only trust the message id from it; fetch
+        // the authoritative row ourselves rather than trusting the payload's
+        // content/plan_id/user_id verbatim.
+        const payload = await req.json();
+        const messageId: string | undefined = payload.record?.id;
+
+        if (!messageId) {
+            return new Response(JSON.stringify({ error: "No message id in payload" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
             });
         }
 
-        console.log(`Processing notification for message ${message.id} in plan ${message.plan_id}`);
-
         // Create Supabase client with service role
         const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+        // Re-fetch the message ourselves -- confirms it actually exists and
+        // gives us authoritative content instead of trusting the payload.
+        const { data: message, error: messageError } = await supabase
+            .from("event_messages")
+            .select("id, plan_id, user_id, content, created_at")
+            .eq("id", messageId)
+            .single<ChatMessage>();
+
+        if (messageError || !message) {
+            return new Response(JSON.stringify({ error: "Message not found" }), {
+                status: 404,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        console.log(`Processing notification for message ${message.id} in plan ${message.plan_id}`);
 
         // Get sender info
         const { data: senderData } = await supabase
